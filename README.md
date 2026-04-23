@@ -1,5 +1,7 @@
 # Analysi
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 Security automation platform that processes alerts through AI-powered investigation workflows. Ingests alerts from SIEMs, enriches them via threat intelligence, runs automated investigation playbooks, and produces analyst-ready dispositions.
 
 For background on the problem Analysi solves, see [docs/context/ai-soc-problem.md](docs/context/ai-soc-problem.md).
@@ -167,4 +169,10 @@ Analysi ships with a pluggable integration framework (Naxos) and 40+ built-in in
 
 ## License
 
-Proprietary. See LICENSE for details.
+Analysi is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later).
+
+In short: you are free to use, modify, and redistribute Analysi. If you run a modified version as a network service, you must make your source code available to users of that service under the same license. See [LICENSE](LICENSE) for the full terms.
+
+## Contributing
+
+Contributions are welcome. All commits must be signed off under the [Developer Certificate of Origin](https://developercertificate.org/) — see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
