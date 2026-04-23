@@ -1,0 +1,285 @@
+{
+  "id": "zscaler",
+  "app": "zscaler",
+  "name": "ZScaler",
+  "version": "1.0.0",
+  "description": "Web security gateway integration for URL/IP blocking, allowlisting, and threat analysis",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_url": "block_url",
+      "block_ip": "block_ip",
+      "unblock_url": "unblock_url",
+      "unblock_ip": "unblock_ip"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "ZScaler username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "ZScaler password",
+        "format": "password",
+        "required": true
+      },
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "ZScaler API key",
+        "format": "password",
+        "required": true
+      },
+      "sandbox_api_token": {
+        "type": "string",
+        "display_name": "Sandbox API Token",
+        "description": "ZScaler Sandbox API token (optional, for file submission)",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "ZScaler API base URL (e.g., https://admin.zscaler_instance.net)",
+        "required": true
+      },
+      "sandbox_base_url": {
+        "type": "string",
+        "display_name": "Sandbox Base URL",
+        "description": "ZScaler Sandbox base URL (optional, for file submission)",
+        "required": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Timeout",
+        "description": "Request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test ZScaler API connectivity",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL",
+      "description": "Look up URL categorization and blocklist status",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "lookup_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Comma-separated list of URLs to look up"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Look up IP address categorization and blocklist status",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "lookup_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "Comma-separated list of IP addresses to look up"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "block_url",
+      "name": "Block URL",
+      "description": "Block URLs by adding to blocklist or category",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Comma-separated list of URLs to block"
+          },
+          "url_category": {
+            "type": "string",
+            "description": "Optional category ID to add URLs to"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock URL",
+      "description": "Unblock URLs by removing from blocklist or category",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Comma-separated list of URLs to unblock"
+          },
+          "url_category": {
+            "type": "string",
+            "description": "Optional category ID to remove URLs from"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP",
+      "description": "Block IP addresses by adding to blocklist or category",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "Comma-separated list of IP addresses to block"
+          },
+          "url_category": {
+            "type": "string",
+            "description": "Optional category ID to add IPs to"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock IP",
+      "description": "Unblock IP addresses by removing from blocklist or category",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "Comma-separated list of IP addresses to unblock"
+          },
+          "url_category": {
+            "type": "string",
+            "description": "Optional category ID to remove IPs from"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "list_url_categories",
+      "name": "List URL Categories",
+      "description": "List all URL categories",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_url_categories",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "get_ids_and_names_only": {
+            "type": "boolean",
+            "description": "Return only category IDs and names",
+            "default": false
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get sandbox report for file hash",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "get_report",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "MD5 hash of file to get report for"
+          }
+        },
+        "required": [
+          "file_hash"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

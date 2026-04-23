@@ -1,0 +1,179 @@
+{
+  "realm": "analysi",
+  "enabled": true,
+  "displayName": "Analysi",
+  "loginTheme": "analysi",
+  "sslRequired": "none",
+
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespanEnabled": false,
+
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+
+  "bruteForceProtected": true,
+  "failureFactor": 10,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "maxDeltaTimeSeconds": 43200,
+
+  "passwordPolicy": "",
+
+  "roles": {
+    "realm": [
+      { "name": "owner",          "description": "Full tenant admin" },
+      { "name": "admin",          "description": "Tenant admin" },
+      { "name": "analyst",        "description": "Security analyst" },
+      { "name": "viewer",         "description": "Read-only access" },
+      { "name": "system",         "description": "Internal system role for workers" },
+      { "name": "platform_admin", "description": "Cross-tenant platform administrator" }
+    ]
+  },
+
+  "scopeMappings": [],
+
+  "clients": [
+    {
+      "clientId": "analysi-app",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "300"
+      },
+      "redirectUris": [
+        "http://localhost:*",
+        "https://localhost:*",
+        "http://127.0.0.1:*"
+      ],
+      "webOrigins": ["*"],
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": ["offline_access"],
+      "protocolMappers": [
+        {
+          "name": "subject mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "access.tokenResponse.claim": "false"
+          }
+        },
+        {
+          "name": "tenant_id mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true",
+            "user.editable": "false"
+          }
+        },
+        {
+          "name": "roles mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true",
+            "multivalued": "true",
+            "user.attribute": "foo"
+          }
+        },
+        {
+          "name": "audience mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "included.client.audience": "analysi-app"
+          }
+        }
+      ]
+    }
+  ],
+
+  "users": [
+    {
+      "username": "dev",
+      "firstName": "Dev",
+      "lastName": "User",
+      "email": "dev@analysi.local",
+      "emailVerified": true,
+      "enabled": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["owner", "offline_access"],
+      "attributes": {
+        "tenant_id": ["default"]
+      }
+    },
+    {
+      "username": "platform",
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "email": "platform@analysi.local",
+      "emailVerified": true,
+      "enabled": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["platform_admin", "offline_access"]
+    },
+    {
+      "username": "admin",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@analysi.local",
+      "emailVerified": true,
+      "enabled": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin", "offline_access"],
+      "attributes": {
+        "tenant_id": ["default"]
+      }
+    }
+  ]
+}

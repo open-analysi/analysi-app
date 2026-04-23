@@ -1,0 +1,432 @@
+{
+  "id": "defender_endpoint",
+  "app": "defender_endpoint",
+  "name": "Microsoft Defender for Endpoint",
+  "version": "1.0.0",
+  "description": "Microsoft Defender for Endpoint provides endpoint detection and response (EDR) capabilities including device isolation, malware scanning, file quarantine, and advanced threat hunting",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "description": "Application (Client) ID",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Client Secret",
+        "required": true,
+        "sensitive": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "client_id",
+      "client_secret"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "tenant_id": {
+        "type": "string",
+        "description": "Azure AD Tenant ID",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "environment": {
+        "type": "string",
+        "description": "Azure cloud environment",
+        "enum": [
+          "Public",
+          "GCC",
+          "GCC High"
+        ],
+        "default": "Public"
+      }
+    },
+    "required": []
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity and authentication to Microsoft Defender for Endpoint API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "isolate_device",
+      "name": "Isolate Device",
+      "description": "Isolate a device from the network to contain threats",
+      "categories": [
+        "containment",
+        "endpoint_security"
+      ],
+      "cy_name": "isolate_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for isolation"
+          },
+          "isolation_type": {
+            "type": "string",
+            "description": "Type of isolation: Full or Selective",
+            "enum": [
+              "Full",
+              "Selective"
+            ],
+            "default": "Full"
+          }
+        },
+        "required": [
+          "device_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "release_device",
+      "name": "Release Device",
+      "description": "Release a device from isolation",
+      "categories": [
+        "containment",
+        "endpoint_security"
+      ],
+      "cy_name": "release_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for releasing from isolation"
+          }
+        },
+        "required": [
+          "device_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "scan_device",
+      "name": "Scan Device",
+      "description": "Run antivirus scan on a device",
+      "categories": [
+        "investigation",
+        "endpoint_security"
+      ],
+      "cy_name": "scan_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for scan"
+          },
+          "scan_type": {
+            "type": "string",
+            "description": "Type of scan: Quick or Full",
+            "enum": [
+              "Quick",
+              "Full"
+            ],
+            "default": "Quick"
+          }
+        },
+        "required": [
+          "device_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "quarantine_file",
+      "name": "Quarantine File",
+      "description": "Stop and quarantine a file on a device",
+      "categories": [
+        "containment",
+        "endpoint_security"
+      ],
+      "cy_name": "quarantine_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "file_hash": {
+            "type": "string",
+            "description": "SHA1 hash of the file to quarantine"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for quarantine"
+          }
+        },
+        "required": [
+          "device_id",
+          "file_hash",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "restrict_app_execution",
+      "name": "Restrict App Execution",
+      "description": "Restrict application execution on a device to Microsoft-signed executables only",
+      "categories": [
+        "containment",
+        "endpoint_security"
+      ],
+      "cy_name": "restrict_app_execution",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for restricting app execution"
+          }
+        },
+        "required": [
+          "device_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "unrestrict_app_execution",
+      "name": "Remove App Execution Restriction",
+      "description": "Remove application execution restriction from a device",
+      "categories": [
+        "containment",
+        "endpoint_security"
+      ],
+      "cy_name": "unrestrict_app_execution",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for removing restriction"
+          }
+        },
+        "required": [
+          "device_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List all devices registered in Microsoft Defender for Endpoint",
+      "categories": [
+        "investigation",
+        "endpoint_security"
+      ],
+      "cy_name": "list_devices",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of devices to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts from Microsoft Defender for Endpoint",
+      "categories": [
+        "investigation",
+        "alert_management"
+      ],
+      "cy_name": "list_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 100
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by alert status",
+            "enum": [
+              "New",
+              "InProgress",
+              "Resolved"
+            ]
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get details of a specific alert",
+      "categories": [
+        "investigation",
+        "alert_management"
+      ],
+      "cy_name": "get_alert",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Alert identifier"
+          }
+        },
+        "required": [
+          "alert_id"
+        ]
+      }
+    },
+    {
+      "id": "get_device_details",
+      "name": "Get Device Details",
+      "description": "Get detailed information about a specific device",
+      "categories": [
+        "investigation",
+        "endpoint_security"
+      ],
+      "cy_name": "get_device_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device identifier (machine ID)"
+          }
+        },
+        "required": [
+          "device_id"
+        ]
+      }
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert status, assignment, or classification",
+      "categories": [
+        "alert_management",
+        "incident_response"
+      ],
+      "cy_name": "update_alert",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Alert identifier"
+          },
+          "status": {
+            "type": "string",
+            "description": "New alert status",
+            "enum": [
+              "New",
+              "InProgress",
+              "Resolved"
+            ]
+          },
+          "assigned_to": {
+            "type": "string",
+            "description": "User to assign the alert to"
+          },
+          "classification": {
+            "type": "string",
+            "description": "Alert classification"
+          },
+          "determination": {
+            "type": "string",
+            "description": "Alert determination"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment for the update"
+          }
+        },
+        "required": [
+          "alert_id"
+        ]
+      }
+    },
+    {
+      "id": "run_advanced_query",
+      "name": "Run Advanced Query",
+      "description": "Run advanced hunting query using Kusto Query Language (KQL)",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "run_advanced_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "KQL (Kusto Query Language) query string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "isolate_device",
+      "release_host": "release_device",
+      "scan_host": "scan_device",
+      "get_host_details": "get_device_details",
+      "quarantine_file": "quarantine_file"
+    }
+  }
+}

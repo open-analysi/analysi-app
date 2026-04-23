@@ -1,0 +1,110 @@
+{{- if .Values.minio.enabled -}}
+{{- $component := "minio" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      containers:
+        - name: minio
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "analysi.fullname" . }}-secrets
+                  key: minio-root-user
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "analysi.fullname" . }}-secrets
+                  key: minio-root-password
+          command: ["minio", "server", "/data", "--console-address", ":9001"]
+          readinessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          {{- if .Values.minio.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- if .Values.minio.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}-data
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.minio.persistence.storageClass }}
+  storageClassName: {{ .Values.minio.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.minio.persistence.size }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+    - name: console
+      port: 9001
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 4 }}
+{{- end }}

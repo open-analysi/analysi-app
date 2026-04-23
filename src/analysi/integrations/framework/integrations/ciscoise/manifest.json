@@ -1,0 +1,200 @@
+{
+  "id": "ciscoise",
+  "app": "ciscoise",
+  "name": "Cisco ISE",
+  "version": "1.0.0",
+  "description": "Cisco ISE (Identity Services Engine) integration for network access control, endpoint quarantine, and session management",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ciscoise-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ciscoise-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco ISE integration instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_ip": "quarantine_endpoint",
+      "unblock_ip": "release_endpoint"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Username for ISE MNT (Monitoring) API authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Password for ISE MNT API authentication",
+        "format": "password",
+        "required": true
+      },
+      "ers_username": {
+        "type": "string",
+        "display_name": "ERS Username",
+        "description": "Username for ISE ERS (External RESTful Services) API. Falls back to primary credentials if not set.",
+        "required": false
+      },
+      "ers_password": {
+        "type": "string",
+        "display_name": "ERS Password",
+        "description": "Password for ISE ERS API. Falls back to primary credentials if not set.",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "server": {
+        "type": "string",
+        "display_name": "ISE Server",
+        "description": "ISE server hostname or IP address (e.g. 10.1.1.1 or ise.corp.com)",
+        "required": true
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify the ISE server SSL certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate connectivity to the Cisco ISE MNT API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_active_sessions",
+      "name": "Get Active Sessions",
+      "description": "List active network sessions with quarantine status",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "get_active_sessions",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List endpoints registered in ISE, optionally filtered by MAC address",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "list_endpoints",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "mac_address": {
+            "type": "string",
+            "description": "MAC address to filter on (6 bytes, colon-separated, e.g. AA:BB:CC:DD:EE:FF)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_endpoint_by_mac",
+      "name": "Get Endpoint By MAC",
+      "description": "Get detailed information about a specific endpoint by its ISE endpoint ID",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "get_endpoint_by_mac",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "ISE endpoint UUID"
+          }
+        },
+        "required": ["endpoint_id"]
+      }
+    },
+    {
+      "id": "quarantine_endpoint",
+      "name": "Quarantine Endpoint",
+      "description": "Apply an ANC (Adaptive Network Control) policy to quarantine an endpoint by MAC or IP address",
+      "categories": ["containment", "network_security"],
+      "cy_name": "quarantine_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_mac_address": {
+            "type": "string",
+            "description": "MAC address or IP address of the endpoint to quarantine"
+          },
+          "policy_name": {
+            "type": "string",
+            "description": "ANC policy name to apply (e.g. 'quarantine')"
+          }
+        },
+        "required": ["ip_mac_address", "policy_name"]
+      }
+    },
+    {
+      "id": "release_endpoint",
+      "name": "Release Endpoint",
+      "description": "Clear an ANC policy from an endpoint to release it from quarantine",
+      "categories": ["containment", "network_security"],
+      "cy_name": "release_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_mac_address": {
+            "type": "string",
+            "description": "MAC address or IP address of the endpoint to release"
+          },
+          "policy_name": {
+            "type": "string",
+            "description": "ANC policy name to clear"
+          }
+        },
+        "required": ["ip_mac_address", "policy_name"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

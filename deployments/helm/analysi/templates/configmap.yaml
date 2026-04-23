@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "analysi.fullname" . }}-config
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+data:
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  LOG_LEVEL: {{ .Values.global.logLevel | quote }}
+  ANALYSI_AUTH_MODE: {{ .Values.global.auth.mode | quote }}
+  ANALYSI_AUTH_JWKS_URI: {{ .Values.global.auth.jwksUri | quote }}
+  ANALYSI_AUTH_ISSUER: {{ .Values.global.auth.issuer | quote }}
+  ANALYSI_AUTH_AUDIENCE: {{ .Values.global.auth.audience | quote }}
+  DATABASE_SSL: {{ .Values.global.database.sslmode | default "disable" | eq "require" | quote }}

@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "unshortenme-integration",
+  "cy_name": "unshortenme_integration",
+  "description": "Expand shortened URLs via unshorten.me during phishing triage and URL-based alert investigations. Use when investigating suspicious links, bit.ly/tinyurl/t.co URLs in alerts, or building URL expansion workflows in Cy."
+}

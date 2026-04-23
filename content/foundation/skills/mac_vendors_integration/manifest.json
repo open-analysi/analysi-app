@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "mac-vendors-integration",
+  "cy_name": "mac_vendors_integration",
+  "description": "MAC address OUI vendor lookup via Analysi mac_vendors integration for device identification during SOC investigations. Use when triaging alerts involving MAC addresses, identifying device manufacturers, detecting rogue/unauthorized hardware, or enriching network-layer IOCs with vendor context."
+}

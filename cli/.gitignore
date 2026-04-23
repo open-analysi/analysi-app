@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+oclif.manifest.json
+*.tsbuildinfo
+
+# Override root .gitignore which ignores lib/ (Python venv pattern)
+!src/lib/
+!test/lib/

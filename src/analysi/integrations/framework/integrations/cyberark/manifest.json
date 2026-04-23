@@ -1,0 +1,284 @@
+{
+  "id": "cyberark",
+  "app": "cyberark",
+  "name": "CyberArk PAM",
+  "version": "1.0.0",
+  "description": "CyberArk Privileged Access Management integration for managing privileged accounts, safes, credential rotation, and user details via the PVWA REST API",
+  "archetypes": [
+    "IdentityProvider"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cyberark-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cyberark-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this CyberArk integration instance"
+  },
+
+  "archetype_mappings": {
+    "IdentityProvider": {
+      "get_user_details": "get_user"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "CyberArk PVWA username for API authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "CyberArk PVWA password for API authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "auth_method": {
+        "type": "string",
+        "display_name": "Authentication Method",
+        "description": "Authentication method to use (CyberArk, LDAP, RADIUS, Windows)",
+        "default": "CyberArk",
+        "enum": ["CyberArk", "LDAP", "RADIUS", "Windows"],
+        "required": false
+      },
+      "base_url": {
+        "type": "string",
+        "display_name": "PVWA Base URL",
+        "description": "CyberArk PVWA server URL (e.g., https://pvwa.company.com)",
+        "required": true,
+        "placeholder": "https://pvwa.company.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify server SSL certificate",
+        "default": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to CyberArk PVWA by authenticating and checking the server",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_account",
+      "name": "Get Account",
+      "description": "Get details of a specific privileged account by its ID",
+      "categories": ["identity_management", "investigation"],
+      "cy_name": "get_account",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The unique ID of the privileged account in CyberArk"
+          }
+        },
+        "required": ["account_id"]
+      }
+    },
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "Search and list privileged accounts with optional filters",
+      "categories": ["identity_management", "investigation"],
+      "cy_name": "list_accounts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Free text search across account properties"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter expression (e.g., safeName eq MySafe)"
+          },
+          "safe_name": {
+            "type": "string",
+            "description": "Filter accounts by safe name (shorthand for filter)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of accounts to return (default 50, max 1000)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Number of accounts to skip for pagination"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "change_credential",
+      "name": "Change Credential",
+      "description": "Trigger immediate credential rotation (password change) for a privileged account via CPM",
+      "categories": ["identity_management", "response"],
+      "cy_name": "change_credential",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The unique ID of the account whose credential should be changed"
+          },
+          "change_entire_group": {
+            "type": "boolean",
+            "description": "Whether to change credentials for all accounts in the group"
+          }
+        },
+        "required": ["account_id"]
+      }
+    },
+    {
+      "id": "get_safe",
+      "name": "Get Safe",
+      "description": "Get details of a specific safe (credential container) by its name",
+      "categories": ["identity_management", "investigation"],
+      "cy_name": "get_safe",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "safe_name": {
+            "type": "string",
+            "description": "The name of the safe to retrieve"
+          }
+        },
+        "required": ["safe_name"]
+      }
+    },
+    {
+      "id": "list_safes",
+      "name": "List Safes",
+      "description": "List available safes (credential containers) with optional search",
+      "categories": ["identity_management", "investigation"],
+      "cy_name": "list_safes",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Search term to filter safes"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of safes to return (default 50, max 1000)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Number of safes to skip for pagination"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "add_account",
+      "name": "Add Account",
+      "description": "Add a new privileged account to a safe in CyberArk",
+      "categories": ["identity_management"],
+      "cy_name": "add_account",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "safe_name": {
+            "type": "string",
+            "description": "Name of the safe to add the account to"
+          },
+          "platform_id": {
+            "type": "string",
+            "description": "Platform ID for the account (e.g., WinServerLocal, UnixSSH)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account name (unique within the safe)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Target machine address (hostname or IP)"
+          },
+          "account_username": {
+            "type": "string",
+            "description": "Username of the account on the target system"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Initial password or SSH key for the account",
+            "format": "password"
+          },
+          "secret_type": {
+            "type": "string",
+            "description": "Type of secret (password or key)",
+            "enum": ["password", "key"],
+            "default": "password"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Platform-specific account properties"
+          }
+        },
+        "required": ["safe_name", "platform_id", "name"]
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get CyberArk user details by user ID",
+      "categories": ["identity_management", "investigation"],
+      "cy_name": "get_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "CyberArk user ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

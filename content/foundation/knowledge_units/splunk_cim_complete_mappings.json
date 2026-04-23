@@ -1,0 +1,1128 @@
+{
+  "tables": [
+    {
+      "name": "Splunk: Sourcetype to CIM Datamodel Mapping (Complete)",
+      "cy_name": "splunk_sourcetype_cim_mapping_complete",
+      "description": "Complete mapping of Splunk sourcetypes to CIM data models with vendor and add-on information",
+      "app": "Splunk",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "mapping_id": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          },
+          "add_on": {
+            "type": "string"
+          },
+          "sourcetype": {
+            "type": "string"
+          },
+          "cim_models": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "doc_url": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          }
+        }
+      },
+      "content": [
+        {
+          "mapping_id": "cim_mapping_001",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Windows",
+          "sourcetype": "WinEventLog:*",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Endpoint",
+            "Inventory",
+            "Alerts"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/WindowsAddOn/8.1.2/User/SourcetypesandCIMdatamodelinfo",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_002",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Windows",
+          "sourcetype": "XmlWinEventLog:Security",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Endpoint",
+            "Inventory",
+            "Alerts"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/WindowsAddOn/8.1.2/User/SourcetypesandCIMdatamodelinfo",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_003",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Sysmon",
+          "sourcetype": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+          "cim_models": [
+            "Endpoint",
+            "Network Resolution (DNS)",
+            "Network Traffic",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5709/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_004",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Sysmon for Linux",
+          "sourcetype": "sysmon:linux",
+          "cim_models": [
+            "Endpoint"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/6179/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_005",
+          "vendor": "Linux/Unix",
+          "add_on": "Splunk Add-on for Unix and Linux",
+          "sourcetype": "cpu",
+          "cim_models": [
+            "Inventory",
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/833/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_006",
+          "vendor": "Linux/Unix",
+          "add_on": "Splunk Add-on for Unix and Linux",
+          "sourcetype": "iostat",
+          "cim_models": [
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/833/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_007",
+          "vendor": "Linux/Unix",
+          "add_on": "Splunk Add-on for Unix and Linux",
+          "sourcetype": "ps",
+          "cim_models": [
+            "Inventory",
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/833/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_008",
+          "vendor": "Linux/Unix",
+          "add_on": "Splunk Add-on for Unix and Linux",
+          "sourcetype": "vmstat",
+          "cim_models": [
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/833/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_009",
+          "vendor": "Linux/Unix",
+          "add_on": "Splunk Add-on for Unix and Linux",
+          "sourcetype": "*_metric",
+          "cim_models": [
+            "Performance",
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/833/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_010",
+          "vendor": "AWS",
+          "add_on": "Splunk Add-on for AWS",
+          "sourcetype": "aws:cloudtrail",
+          "cim_models": [
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://splunk.github.io/splunk-add-on-for-amazon-web-services/DataTypes/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_011",
+          "vendor": "AWS",
+          "add_on": "Splunk Add-on for AWS",
+          "sourcetype": "aws:cloudwatchlogs:vpcflow",
+          "cim_models": [
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunk.github.io/splunk-add-on-for-amazon-web-services/DataTypes/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_012",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Microsoft Office 365",
+          "sourcetype": "o365:management:activity",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Email",
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4055/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_013",
+          "vendor": "Google",
+          "add_on": "Splunk Add-on for Google Workspace",
+          "sourcetype": "gws:reports:drive",
+          "cim_models": [
+            "Change",
+            "Data Access",
+            "Web",
+            "Email"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5556/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_014",
+          "vendor": "Google",
+          "add_on": "Splunk Add-on for Google Workspace",
+          "sourcetype": "gws:reports:login",
+          "cim_models": [
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5556/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_015",
+          "vendor": "Google",
+          "add_on": "Splunk Add-on for GCP",
+          "sourcetype": "gcp:*",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3088/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_016",
+          "vendor": "Okta",
+          "add_on": "Splunk Add-on for Okta Identity Cloud",
+          "sourcetype": "okta:im2:system",
+          "cim_models": [
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4186/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_017",
+          "vendor": "CrowdStrike",
+          "add_on": "Splunk Add-on for CrowdStrike FDR",
+          "sourcetype": "crowdstrike:fdr:*",
+          "cim_models": [
+            "Endpoint",
+            "Malware",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5678/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_018",
+          "vendor": "Palo Alto Networks",
+          "add_on": "Splunk Add-on for Palo Alto Networks",
+          "sourcetype": "pan:traffic",
+          "cim_models": [
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/491/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_019",
+          "vendor": "Palo Alto Networks",
+          "add_on": "Splunk Add-on for Palo Alto Networks",
+          "sourcetype": "pan:threat",
+          "cim_models": [
+            "Intrusion Detection",
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/491/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_020",
+          "vendor": "Palo Alto Networks",
+          "add_on": "Splunk Add-on for Palo Alto Networks",
+          "sourcetype": "pan:url",
+          "cim_models": [
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/491/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_021",
+          "vendor": "Palo Alto Networks",
+          "add_on": "Splunk Add-on for Palo Alto Networks",
+          "sourcetype": "pan:system",
+          "cim_models": [
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/491/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_022",
+          "vendor": "Palo Alto Networks",
+          "add_on": "Splunk Add-on for Palo Alto Networks",
+          "sourcetype": "pan:decryption",
+          "cim_models": [
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/491/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_023",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco ASA",
+          "sourcetype": "cisco:asa",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1620/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_024",
+          "vendor": "Fortinet",
+          "add_on": "Fortinet FortiGate Add-On for Splunk",
+          "sourcetype": "fgt:*",
+          "cim_models": [
+            "Network Traffic",
+            "Intrusion Detection",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2846/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_025",
+          "vendor": "Zscaler",
+          "add_on": "Zscaler Technical Add-on for Splunk",
+          "sourcetype": "zscalernss:*",
+          "cim_models": [
+            "Web",
+            "Network Traffic",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3865/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_026",
+          "vendor": "Zscaler",
+          "add_on": "Zscaler Technical Add-on for Splunk",
+          "sourcetype": "zpa:*",
+          "cim_models": [
+            "Authentication",
+            "Network Traffic",
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3865/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_027",
+          "vendor": "Zscaler",
+          "add_on": "Zscaler Technical Add-on for Splunk",
+          "sourcetype": "zscalernss-web",
+          "cim_models": [
+            "Network Traffic",
+            "Web",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3865/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_028",
+          "vendor": "Netskope",
+          "add_on": "Netskope Add-on for Splunk",
+          "sourcetype": "netskope:*",
+          "cim_models": [
+            "Web",
+            "Data Loss Prevention",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3808/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_029",
+          "vendor": "Zeek (Bro)",
+          "add_on": "Splunk TA for Zeek",
+          "sourcetype": "bro:conn",
+          "cim_models": [
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2734/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_030",
+          "vendor": "Zeek (Bro)",
+          "add_on": "Splunk TA for Zeek",
+          "sourcetype": "bro:dns",
+          "cim_models": [
+            "Network Resolution (DNS)"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2734/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_031",
+          "vendor": "Zeek (Bro)",
+          "add_on": "Splunk TA for Zeek",
+          "sourcetype": "zeek:*",
+          "cim_models": [
+            "Network Traffic",
+            "Network Resolution (DNS)",
+            "Web",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2734/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_032",
+          "vendor": "Suricata",
+          "add_on": "Splunk TA for Suricata",
+          "sourcetype": "suricata:json",
+          "cim_models": [
+            "Intrusion Detection",
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2760/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_033",
+          "vendor": "Suricata",
+          "add_on": "Splunk TA for Suricata",
+          "sourcetype": "suricata:eve.json",
+          "cim_models": [
+            "Intrusion Detection",
+            "Network Traffic"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2760/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_034",
+          "vendor": "F5",
+          "add_on": "Splunk Add-on for F5 BIG-IP",
+          "sourcetype": "f5:bigip:syslog",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2680/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_035",
+          "vendor": "F5",
+          "add_on": "Splunk Add-on for F5 BIG-IP",
+          "sourcetype": "f5:bigip:asm:syslog",
+          "cim_models": [
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2680/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_036",
+          "vendor": "Citrix",
+          "add_on": "Splunk Add-on for Citrix NetScaler",
+          "sourcetype": "citrix:netscaler:*",
+          "cim_models": [
+            "Web",
+            "Network Traffic",
+            "Authentication"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/CitrixNetScaler/Source",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_037",
+          "vendor": "Salesforce",
+          "add_on": "Splunk Add-on for Salesforce",
+          "sourcetype": "salesforce:elogfile",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1931/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_038",
+          "vendor": "Salesforce",
+          "add_on": "Splunk Add-on for Salesforce",
+          "sourcetype": "salesforce:object",
+          "cim_models": [
+            "Change",
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1931/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_039",
+          "vendor": "Infoblox",
+          "add_on": "Splunk Add-on for Infoblox",
+          "sourcetype": "infoblox:dns",
+          "cim_models": [
+            "Network Resolution (DNS)"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/Infoblox/Sourcetypes",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_040",
+          "vendor": "Infoblox",
+          "add_on": "Splunk Add-on for Infoblox",
+          "sourcetype": "infoblox:dhcp",
+          "cim_models": [
+            "Network Sessions"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/Infoblox/Sourcetypes",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_041",
+          "vendor": "Infoblox",
+          "add_on": "Splunk Add-on for Infoblox",
+          "sourcetype": "infoblox:audit",
+          "cim_models": [
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/Infoblox/Sourcetypes",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_042",
+          "vendor": "Qualys",
+          "add_on": "Qualys Technology Add-on for Splunk",
+          "sourcetype": "qualys:*",
+          "cim_models": [
+            "Vulnerabilities",
+            "Inventory",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3336/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_043",
+          "vendor": "Oracle",
+          "add_on": "Splunk Add-on for Oracle Database",
+          "sourcetype": "oracle:listener",
+          "cim_models": [
+            "Databases",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2710/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_044",
+          "vendor": "Oracle",
+          "add_on": "Splunk Add-on for Oracle Database",
+          "sourcetype": "oracle:audit",
+          "cim_models": [
+            "Databases",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2710/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_045",
+          "vendor": "Oracle",
+          "add_on": "Splunk Add-on for Oracle Database",
+          "sourcetype": "oracle:alertlog",
+          "cim_models": [
+            "Databases"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2710/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_046",
+          "vendor": "Proofpoint",
+          "add_on": "Proofpoint On Demand Email Security Add-on",
+          "sourcetype": "proofpoint:pod:message",
+          "cim_models": [
+            "Email"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4327/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_047",
+          "vendor": "Proofpoint",
+          "add_on": "Proofpoint On Demand Email Security Add-on",
+          "sourcetype": "proofpoint:pod:maillog",
+          "cim_models": [
+            "Email"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4327/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_048",
+          "vendor": "Akamai",
+          "add_on": "Akamai SIEM Integration",
+          "sourcetype": "akamaisiem",
+          "cim_models": [
+            "Web",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://techdocs.akamai.com/siem-integration/docs/siem-splunk-connector",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_049",
+          "vendor": "Akamai",
+          "add_on": "Akamai DataStream",
+          "sourcetype": "akamai-datastream",
+          "cim_models": [
+            "Web"
+          ],
+          "doc_url": "https://techdocs.akamai.com/datastream/docs/overview",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_050",
+          "vendor": "CyberArk",
+          "add_on": "Splunk Add-on for CyberArk",
+          "sourcetype": "cyberark:*",
+          "cim_models": [
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/CyberArk/Sourcetypes",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_051",
+          "vendor": "CyberArk",
+          "add_on": "Splunk Add-on for CyberArk EPM",
+          "sourcetype": "cyberark:epm:*",
+          "cim_models": [
+            "Endpoint",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/CyberArkEPM/Sourcetypes",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_052",
+          "vendor": "Box",
+          "add_on": "Splunk Add-on for Box",
+          "sourcetype": "box:events",
+          "cim_models": [
+            "Authentication",
+            "Change",
+            "Alerts",
+            "Data Access",
+            "Malware"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4090/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_053",
+          "vendor": "Box",
+          "add_on": "Splunk Add-on for Box",
+          "sourcetype": "box:metadata",
+          "cim_models": [
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4090/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_054",
+          "vendor": "Box",
+          "add_on": "Splunk Add-on for Box",
+          "sourcetype": "box:files",
+          "cim_models": [
+            "Data Access"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4090/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_055",
+          "vendor": "Juniper Networks",
+          "add_on": "Splunk Add-on for Juniper",
+          "sourcetype": "juniper",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1493/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_056",
+          "vendor": "Juniper Networks",
+          "add_on": "Splunk Add-on for Juniper",
+          "sourcetype": "juniper:*",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1493/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_057",
+          "vendor": "VMware",
+          "add_on": "Splunk Add-on for VMware",
+          "sourcetype": "vmware:*",
+          "cim_models": [
+            "Inventory",
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3215/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_058",
+          "vendor": "VMware",
+          "add_on": "Splunk Add-on for VMware",
+          "sourcetype": "vmware:perf:*",
+          "cim_models": [
+            "Performance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3215/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_059",
+          "vendor": "VMware",
+          "add_on": "Splunk Add-on for VMware ESXi logs",
+          "sourcetype": "vmware:esx:syslog:*",
+          "cim_models": [
+            "Inventory",
+            "Operations/Performance"
+          ],
+          "doc_url": "https://docs.splunk.com/Documentation/AddOns/released/VMWesxilogs/SourceTypes",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_060",
+          "vendor": "Tenable",
+          "add_on": "Tenable Add-On for Splunk",
+          "sourcetype": "tenable:io:*",
+          "cim_models": [
+            "Vulnerabilities",
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4065/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_061",
+          "vendor": "Tenable",
+          "add_on": "Tenable Add-On for Splunk",
+          "sourcetype": "tenable:sc:*",
+          "cim_models": [
+            "Vulnerabilities",
+            "Inventory",
+            "Compliance"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4065/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_062",
+          "vendor": "Tenable",
+          "add_on": "Tenable Add-On for Splunk",
+          "sourcetype": "tenable:ot:*",
+          "cim_models": [
+            "Vulnerabilities",
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4065/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_063",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Microsoft IIS",
+          "sourcetype": "ms:iis:auto",
+          "cim_models": [
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3185/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_064",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Microsoft IIS",
+          "sourcetype": "ms:iis:default",
+          "cim_models": [
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3185/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_065",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Microsoft Security",
+          "sourcetype": "m365:defender:incident",
+          "cim_models": [
+            "Alerts",
+            "Endpoint",
+            "Intrusion Detection",
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5453/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_066",
+          "vendor": "Microsoft",
+          "add_on": "Splunk Add-on for Microsoft Security",
+          "sourcetype": "mdatp:alert",
+          "cim_models": [
+            "Alerts",
+            "Endpoint",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/5453/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_067",
+          "vendor": "Cisco",
+          "add_on": "Add-on for Cisco Network Data (IOS/NX-OS/WLC)",
+          "sourcetype": "cisco:ios",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://classic.splunkbase.splunk.com/app/1467/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_068",
+          "vendor": "Cisco",
+          "add_on": "Add-on for Cisco Network Data (IOS/NX-OS/WLC)",
+          "sourcetype": "cisco:ios-xe",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://classic.splunkbase.splunk.com/app/1467/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_069",
+          "vendor": "Cisco",
+          "add_on": "Add-on for Cisco Network Data (IOS/NX-OS/WLC)",
+          "sourcetype": "cisco:nxos",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://classic.splunkbase.splunk.com/app/1467/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_070",
+          "vendor": "Cisco",
+          "add_on": "Add-on for Cisco Network Data (IOS/NX-OS/WLC)",
+          "sourcetype": "cisco:iosxr",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://classic.splunkbase.splunk.com/app/1467/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_071",
+          "vendor": "Cisco",
+          "add_on": "Add-on for Cisco Network Data (IOS/NX-OS/WLC)",
+          "sourcetype": "cisco:wlc",
+          "cim_models": [
+            "Network Traffic",
+            "Authentication",
+            "Change"
+          ],
+          "doc_url": "https://classic.splunkbase.splunk.com/app/1467/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_072",
+          "vendor": "CrowdStrike",
+          "add_on": "CrowdStrike Falcon Event Streams TA",
+          "sourcetype": "crowdstrike:events:*",
+          "cim_models": [
+            "Endpoint",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://www.crowdstrike.com/en-us/resources/guides/crowdstrike-falcon-event-streams-add-on-for-splunk-guide-v3/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_073",
+          "vendor": "CrowdStrike",
+          "add_on": "CrowdStrike Falcon Event Streams TA",
+          "sourcetype": "crowdstrike:incident:*",
+          "cim_models": [
+            "Alerts",
+            "Intrusion Detection"
+          ],
+          "doc_url": "https://www.crowdstrike.com/en-us/resources/guides/crowdstrike-falcon-event-streams-add-on-for-splunk-guide-v3/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_074",
+          "vendor": "CrowdStrike",
+          "add_on": "CrowdStrike Falcon Event Streams TA",
+          "sourcetype": "crowdstrike:audit:*",
+          "cim_models": [
+            "Change",
+            "Authentication"
+          ],
+          "doc_url": "https://www.crowdstrike.com/en-us/resources/guides/crowdstrike-falcon-event-streams-add-on-for-splunk-guide-v3/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_075",
+          "vendor": "ServiceNow",
+          "add_on": "Splunk Add-on for ServiceNow",
+          "sourcetype": "servicenow:incident",
+          "cim_models": [
+            "Ticket Management"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1928/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_076",
+          "vendor": "ServiceNow",
+          "add_on": "Splunk Add-on for ServiceNow",
+          "sourcetype": "servicenow:event",
+          "cim_models": [
+            "Alerts"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1928/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_077",
+          "vendor": "ServiceNow",
+          "add_on": "Splunk Add-on for ServiceNow",
+          "sourcetype": "servicenow:change",
+          "cim_models": [
+            "Change",
+            "Ticket Management"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1928/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_078",
+          "vendor": "ServiceNow",
+          "add_on": "Splunk Add-on for ServiceNow",
+          "sourcetype": "servicenow:cmdb",
+          "cim_models": [
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1928/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_079",
+          "vendor": "ServiceNow",
+          "add_on": "Splunk Add-on for ServiceNow",
+          "sourcetype": "servicenow:user",
+          "cim_models": [
+            "Inventory"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1928/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_080",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco ESA",
+          "sourcetype": "cisco:esa:authentication",
+          "cim_models": [
+            "Authentication"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1761/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_081",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco ESA",
+          "sourcetype": "cisco:esa:http",
+          "cim_models": [
+            "Network Sessions",
+            "Change",
+            "Web"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1761/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_082",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco ESA",
+          "sourcetype": "cisco:esa:amp",
+          "cim_models": [
+            "Alerts",
+            "Malware"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1761/",
+          "confidence": "High"
+        },
+        {
+          "mapping_id": "cim_mapping_083",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco WSA",
+          "sourcetype": "cisco:wsa:syslog",
+          "cim_models": [
+            "Web",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1629/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_084",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco ISE",
+          "sourcetype": "cisco:ise:syslog",
+          "cim_models": [
+            "Authentication",
+            "Endpoint",
+            "Network Traffic",
+            "Change"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1904/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_085",
+          "vendor": "Cisco",
+          "add_on": "Splunk Add-on for Cisco Meraki",
+          "sourcetype": "meraki:securityappliances",
+          "cim_models": [
+            "Alerts",
+            "Authentication",
+            "Change",
+            "Network Sessions"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/4858/",
+          "confidence": "Medium"
+        },
+        {
+          "mapping_id": "cim_mapping_086",
+          "vendor": "Symantec",
+          "add_on": "Splunk Add-on for Symantec Endpoint Protection",
+          "sourcetype": "symantec:ep:risk:file",
+          "cim_models": [
+            "Malware"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/3120/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_087",
+          "vendor": "Symantec",
+          "add_on": "Splunk Add-on for Symantec DLP",
+          "sourcetype": "symantec:dlp:incident",
+          "cim_models": [
+            "Data Loss Prevention"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/2947/",
+          "confidence": "Low"
+        },
+        {
+          "mapping_id": "cim_mapping_088",
+          "vendor": "McAfee",
+          "add_on": "Splunk Add-on for McAfee ePO Syslog",
+          "sourcetype": "mcafee:epo:syslog",
+          "cim_models": [
+            "Intrusion Detection",
+            "Malware"
+          ],
+          "doc_url": "https://splunkbase.splunk.com/app/1578/",
+          "confidence": "Low"
+        }
+      ],
+      "row_count": 88,
+      "column_count": 7,
+      "tags": [
+        "splunk",
+        "cim",
+        "sourcetypes",
+        "datamodels",
+        "mappings"
+      ]
+    }
+  ],
+  "documents": [],
+  "indexes": [],
+  "categories": [
+    "Foundation"
+  ]
+}

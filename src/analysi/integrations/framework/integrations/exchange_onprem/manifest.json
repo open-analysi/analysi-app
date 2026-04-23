@@ -1,0 +1,244 @@
+{
+  "id": "exchange_onprem",
+  "app": "exchange_onprem",
+  "name": "Microsoft Exchange On-Premises EWS",
+  "version": "1.0.0",
+  "description": "Integration with Microsoft Exchange On-Premises using EWS (SOAP protocol) for email investigation and management actions",
+  "archetypes": [
+    "EmailSecurity"
+  ],
+  "priority": 65,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "Username for authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for authentication",
+        "required": true,
+        "sensitive": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "username",
+      "password"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "EWS endpoint URL (e.g., https://mail.company.com/EWS/Exchange.asmx)",
+        "required": true
+      },
+      "version": {
+        "type": "string",
+        "description": "Exchange EWS version",
+        "enum": [
+          "2013",
+          "2016"
+        ],
+        "default": "2016"
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "description": "Verify SSL certificate",
+        "default": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 300
+      },
+      "use_impersonation": {
+        "type": "boolean",
+        "description": "Use Exchange impersonation for mailbox access",
+        "default": false
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Exchange server",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_email",
+      "name": "Lookup Email",
+      "description": "Resolve email address to get user details",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "lookup_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to look up"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search for emails in a mailbox",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of mailbox to search"
+          },
+          "folder": {
+            "type": "string",
+            "description": "Folder to search (default: Inbox)",
+            "default": "Inbox"
+          },
+          "range": {
+            "type": "string",
+            "description": "Email range to return (e.g., 0-10)",
+            "default": "0-10"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Get full email details by ID",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "get_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Exchange item ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "delete_email",
+      "name": "Delete Email",
+      "description": "Delete an email from Exchange",
+      "categories": [
+        "containment",
+        "email_security"
+      ],
+      "cy_name": "delete_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Exchange item ID to delete"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "move_email",
+      "name": "Move Email",
+      "description": "Move an email to a different folder",
+      "categories": [
+        "containment",
+        "email_security"
+      ],
+      "cy_name": "move_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Exchange item ID to move"
+          },
+          "folder": {
+            "type": "string",
+            "description": "Destination folder ID"
+          }
+        },
+        "required": [
+          "id",
+          "folder"
+        ]
+      }
+    },
+    {
+      "id": "copy_email",
+      "name": "Copy Email",
+      "description": "Copy an email to a different folder",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "copy_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Exchange item ID to copy"
+          },
+          "folder": {
+            "type": "string",
+            "description": "Destination folder ID"
+          }
+        },
+        "required": [
+          "id",
+          "folder"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "search_emails": "run_query",
+      "get_email_details": "get_email",
+      "delete_email": "delete_email",
+      "quarantine_email": "move_email"
+    }
+  }
+}

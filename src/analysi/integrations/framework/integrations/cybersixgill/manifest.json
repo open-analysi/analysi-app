@@ -1,0 +1,239 @@
+{
+  "id": "cybersixgill",
+  "app": "cybersixgill",
+  "name": "Cybersixgill",
+  "version": "1.0.0",
+  "description": "Cybersixgill dark web threat intelligence integration for IOC enrichment, threat search, and alert management",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cybersixgill-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cybersixgill-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cybersixgill integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "lookup_ip",
+      "lookup_domain": "lookup_domain",
+      "lookup_file_hash": "lookup_hash",
+      "lookup_url": "lookup_url"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "Cybersixgill API Client ID for OAuth2 authentication",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "Cybersixgill API Client Secret for OAuth2 authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Cybersixgill API base URL",
+        "default": "https://api.cybersixgill.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity and credential validity",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Query Cybersixgill Darkfeed for IOCs matching an IP address",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to look up in Cybersixgill Darkfeed"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Query Cybersixgill Darkfeed for IOCs matching a domain",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to look up in Cybersixgill Darkfeed"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "lookup_hash",
+      "name": "Lookup Hash",
+      "description": "Query Cybersixgill Darkfeed for IOCs matching a file hash",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_hash",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5, SHA-1, or SHA-256) to look up"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL",
+      "description": "Query Cybersixgill Darkfeed for IOCs matching a URL",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to look up in Cybersixgill Darkfeed"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "search_threats",
+      "name": "Search Threats",
+      "description": "Search for threats and mentions on the dark web",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "search_threats",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text search query"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 10
+          },
+          "from_date": {
+            "type": "string",
+            "description": "Filter results from this date (ISO 8601 format)"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get a Cybersixgill alert by its ID",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Cybersixgill alert ID"
+          }
+        },
+        "required": ["alert_id"]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List Cybersixgill alerts with optional filters",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "list_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 25
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Number of alerts to skip for pagination",
+            "default": 0
+          },
+          "severity": {
+            "type": "string",
+            "description": "Filter by severity level (e.g. low, medium, high)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by alert status"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

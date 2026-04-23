@@ -1,0 +1,180 @@
+{
+  "id": "openai",
+  "app": "openai",
+  "name": "OpenAI",
+  "version": "1.1.0",
+  "description": "OpenAI AI/LLM integration for language model operations",
+  "archetypes": [
+    "AI"
+  ],
+  "priority": 80,
+  "integration_id_config": {
+    "default": "openai-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "openai-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "AI": {
+      "llm_run": "llm_run",
+      "llm_chat": "llm_chat",
+      "llm_embed": "llm_embed"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "OpenAI API key",
+        "format": "password",
+        "placeholder": "sk-...",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "api_url": {
+        "type": "string",
+        "display_name": "API URL",
+        "description": "OpenAI API base URL",
+        "default": "https://api.openai.com/v1"
+      },
+      "model": {
+        "type": "string",
+        "display_name": "Model",
+        "description": "Default LLM model (legacy; prefer model_presets)",
+        "default": "gpt-4o"
+      },
+      "model_presets": {
+        "type": "object",
+        "display_name": "Model Presets",
+        "description": "Named model configurations keyed by capability",
+        "default": {
+          "default": {
+            "model": "gpt-4o"
+          },
+          "thinking": {
+            "model": "o3"
+          },
+          "long_context": {
+            "model": "gpt-4o"
+          },
+          "fast": {
+            "model": "gpt-4o-mini"
+          },
+          "embedding": {
+            "model": "text-embedding-3-small"
+          }
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to OpenAI API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "llm_run",
+      "name": "LLM Run",
+      "description": "Single-turn LLM execution: prompt in, string out",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_run",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to send"
+          },
+          "context": {
+            "type": "string",
+            "description": "Optional system context"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      }
+    },
+    {
+      "id": "llm_chat",
+      "name": "LLM Chat",
+      "description": "Multi-turn LLM chat: messages in, message out",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_chat",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "description": "Chat messages array"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      }
+    },
+    {
+      "id": "llm_embed",
+      "name": "LLM Embed",
+      "description": "Generate text embeddings: text in, vector out",
+      "categories": [
+        "ai",
+        "embedding"
+      ],
+      "cy_name": "llm_embed",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to embed"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

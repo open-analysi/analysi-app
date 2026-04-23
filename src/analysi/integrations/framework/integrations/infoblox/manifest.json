@@ -1,0 +1,303 @@
+{
+  "id": "infoblox",
+  "app": "infoblox",
+  "name": "Infoblox DDI",
+  "version": "1.0.0",
+  "description": "Infoblox DDI integration for DNS/DHCP/IPAM management, RPZ-based IP and domain blocking, network information, and host discovery",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "infoblox-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "infoblox-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Infoblox instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_ip": "block_ip",
+      "unblock_ip": "unblock_ip",
+      "block_url": "block_domain"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Infoblox admin username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Infoblox admin password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "display_name": "URL",
+        "description": "Infoblox Grid Manager URL (e.g., https://10.10.10.10)",
+        "placeholder": "https://infoblox.example.com",
+        "required": true
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify Server Certificate",
+        "description": "Verify SSL certificate when connecting to Infoblox",
+        "default": false,
+        "required": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the Infoblox Grid Manager by querying the schema endpoint",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP",
+      "description": "Block an IP/CIDR by adding a 'Block IP Address (No Such Domain)' RPZ rule in the specified Response Policy Zone",
+      "categories": ["containment", "remediation"],
+      "cy_name": "block_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP/CIDR to block"
+          },
+          "rp_zone": {
+            "type": "string",
+            "description": "FQDN of response policy zone"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment (maximum 256 characters)"
+          }
+        },
+        "required": ["ip", "rp_zone"]
+      }
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock IP",
+      "description": "Unblock an IP/CIDR by removing the 'Block IP Address (No Such Domain)' RPZ rule from the specified Response Policy Zone",
+      "categories": ["remediation"],
+      "cy_name": "unblock_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP/CIDR to unblock"
+          },
+          "rp_zone": {
+            "type": "string",
+            "description": "FQDN of response policy zone"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          }
+        },
+        "required": ["ip", "rp_zone"]
+      }
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Block a domain by adding a 'Block Domain Name (No Such Domain)' RPZ rule in the specified Response Policy Zone",
+      "categories": ["containment", "remediation"],
+      "cy_name": "block_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to block"
+          },
+          "rp_zone": {
+            "type": "string",
+            "description": "FQDN of response policy zone"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment (maximum 256 characters)"
+          }
+        },
+        "required": ["domain", "rp_zone"]
+      }
+    },
+    {
+      "id": "unblock_domain",
+      "name": "Unblock Domain",
+      "description": "Unblock a domain by removing the 'Block Domain Name (No Such Domain)' RPZ rule from the specified Response Policy Zone",
+      "categories": ["remediation"],
+      "cy_name": "unblock_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to unblock"
+          },
+          "rp_zone": {
+            "type": "string",
+            "description": "FQDN of response policy zone"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          }
+        },
+        "required": ["domain", "rp_zone"]
+      }
+    },
+    {
+      "id": "list_rpz",
+      "name": "List RPZ",
+      "description": "List details of Response Policy Zones including policy, severity, priority, and last update time",
+      "categories": ["investigation"],
+      "cy_name": "list_rpz",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List available DNS host records (A and AAAA records) from Infoblox",
+      "categories": ["investigation"],
+      "cy_name": "list_hosts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_network_view",
+      "name": "List Network View",
+      "description": "List available network views configured on the Infoblox Grid Manager",
+      "categories": ["investigation"],
+      "cy_name": "list_network_view",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_network_info",
+      "name": "Get Network Info",
+      "description": "Get network information for an IP or IP range (CIDR notation). Returns all network ranges if no IP is provided.",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_network_info",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP or IP network (CIDR notation)"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get the DHCP lease and DNS record information for a given IP address or hostname",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_system_info",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname to look up"
+          },
+          "network_view": {
+            "type": "string",
+            "description": "Network view (default: 'default')",
+            "default": "default"
+          }
+        },
+        "required": ["ip_hostname"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "global-dns-integration",
+  "cy_name": "global_dns_integration",
+  "description": "DNS resolution, reverse lookups, and mail/TXT/NS/SOA queries via Analysi's Global DNS for SOC triage. Use when investigating suspicious domains, resolving IPs to hostnames, checking SPF/DKIM/DMARC in phishing analysis, or correlating network indicators with domain infrastructure."
+}

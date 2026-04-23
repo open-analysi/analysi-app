@@ -1,0 +1,357 @@
+{
+  "id": "netwitness_endpoint",
+  "app": "netwitness_endpoint",
+  "name": "NetWitness Endpoint",
+  "version": "1.0.0",
+  "description": "RSA NetWitness Endpoint is an EDR platform for threat detection and response. Supports endpoint scanning, IOC management, and threat blocklisting.",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "Username for authentication"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for authentication",
+        "format": "password"
+      }
+    },
+    "required": [
+      "username",
+      "password"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "NetWitness Endpoint server URL (e.g., https://netwitness.company.com)",
+        "required": true
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "description": "Verify SSL certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 300
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to NetWitness Endpoint API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "blocklist_domain",
+      "name": "Blocklist Domain",
+      "description": "Add a domain to the blocklist",
+      "categories": [
+        "containment",
+        "network_security"
+      ],
+      "cy_name": "blocklist_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to blocklist"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "blocklist_ip",
+      "name": "Blocklist IP",
+      "description": "Add an IP address to the blocklist",
+      "categories": [
+        "containment",
+        "network_security"
+      ],
+      "cy_name": "blocklist_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to blocklist"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all Windows endpoints configured on NetWitness Endpoint",
+      "categories": [
+        "investigation",
+        "asset_management"
+      ],
+      "cy_name": "list_endpoints",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ioc_score_gte": {
+            "type": "integer",
+            "description": "Minimum IOC score",
+            "default": 0
+          },
+          "ioc_score_lte": {
+            "type": "integer",
+            "description": "Maximum IOC score",
+            "default": 1024
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of endpoints to return",
+            "default": 50
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get detailed information about an endpoint",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_system_info",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "guid": {
+            "type": "string",
+            "description": "Endpoint GUID"
+          }
+        },
+        "required": [
+          "guid"
+        ]
+      }
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Initiate a scan on an endpoint",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "scan_endpoint",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "guid": {
+            "type": "string",
+            "description": "Endpoint GUID to scan"
+          },
+          "cpu_max": {
+            "type": "integer",
+            "description": "Maximum CPU usage percentage",
+            "default": 95,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "cpu_max_vm": {
+            "type": "integer",
+            "description": "Maximum CPU usage for VMs",
+            "default": 25,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "cpu_min": {
+            "type": "integer",
+            "description": "Minimum CPU usage percentage",
+            "default": 20,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "scan_category": {
+            "type": "string",
+            "description": "Scan category",
+            "enum": [
+              "All",
+              "Drivers",
+              "Processes",
+              "Kernel Hooks",
+              "Windows Hooks",
+              "Autoruns",
+              "Network",
+              "Services",
+              "Image Hooks",
+              "Files",
+              "Registry Discrepancies",
+              "Dlls",
+              "Security Products",
+              "Network Shares",
+              "Current Users",
+              "Loaded Files",
+              "Tasks",
+              "Hosts",
+              "Suspicious Threads",
+              "Windows Patches",
+              "None"
+            ],
+            "default": "All"
+          },
+          "filter_hooks": {
+            "type": "string",
+            "description": "Filter hook types",
+            "enum": [
+              "Signed Modules",
+              "Whitelisted Certificates",
+              "None"
+            ]
+          },
+          "capture_floating_code": {
+            "type": "boolean",
+            "description": "Capture floating code"
+          },
+          "all_network_connections": {
+            "type": "boolean",
+            "description": "Include all network connections"
+          },
+          "reset_agent_network_cache": {
+            "type": "boolean",
+            "description": "Reset agent network cache"
+          },
+          "retrieve_master_boot_record": {
+            "type": "boolean",
+            "description": "Retrieve master boot record"
+          },
+          "notify": {
+            "type": "boolean",
+            "description": "Send notification"
+          }
+        },
+        "required": [
+          "guid"
+        ]
+      }
+    },
+    {
+      "id": "get_scan_data",
+      "name": "Get Scan Data",
+      "description": "Get scan data from an endpoint",
+      "categories": [
+        "investigation",
+        "forensics"
+      ],
+      "cy_name": "get_scan_data",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "guid": {
+            "type": "string",
+            "description": "Endpoint GUID"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum items per category",
+            "default": 50
+          }
+        },
+        "required": [
+          "guid"
+        ]
+      }
+    },
+    {
+      "id": "list_ioc",
+      "name": "List IOCs",
+      "description": "List available Indicators of Compromise (IOCs)",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "list_ioc",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "machine_count": {
+            "type": "integer",
+            "description": "Minimum machine count",
+            "default": 0
+          },
+          "module_count": {
+            "type": "integer",
+            "description": "Minimum module count",
+            "default": 0
+          },
+          "ioc_level": {
+            "type": "integer",
+            "description": "Maximum IOC level (0=Critical, 1=High, 2=Medium, 3=Low)",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 3
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of IOCs to return",
+            "default": 50
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_ioc",
+      "name": "Get IOC",
+      "description": "Get detailed information about an IOC",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "get_ioc",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "IOC name"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EDR": {
+      "scan_host": "scan_endpoint",
+      "get_host_details": "get_system_info",
+      "collect_forensics": "get_scan_data"
+    }
+  }
+}

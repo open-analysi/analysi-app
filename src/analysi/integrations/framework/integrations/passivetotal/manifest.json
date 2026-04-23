@@ -1,0 +1,293 @@
+{
+  "id": "passivetotal",
+  "app": "passivetotal",
+  "name": "PassiveTotal",
+  "version": "1.0.0",
+  "description": "Infrastructure intelligence platform for passive DNS, WHOIS, SSL certificate lookups, and host attribute analysis via RiskIQ PassiveTotal",
+  "archetypes": [
+    "ThreatIntel",
+    "DatabaseEnrichment"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "passivetotal-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "passivetotal-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this PassiveTotal integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "lookup_ip",
+      "lookup_domain": "lookup_domain"
+    },
+    "DatabaseEnrichment": {
+      "lookup_ip": "lookup_ip",
+      "search_hosts": "get_host_components"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "API Username",
+        "description": "PassiveTotal API username (email address)",
+        "required": true
+      },
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "PassiveTotal API secret key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "PassiveTotal API base URL",
+        "default": "https://api.riskiq.net/pt/v2"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the PassiveTotal API and validate credentials",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Domain Reputation",
+      "description": "Get domain enrichment including metadata, passive DNS records, and classification",
+      "categories": ["enrichment", "threat_intel"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          },
+          "from": {
+            "type": "string",
+            "description": "Start date for passive data (YYYY-MM-DD)"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date for passive data (YYYY-MM-DD)"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "IP Reputation",
+      "description": "Get IP enrichment including metadata, passive DNS, classification, and SSL certificates",
+      "categories": ["enrichment", "threat_intel"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query (IPv4 or IPv6)"
+          },
+          "from": {
+            "type": "string",
+            "description": "Start date for passive data (YYYY-MM-DD)"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date for passive data (YYYY-MM-DD)"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "whois_ip",
+      "name": "WHOIS IP",
+      "description": "Get WHOIS registration information for an IP address",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "whois_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "whois_domain",
+      "name": "WHOIS Domain",
+      "description": "Get WHOIS registration information for a domain",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "whois_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "lookup_certificate_hash",
+      "name": "Lookup Certificate Hash",
+      "description": "Look up SSL certificate details and history by SHA-1 hash",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "lookup_certificate_hash",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "SHA-1 hash of the certificate to retrieve"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "lookup_certificate",
+      "name": "Lookup Certificate",
+      "description": "Search SSL certificates by a specific field and value",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "lookup_certificate",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Field value to search for"
+          },
+          "field": {
+            "type": "string",
+            "description": "Certificate field to search (e.g., issuerCommonName, subjectCommonName)"
+          }
+        },
+        "required": ["query", "field"]
+      }
+    },
+    {
+      "id": "get_host_components",
+      "name": "Get Host Components",
+      "description": "Retrieve host attribute components such as web frameworks, servers, and CDNs",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "get_host_components",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Domain or IP to query"
+          },
+          "from": {
+            "type": "string",
+            "description": "Start date (YYYY-MM-DD)"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date (YYYY-MM-DD)"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number for pagination (default 0)",
+            "default": 0
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "get_host_pairs",
+      "name": "Get Host Pairs",
+      "description": "Retrieve host attribute pairs showing parent/child relationships between hosts",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "get_host_pairs",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Domain or IP to query"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Relationship direction: parents or children"
+          },
+          "from": {
+            "type": "string",
+            "description": "Start date (YYYY-MM-DD)"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date (YYYY-MM-DD)"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number for pagination (default 0)",
+            "default": 0
+          }
+        },
+        "required": ["query", "direction"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

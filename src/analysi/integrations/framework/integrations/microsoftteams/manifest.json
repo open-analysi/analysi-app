@@ -1,0 +1,349 @@
+{
+  "id": "microsoftteams",
+  "app": "microsoftteams",
+  "name": "Microsoft Teams",
+  "version": "1.0.0",
+  "description": "Integrate with Microsoft Teams to send messages, manage channels, create meetings, and collaborate with teams",
+  "archetypes": [
+    "Communication"
+  ],
+  "priority": 55,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "description": "Application (client) ID from Azure AD app registration"
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Client secret from Azure AD app registration",
+        "format": "password"
+      },
+      "access_token": {
+        "type": "string",
+        "description": "Microsoft Graph API access token (obtained via OAuth 2.0)",
+        "format": "password"
+      }
+    },
+    "required": [
+      "client_id",
+      "client_secret",
+      "access_token"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "tenant_id": {
+        "type": "string",
+        "description": "Azure AD Tenant ID"
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "timezone": {
+        "type": "string",
+        "description": "Timezone for calendar events (e.g., 'UTC', 'America/New_York')",
+        "default": "UTC"
+      }
+    },
+    "required": []
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Microsoft Teams",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in Microsoft Teams",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all groups in Microsoft Teams",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_groups",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List all teams in Microsoft Teams",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_teams",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "List channels in a Microsoft Teams group",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_channels",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group/Team ID"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      }
+    },
+    {
+      "id": "send_channel_message",
+      "name": "Send Channel Message",
+      "description": "Send a message to a Microsoft Teams channel",
+      "categories": [
+        "notification"
+      ],
+      "cy_name": "send_channel_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group/Team ID"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "Channel ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to send (supports HTML)"
+          }
+        },
+        "required": [
+          "group_id",
+          "channel_id",
+          "message"
+        ]
+      }
+    },
+    {
+      "id": "list_chats",
+      "name": "List Chats",
+      "description": "List chats for the current user with optional filters",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_chats",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "Filter by user ID or email"
+          },
+          "chat_type": {
+            "type": "string",
+            "description": "Filter by chat type (oneOnOne, group, meeting)",
+            "enum": [
+              "oneOnOne",
+              "group",
+              "meeting",
+              "unknownFutureValue"
+            ]
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "send_chat_message",
+      "name": "Send Chat Message",
+      "description": "Send a message to a chat",
+      "categories": [
+        "notification"
+      ],
+      "cy_name": "send_chat_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chat_id": {
+            "type": "string",
+            "description": "Chat ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to send (supports HTML)"
+          }
+        },
+        "required": [
+          "chat_id",
+          "message"
+        ]
+      }
+    },
+    {
+      "id": "send_direct_message",
+      "name": "Send Direct Message",
+      "description": "Send a direct message to a user",
+      "categories": [
+        "notification"
+      ],
+      "cy_name": "send_direct_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID to send message to"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to send (supports HTML)"
+          }
+        },
+        "required": [
+          "user_id",
+          "message"
+        ]
+      }
+    },
+    {
+      "id": "create_meeting",
+      "name": "Create Meeting",
+      "description": "Create an online meeting in Microsoft Teams",
+      "categories": [
+        "generic"
+      ],
+      "cy_name": "create_meeting",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Meeting subject"
+          },
+          "add_calendar_event": {
+            "type": "boolean",
+            "description": "Add meeting to calendar (default: false)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Meeting description (only used if add_calendar_event is true)"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format (only used if add_calendar_event is true)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time in ISO 8601 format (only used if add_calendar_event is true)"
+          },
+          "attendees": {
+            "type": "string",
+            "description": "Comma-separated email addresses of attendees (only used if add_calendar_event is true)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_channel_message",
+      "name": "Get Channel Message",
+      "description": "Get a message from a channel",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_channel_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group/Team ID"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "Channel ID"
+          },
+          "message_id": {
+            "type": "string",
+            "description": "Message ID"
+          }
+        },
+        "required": [
+          "group_id",
+          "channel_id",
+          "message_id"
+        ]
+      }
+    },
+    {
+      "id": "get_chat_message",
+      "name": "Get Chat Message",
+      "description": "Get a message from a chat",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_chat_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "chat_id": {
+            "type": "string",
+            "description": "Chat ID"
+          },
+          "message_id": {
+            "type": "string",
+            "description": "Message ID"
+          }
+        },
+        "required": [
+          "chat_id",
+          "message_id"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "Communication": {
+      "send_message": "send_channel_message",
+      "post_to_channel": "send_channel_message",
+      "create_channel": "list_channels"
+    }
+  }
+}

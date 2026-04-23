@@ -1,0 +1,54 @@
+[
+  {
+    "Event Time": "02.09.2021 18:18",
+    "Destination Domain/IP Address": "151.101.66.137"
+  },
+  {
+    "Event Time": "02.09.2021 18:57",
+    "Destination Domain/IP Address": "52.85.10.129"
+  },
+  {
+    "Event Time": "02.09.2021 22:04",
+    "Destination Domain/IP Address": "142.250.187.110"
+  },
+  {
+    "Event Time": "02.09.2021 22:11",
+    "Destination Domain/IP Address": "104.26.3.95"
+  },
+  {
+    "Event Time": "03.09.2021 11:45",
+    "Destination Domain/IP Address": "142.250.187.110"
+  },
+  {
+    "Event Time": "03.09.2021 11:46",
+    "Destination Domain/IP Address": "172.67.0.39"
+  },
+  {
+    "Event Time": "03.09.2021 12:01",
+    "Destination Domain/IP Address": "151.101.66.202"
+  },
+  {
+    "Event Time": "03.09.2021 12:34",
+    "Destination Domain/IP Address": "34.95.96.50"
+  },
+  {
+    "Event Time": "04.09.2021 08:45",
+    "Destination Domain/IP Address": "104.244.42.129"
+  },
+  {
+    "Event Time": "04.09.2021 09:00",
+    "Destination Domain/IP Address": "151.101.128.81"
+  },
+  {
+    "Event Time": "04.09.2021 09:02",
+    "Destination Domain/IP Address": "151.101.128.81"
+  },
+  {
+    "Event Time": "04.09.2021 09:13",
+    "Destination Domain/IP Address": "151.101.128.81"
+  },
+  {
+    "Event Time": "04.09.2021 13:13",
+    "Destination Domain/IP Address": "104.17.138.178"
+  }
+]

@@ -1,0 +1,249 @@
+{
+  "id": "qualysvm",
+  "app": "qualysvm",
+  "name": "Qualys Vulnerability Management",
+  "version": "1.0.0",
+  "description": "Qualys VM for vulnerability scanning, asset group management, and host findings enrichment. Answers 'is this host vulnerable?' during SOC triage.",
+  "archetypes": [
+    "VulnerabilityManagement"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "qualysvm-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "qualysvm-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Qualys VM integration instance"
+  },
+
+  "archetype_mappings": {
+    "VulnerabilityManagement": {
+      "scan_assets": "launch_scan",
+      "get_vulnerabilities": "list_host_findings",
+      "get_compliance_status": "scan_summary"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Qualys API username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Qualys API password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Qualys API base URL (e.g., https://qualysapi.qualys.com)",
+        "default": "https://qualysapi.qualys.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API credentials and connectivity to Qualys",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_asset_groups",
+      "name": "List Asset Groups",
+      "description": "List asset groups in the user account, optionally filtered by group IDs",
+      "categories": [
+        "investigation",
+        "asset_management"
+      ],
+      "cy_name": "list_asset_groups",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "string",
+            "description": "Comma-separated asset group IDs to filter"
+          },
+          "truncation_limit": {
+            "type": "integer",
+            "description": "Maximum number of asset group records to return (max 1000000)",
+            "default": 1000
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_host_findings",
+      "name": "List Host Findings",
+      "description": "List hosts with vulnerability details, enriched with knowledge base data",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "list_host_findings",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ips": {
+            "type": "string",
+            "description": "Comma-separated IPv4 addresses or IP ranges"
+          },
+          "vm_scan_date_before": {
+            "type": "string",
+            "description": "Show hosts scanned before this date (YYYY-MM-DDTHH:MM:SSZ)"
+          },
+          "vm_scan_date_after": {
+            "type": "string",
+            "description": "Show hosts scanned after this date (YYYY-MM-DDTHH:MM:SSZ)"
+          },
+          "truncation_limit": {
+            "type": "integer",
+            "description": "Maximum number of host records to return (max 1000000)",
+            "default": 1000
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "launch_scan",
+      "name": "Launch Scan",
+      "description": "Launch a vulnerability scan targeting IPs or asset groups",
+      "categories": [
+        "containment",
+        "vulnerability_management"
+      ],
+      "cy_name": "launch_scan",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "option_title": {
+            "type": "string",
+            "description": "Title of the option profile to use for the scan"
+          },
+          "scan_title": {
+            "type": "string",
+            "description": "Scan title (max 2000 characters)"
+          },
+          "ip": {
+            "type": "string",
+            "description": "Comma-separated IPs or IP ranges to scan"
+          },
+          "asset_group_ids": {
+            "type": "string",
+            "description": "Comma-separated asset group IDs to scan"
+          },
+          "exclude_ip_per_scan": {
+            "type": "string",
+            "description": "Comma-separated IPs or IP ranges to exclude"
+          },
+          "iscanner_name": {
+            "type": "string",
+            "description": "Comma-separated scanner appliance names",
+            "default": "External"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Processing priority (0-9)",
+            "default": 0
+          }
+        },
+        "required": [
+          "option_title"
+        ]
+      }
+    },
+    {
+      "id": "scan_summary",
+      "name": "Scan Summary",
+      "description": "Get scan summary identifying hosts not scanned and why (dead, excluded, cancelled, etc.)",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "scan_summary",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_date_since": {
+            "type": "string",
+            "description": "Include scans started since this date (YYYY-MM-DD format)"
+          },
+          "scan_date_to": {
+            "type": "string",
+            "description": "Include scans up to this date (YYYY-MM-DD format)"
+          },
+          "include_dead": {
+            "type": "boolean",
+            "description": "Include dead hosts in output",
+            "default": true
+          },
+          "include_excluded": {
+            "type": "boolean",
+            "description": "Include excluded hosts in output",
+            "default": false
+          },
+          "include_unresolved": {
+            "type": "boolean",
+            "description": "Include unresolved hosts in output",
+            "default": false
+          },
+          "include_cancelled": {
+            "type": "boolean",
+            "description": "Include cancelled hosts in output",
+            "default": false
+          },
+          "include_blocked": {
+            "type": "boolean",
+            "description": "Include blocked hosts in output",
+            "default": false
+          },
+          "include_aborted": {
+            "type": "boolean",
+            "description": "Include aborted hosts in output",
+            "default": false
+          }
+        },
+        "required": [
+          "scan_date_since"
+        ]
+      }
+    }
+  ]
+}

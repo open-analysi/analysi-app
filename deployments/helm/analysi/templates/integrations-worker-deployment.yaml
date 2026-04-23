@@ -1,0 +1,63 @@
+{{- $component := "integrations-worker" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: {{ .Values.integrationsWorker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: integrations-worker
+          image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          command: ["arq", "analysi.integrations.worker.WorkerSettings"]
+          env:
+            {{- include "analysi.commonEnv" . | nindent 12 }}
+            - name: INTEGRATION_REDIS_DB
+              value: {{ .Values.integrationsWorker.redisDb | quote }}
+            - name: INTEGRATION_DEFAULT_TENANT
+              value: {{ .Values.integrationsWorker.defaultTenant | quote }}
+            - name: INTEGRATION_POLL_INTERVAL
+              value: {{ .Values.integrationsWorker.pollInterval | quote }}
+            - name: INTEGRATION_PULL_LOOKBACK
+              value: {{ .Values.integrationsWorker.pullLookback | quote }}
+            - name: INTEGRATION_MAX_JOBS
+              value: {{ .Values.integrationsWorker.maxJobs | quote }}
+            - name: INTEGRATION_JOB_TIMEOUT
+              value: {{ .Values.integrationsWorker.jobTimeout | quote }}
+            - name: INTEGRATION_RECONCILE_INTERVAL
+              value: {{ .Values.integrationsWorker.reconcileInterval | quote }}
+            - name: INTEGRATION_RECONCILE_LOCK_TTL
+              value: {{ .Values.integrationsWorker.reconcileLockTtl | quote }}
+            - name: ARTIFACTS_BUCKET
+              value: {{ .Values.global.minio.artifactsBucket | quote }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.integrationsWorker.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}

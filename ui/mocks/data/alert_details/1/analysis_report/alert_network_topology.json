@@ -1,0 +1,210 @@
+{
+  "nodes": [
+    {
+      "id": "malicious_ip",
+      "label": "Malicious IP\n58.237.200.6",
+      "type": "BAD_EXTERNAL_IP",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "ip": "58.237.200.6",
+        "country": "South Korea",
+        "threat_score": 92
+      }
+    },
+    {
+      "id": "triggering_event",
+      "label": "Triggering Event",
+      "type": "TRIGGERING_EVENT(S)",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "description": "Primary malicious activity that triggered the detection."
+      }
+    },
+    {
+      "id": "supporting_events",
+      "label": "Supporting Events",
+      "type": "SUPPORTING_EVENT(S)",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "description": "Related activities that support this alert (AI collected)"
+      }
+    },
+    {
+      "id": "url_1",
+      "label": "Malicious URL",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "url": "/autodiscover/autodiscover.json?@evil.com/owa/&Email=autodiscover/autodiscover.json%3f@evil.com&Protocol=XYZ&FooProtocol=Powershell",
+        "detected_at": "2022/09/30 7:19:00"
+      }
+    },
+    {
+      "id": "url_2",
+      "label": "Malicious URL",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "url": "/autodiscover/autodiscover.json?@evil.com/ews/exchange.asmx?&Email=autodiscover/autodiscover.json%3f@evil.com",
+        "detected_at": "2022/09/30 7:18:00"
+      }
+    },
+    {
+      "id": "url_3",
+      "label": "Malicious URL",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "HIGH RISK",
+      "data": {
+        "url": "/autodiscover/autodiscover.json",
+        "detected_at": "2022/09/30 7:17:00"
+      }
+    },
+    {
+      "id": "firewall",
+      "label": "Blocked by Palo Alto Firewall",
+      "type": "FIREWALL",
+      "riskLevel": "NO RISK",
+      "data": {
+        "description": "Palo Alto Firewall that blocked the malicious activity and generated the logs."
+      }
+    },
+    {
+      "id": "internal_server",
+      "label": "Exchange Server 2\n172.16.20.8",
+      "type": "SERVER",
+      "riskLevel": "NO RISK",
+      "data": {
+        "ip": "172.16.20.8",
+        "hostname": "Exchange Server 2",
+        "function": "Microsoft Exchange"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "malicious_ip",
+      "target": "triggering_event",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314225995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e2",
+      "source": "malicious_ip",
+      "target": "supporting_events",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314275995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e3",
+      "source": "triggering_event",
+      "target": "url_1",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314325995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e4",
+      "source": "url_1",
+      "target": "firewall",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314375995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e5",
+      "source": "firewall",
+      "target": "internal_server",
+      "eventType": "PROTECTED_BY_FIREWALL",
+      "status": "NONE",
+      "riskLevel": "NO RISK",
+      "timestamp": 1712314425995,
+      "data": {
+        "action": "Protect",
+        "mechanism": "Traffic filtering"
+      }
+    },
+    {
+      "id": "e6",
+      "source": "supporting_events",
+      "target": "url_2",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314475995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e7",
+      "source": "url_2",
+      "target": "firewall",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314485995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e8",
+      "source": "supporting_events",
+      "target": "url_3",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314525995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    },
+    {
+      "id": "e9",
+      "source": "url_3",
+      "target": "firewall",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "BLOCKED",
+      "riskLevel": "HIGH RISK",
+      "timestamp": 1712314535995,
+      "data": {
+        "method": "GET",
+        "status": "Blocked",
+        "protocol": "HTTP"
+      }
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "google_chat",
+  "app": "google_chat",
+  "name": "Google Chat",
+  "version": "1.0.0",
+  "description": "Integrate with Google Chat to send and manage messages in Chat spaces",
+  "archetypes": [
+    "Communication"
+  ],
+  "priority": 55,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "description": "OAuth application Client ID"
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "OAuth application Client Secret",
+        "format": "password"
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "OAuth refresh token (obtained from authorization flow)",
+        "format": "password"
+      }
+    },
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate the asset configuration for connectivity using supplied configuration",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_message",
+      "name": "Create Message",
+      "description": "Creates a message in a Google Chat space",
+      "categories": [
+        "communication",
+        "messaging"
+      ],
+      "cy_name": "create_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "parent_space": {
+            "type": "string",
+            "description": "The resource name of the space in which to create a message (e.g., spaces/SPACE_ID)"
+          },
+          "text_message": {
+            "type": "string",
+            "description": "Message content"
+          },
+          "requestid": {
+            "type": "string",
+            "description": "A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message"
+          },
+          "messagereplyoption": {
+            "type": "string",
+            "description": "Specifies whether a message starts a thread or replies to one. Only supported in named spaces",
+            "enum": [
+              "MESSAGE_REPLY_OPTION_UNSPECIFIED",
+              "REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD",
+              "REPLY_MESSAGE_OR_FAIL"
+            ]
+          },
+          "messageid": {
+            "type": "string",
+            "description": "A custom ID for a message"
+          }
+        },
+        "required": [
+          "parent_space",
+          "text_message"
+        ]
+      }
+    },
+    {
+      "id": "read_message",
+      "name": "Read Message",
+      "description": "Returns details about a message",
+      "categories": [
+        "investigation",
+        "communication"
+      ],
+      "cy_name": "read_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Resource name of the message (e.g., spaces/SPACE_ID/messages/MESSAGE_ID)"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "Communication": {
+      "send_message": "create_message",
+      "post_to_channel": "create_message"
+    }
+  }
+}

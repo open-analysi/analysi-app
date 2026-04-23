@@ -1,0 +1,116 @@
+{
+  "name": "Splunk: Supporting Evidence Search with Observable Scoring",
+  "cy_name": "splunk_supporting_evidence_search",
+  "description": "Enriches alerts by discovering and analyzing corroborating events in Splunk using hypothesis-driven investigation. Extracts observables from alert, generates investigation hypotheses, discovers relevant data sources via tstats, intelligently selects indexes/sourcetypes, searches for events matching observables with scoring, and validates hypotheses against discovered evidence with structured analysis.",
+  "app": "Splunk",
+  "directive": "You are a security analyst specializing in hypothesis-driven investigation and evidence correlation. Analyze security contexts to generate targeted investigation hypotheses, select relevant data sources intelligently, and provide structured validation of hypotheses against discovered evidence. Focus on actionable conclusions that clearly map events to investigation theories.",
+  "script_file": "splunk_supporting_evidence_search.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Splunk",
+    "SIEM",
+    "Evidence Correlation",
+    "Hypothesis Testing",
+    "Alert Enrichment",
+    "Investigation",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 3000
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "PowerShell CVE-2022-41082 Exploitation",
+      "description": "ProxyNotShell CVE exploitation attempt with multiple corroborating Zscaler events",
+      "input": {
+        "triggering_event_time": "2026-02-24T23:05:00+00:00",
+        "severity": "high",
+        "source_product": "Enterprise Security",
+        "enrichments": {
+          "alert_context_generation": {
+            "ai_analysis": "CVE-2022-41082 (ProxyNotShell) exploitation attempt detected. External IP 58.237.200.6 attempted PowerShell command injection via autodiscover endpoint targeting Exchange Server at 172.16.20.8. Attack was blocked by firewall."
+          },
+          "proxynotshell_hypothesis_generation": {
+            "investigation_hypotheses": [
+              {
+                "question": "Was there successful exploitation before the block?",
+                "priority": "high"
+              },
+              {
+                "question": "Are there other targets from the same source IP?",
+                "priority": "medium"
+              }
+            ]
+          }
+        },
+        "title": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+        "source_vendor": "Splunk",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "network"
+          ]
+        },
+        "rule_name": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "58.237.200.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "58.237.200.6"
+            },
+            "dst_endpoint": {
+              "ip": "172.16.20.8",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.20.8"
+        },
+        "raw_data": "{\"alert\": \"PowerShell exploitation attempt\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "splunk",
+    "siem",
+    "evidence-correlation",
+    "hypothesis-testing",
+    "investigation",
+    "observable-scoring",
+    "automated-analysis"
+  ]
+}

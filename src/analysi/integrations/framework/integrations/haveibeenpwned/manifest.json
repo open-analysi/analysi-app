@@ -1,0 +1,129 @@
+{
+  "id": "haveibeenpwned",
+  "app": "haveibeenpwned",
+  "name": "Have I Been Pwned",
+  "version": "1.0.0",
+  "description": "Queries Have I Been Pwned for data breach information. Checks if email addresses or domains appear in known data breaches, critical for phishing and account compromise investigations.",
+  "archetypes": [
+    "DatabaseEnrichment"
+  ],
+  "priority": 60,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "haveibeenpwned-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "haveibeenpwned-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Have I Been Pwned integration instance"
+  },
+
+  "archetype_mappings": {
+    "DatabaseEnrichment": {
+      "lookup_email": "lookup_email",
+      "lookup_domain": "lookup_domain"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Have I Been Pwned API key (hibp-api-key header). Obtain from https://haveibeenpwned.com/API/Key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "HIBP API v3 base URL",
+        "default": "https://haveibeenpwned.com/api/v3"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the HIBP API and validate the API key",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_email",
+      "name": "Lookup Email",
+      "description": "Search for breaches associated with an email address",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "lookup_email",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to look up"
+          },
+          "truncate": {
+            "type": "boolean",
+            "description": "Truncate results to just breach names (default: false)",
+            "default": false
+          }
+        },
+        "required": ["email"]
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Search for breaches associated with a domain",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name or URL to look up. URLs are automatically parsed to extract the domain, and www. prefixes are stripped."
+          }
+        },
+        "required": ["domain"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "id": "cloudflare",
+  "app": "cloudflare",
+  "name": "Cloudflare",
+  "version": "1.0.0",
+  "description": "Cloudflare WAF/CDN integration for firewall rule management, IP blocking, and user agent blocking at the edge",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cloudflare-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cloudflare-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cloudflare instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_ip": "block_ip",
+      "create_rule": "update_rule"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Cloudflare API token with Firewall permissions (Zone.Firewall Services)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Cloudflare API base URL",
+        "default": "https://api.cloudflare.com/client/v4"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the Cloudflare API by listing zones",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP",
+      "description": "Block an IP address by creating a Cloudflare firewall rule. Creates a filter expression and block rule for the specified zone.",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to block"
+          },
+          "domain_name": {
+            "type": "string",
+            "description": "Domain name (Cloudflare zone) to apply the rule to"
+          },
+          "rule_description": {
+            "type": "string",
+            "description": "Description for the firewall rule",
+            "default": "Analysi Block IP"
+          }
+        },
+        "required": [
+          "ip",
+          "domain_name"
+        ]
+      }
+    },
+    {
+      "id": "block_user_agent",
+      "name": "Block User Agent",
+      "description": "Block a user agent string by creating a Cloudflare firewall rule. Creates a filter expression matching the user agent and a block rule.",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_user_agent",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_agent": {
+            "type": "string",
+            "description": "User agent string to block"
+          },
+          "domain_name": {
+            "type": "string",
+            "description": "Domain name (Cloudflare zone) to apply the rule to"
+          },
+          "rule_description": {
+            "type": "string",
+            "description": "Description for the firewall rule",
+            "default": "Analysi Block UserAgent"
+          }
+        },
+        "required": [
+          "user_agent",
+          "domain_name"
+        ]
+      }
+    },
+    {
+      "id": "update_rule",
+      "name": "Update Rule",
+      "description": "Enable or disable a Cloudflare firewall rule by name. Use action 'block' to enable the rule or 'allow' to pause it.",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "update_rule",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "rule_name": {
+            "type": "string",
+            "description": "Firewall rule description/name (case-insensitive exact match)"
+          },
+          "domain_name": {
+            "type": "string",
+            "description": "Domain name (Cloudflare zone)"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to apply: 'block' (enable rule) or 'allow' (pause rule)",
+            "enum": [
+              "block",
+              "allow"
+            ]
+          }
+        },
+        "required": [
+          "rule_name",
+          "domain_name",
+          "action"
+        ]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

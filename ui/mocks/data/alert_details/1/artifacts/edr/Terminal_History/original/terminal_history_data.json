@@ -1,0 +1,10 @@
+[
+  {
+    "Event Time": "2022-09-22 16:13:01",
+    "Command Line": "Get-ChildItem Desktop"
+  },
+  {
+    "Event Time": "2022-09-22 16:13:22",
+    "Command Line": "get-content Desktop/exchange-server-commands.txt"
+  }
+]

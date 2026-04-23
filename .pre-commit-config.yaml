@@ -1,0 +1,88 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: (^migrations/flyway/sql/.*\.sql$|^\.claude/(skills|agents|\.aipm)/)
+      - id: end-of-file-fixer
+        exclude: (^migrations/flyway/sql/.*\.sql$|^\.claude/(skills|agents|\.aipm)/)
+      - id: check-yaml
+        exclude: ^deployments/helm/.*templates/
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: detect-private-key
+        exclude: (^tests/unit/third_party_integrations/|^src/analysi/integrations/framework/integrations/bigquery/README\.md$)
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.2
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        exclude: ^\.claude/(skills|agents|\.aipm)/
+      - id: ruff-format
+        exclude: ^\.claude/(skills|agents|\.aipm)/
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.9.4"
+    hooks:
+      - id: bandit
+        args: ["-ll", "--skip", "B101"]
+        exclude: ^(tests/|deployments/|\.claude/(skills|agents)/)
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: generate-openapi-types
+        name: Generate TypeScript types from OpenAPI
+        entry: scripts/make/generate_openapi_types.sh
+        language: script
+        files: ^src/analysi/(schemas|routers|api)/.*\.py$
+        pass_filenames: false
+
+      - id: helm-lint
+        name: Helm chart lint
+        entry: bash -c 'helm lint deployments/helm/analysi/ 2>&1'
+        language: system
+        files: ^deployments/helm/analysi/
+        pass_filenames: false
+
+      - id: deptry
+        name: Check for unused/missing dependencies
+        entry: poetry run deptry src/
+        language: system
+        files: ^(pyproject\.toml|src/.*)$
+        pass_filenames: false
+
+      - id: check-cli-api-sync
+        name: Check CLI ↔ API route sync
+        entry: poetry run python scripts/code_quality_tools/check_cli_api_sync.py
+        language: system
+        files: '(^cli/cli-config\.yaml$|^cli/src/commands/|^src/analysi/routers/)'
+        pass_filenames: false
+
+      - id: check-foundation-skills-sync
+        name: Check skills/ ↔ content/foundation/skills/ sync
+        entry: python scripts/agents_management/package.py skills --check
+        language: system
+        files: '(^skills/|^content/foundation/skills/)'
+        pass_filenames: false
+
+      - id: skilltree-scan
+        name: Check skill dependencies (regex)
+        entry: bash -c '"$HOME/.skilltree/bin/skilltree" scan --check "$@"' --
+        language: system
+        files: '(^skills/.*\.md$|^agents/.*\.md$)'
+        pass_filenames: true
+
+      - id: skilltree-scan-llm
+        name: Check skill dependencies (LLM)
+        entry: bash -c '"$HOME/.skilltree/bin/skilltree" scan --llm --check "$@"' --
+        language: system
+        files: '(^skills/.*\.md$|^agents/.*\.md$)'
+        pass_filenames: true

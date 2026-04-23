@@ -1,0 +1,221 @@
+{
+  "id": "global_dns",
+  "app": "global_dns",
+  "name": "Global DNS",
+  "version": "1.0.0",
+  "description": "Free DNS resolution and reverse lookup using public DNS servers (Google DNS, Cloudflare, etc.). No authentication required.",
+  "archetypes": [
+    "DNS"
+  ],
+  "priority": 60,
+  "integration_id_config": {
+    "default": "global-dns",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "global-dns",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "DNS": {
+      "resolve_domain": "resolve_domain",
+      "reverse_lookup": "reverse_lookup",
+      "get_mx_records": "get_mx_records",
+      "get_txt_records": "get_txt_records",
+      "get_ns_records": "get_ns_records",
+      "get_soa_record": "get_soa_record"
+    }
+  },
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "dns_server": {
+        "type": "string",
+        "display_name": "DNS Server",
+        "description": "Preferred DNS server (informational). Resolution uses the system resolver for Docker compatibility.",
+        "default": "",
+        "placeholder": "8.8.8.8"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Query Timeout",
+        "description": "DNS query timeout in seconds",
+        "default": 5,
+        "minimum": 1,
+        "maximum": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test DNS resolution by querying a known domain (google.com)",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "resolve_domain",
+      "name": "Resolve Domain",
+      "description": "Resolve domain name to IP addresses (supports A, AAAA, CNAME records)",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "resolve_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to resolve (e.g., example.com)"
+          },
+          "record_type": {
+            "type": "string",
+            "description": "DNS record type to query",
+            "enum": [
+              "A",
+              "AAAA",
+              "CNAME"
+            ],
+            "default": "A"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "reverse_lookup",
+      "name": "Reverse DNS Lookup",
+      "description": "Perform reverse DNS lookup (IP to domain name) using PTR records",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "reverse_lookup",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address for reverse lookup (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "get_mx_records",
+      "name": "Get MX Records",
+      "description": "Get mail server (MX) records for a domain",
+      "categories": [
+        "investigation",
+        "enrichment",
+        "email_security"
+      ],
+      "cy_name": "get_mx_records",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query for MX records"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "get_txt_records",
+      "name": "Get TXT Records",
+      "description": "Get TXT records for a domain (SPF, DKIM, DMARC, verification)",
+      "categories": [
+        "investigation",
+        "enrichment",
+        "email_security"
+      ],
+      "cy_name": "get_txt_records",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query for TXT records"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "get_ns_records",
+      "name": "Get NS Records",
+      "description": "Get nameserver (NS) records for a domain",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "get_ns_records",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query for NS records"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "get_soa_record",
+      "name": "Get SOA Record",
+      "description": "Get Start of Authority (SOA) record for a domain",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "get_soa_record",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query for SOA record"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

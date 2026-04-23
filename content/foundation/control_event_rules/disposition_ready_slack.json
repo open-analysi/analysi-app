@@ -1,0 +1,10 @@
+{
+  "name": "Slack notification on disposition ready",
+  "channel": "disposition:ready",
+  "target_type": "task",
+  "target_cy_name": "slack_notify_disposition_ready",
+  "enabled": true,
+  "config": {
+    "slack_channel": "#test"
+  }
+}

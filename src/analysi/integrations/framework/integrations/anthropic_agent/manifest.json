@@ -1,0 +1,165 @@
+{
+  "id": "anthropic_agent",
+  "app": "anthropic_agent",
+  "name": "Anthropic (Claude)",
+  "version": "1.1.0",
+  "description": "Anthropic integration for Claude LLM operations and Claude Code SDK agent execution. Dual archetype: AI (LLM) + AgenticFramework (Claude Code SDK).",
+  "archetypes": [
+    "AI",
+    "AgenticFramework"
+  ],
+  "priority": 90,
+  "integration_id_config": {
+    "default": "anthropic-agent-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "anthropic-agent-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "AI": {
+      "llm_run": "llm_run",
+      "llm_chat": "llm_chat"
+    },
+    "AgenticFramework": {}
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Anthropic API key for LLM operations",
+        "format": "password",
+        "placeholder": "sk-ant-...",
+        "required": true
+      },
+      "oauth_token": {
+        "type": "string",
+        "display_name": "OAuth Token",
+        "description": "Claude Code OAuth token for agentic workflows (optional)",
+        "format": "password",
+        "placeholder": "sk-ant-..."
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "max_turns": {
+        "type": "integer",
+        "display_name": "Max Turns",
+        "description": "Maximum agent turns per execution (AgenticFramework)",
+        "default": 100
+      },
+      "permission_mode": {
+        "type": "string",
+        "display_name": "Permission Mode",
+        "description": "SDK permission mode for file operations (AgenticFramework)",
+        "default": "bypassPermissions",
+        "enum": [
+          "bypassPermissions",
+          "acceptEdits",
+          "plan"
+        ]
+      },
+      "model_presets": {
+        "type": "object",
+        "display_name": "Model Presets",
+        "description": "Named model configurations keyed by capability",
+        "default": {
+          "default": {
+            "model": "claude-sonnet-4-20250514"
+          },
+          "thinking": {
+            "model": "claude-sonnet-4-20250514",
+            "extended_thinking": true,
+            "max_thinking_tokens": 10000
+          },
+          "long_context": {
+            "model": "claude-opus-4-20250514"
+          },
+          "fast": {
+            "model": "claude-haiku-3-20250307"
+          },
+          "embedding": null
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API key / OAuth token is configured",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "llm_run",
+      "name": "LLM Run",
+      "description": "Single-turn LLM execution: prompt in, string out",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_run",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to send"
+          },
+          "context": {
+            "type": "string",
+            "description": "Optional system context"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      }
+    },
+    {
+      "id": "llm_chat",
+      "name": "LLM Chat",
+      "description": "Multi-turn LLM chat: messages in, message out (supports extended thinking)",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_chat",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "description": "Chat messages array"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      }
+    }
+  ],
+  "default_schedules": []
+}

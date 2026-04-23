@@ -1,0 +1,52 @@
+{{- if .Values.flyway.enabled -}}
+{{- $component := "flyway" -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}-{{ now | date "20060102-150405" }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+  annotations:
+    # Not a Helm hook — runs as a regular Job so PostgreSQL sub-chart starts first.
+    # The wait-for-db init container blocks until the database is reachable.
+    # Flyway runs as a regular Job (not a hook) so PostgreSQL sub-chart starts first.
+    # The wait-for-db init container blocks until the database is reachable.
+spec:
+  backoffLimit: {{ .Values.flyway.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- if .Values.flyway.initContainers.waitForDb }}
+      initContainers:
+        - name: wait-for-db
+          image: "{{ .Values.global.utilityImage.repository }}:{{ .Values.global.utilityImage.tag }}"
+          command: ['sh', '-c', 'until nc -z {{ .Values.global.database.host }} {{ .Values.global.database.port }}; do sleep 2; done']
+      {{- end }}
+      containers:
+        - name: flyway
+          image: "{{ .Values.flyway.image.repository }}:{{ .Values.flyway.image.tag }}"
+          command:
+            - flyway
+            - -url=jdbc:postgresql://{{ .Values.global.database.host }}:{{ .Values.global.database.port }}/{{ .Values.global.database.name }}
+            - -user={{ .Values.global.database.user }}
+            - -password={{ .Values.global.database.password }}
+            - -connectRetries=60
+            - migrate
+          {{- if .Values.flyway.sqlConfigMap }}
+          volumeMounts:
+            - name: sql
+              mountPath: /flyway/sql
+          {{- end }}
+          resources:
+            {{- toYaml .Values.flyway.resources | nindent 12 }}
+      {{- if .Values.flyway.sqlConfigMap }}
+      volumes:
+        - name: sql
+          configMap:
+            name: {{ .Values.flyway.sqlConfigMap }}
+      {{- end }}
+{{- end }}

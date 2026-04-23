@@ -1,0 +1,168 @@
+{
+  "id": "forescout",
+  "app": "forescout",
+  "name": "Forescout",
+  "version": "1.0.0",
+  "description": "Forescout network access control integration for host visibility, policy management, and session monitoring via the Web API",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "forescout-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "forescout-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Forescout integration instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "get_host_details": "get_host"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Web API Username",
+        "description": "Username for Forescout Web API authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Web API Password",
+        "description": "Password for Forescout Web API authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Forescout Enterprise Manager URL (e.g., https://forescout.example.com)",
+        "placeholder": "https://forescout.example.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Whether to verify the server SSL certificate",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the Forescout Web API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List all hosts/endpoints visible to Forescout",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "list_hosts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_host",
+      "name": "Get Host",
+      "description": "Get detailed properties of a host by ID, IP address, or MAC address",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "get_host",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "host_id": {
+            "type": "integer",
+            "description": "Forescout host ID (used first if provided)"
+          },
+          "host_ip": {
+            "type": "string",
+            "description": "Host IP address (used second if provided)"
+          },
+          "host_mac": {
+            "type": "string",
+            "description": "Host MAC address (used last if provided)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List all Forescout policies",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "list_policies",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_active_sessions",
+      "name": "Get Active Sessions",
+      "description": "Get active sessions filtered by rule IDs and/or property values",
+      "categories": ["investigation", "network_security"],
+      "cy_name": "get_active_sessions",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Comma-separated list of policy or rule IDs to filter by"
+          },
+          "prop_val": {
+            "type": "string",
+            "description": "Comma-separated list of property=value filters (e.g., Prop_String=Sales,Prop_Int=5)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

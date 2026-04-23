@@ -1,0 +1,330 @@
+{
+  "id": "cybereason",
+  "app": "cybereason",
+  "name": "Cybereason",
+  "version": "1.0.0",
+  "description": "Cybereason EDR platform integration for endpoint investigation, containment, and remediation of Malop and Malware events",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cybereason-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cybereason-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cybereason integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "quarantine_device",
+      "release_host": "unquarantine_device",
+      "get_host_details": "query_machines",
+      "kill_process": "kill_process"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Username for the Cybereason console",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Password for the Cybereason console",
+        "format": "password",
+        "required": true
+      }
+    },
+    "required": [
+      "username",
+      "password"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Console URL",
+        "description": "Cybereason console URL (e.g., https://integration.cybereason.net:8443)",
+        "placeholder": "https://integration.cybereason.net:8443",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60,
+        "minimum": 10,
+        "maximum": 300
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify the SSL certificate of the Cybereason server",
+        "default": false
+      }
+    },
+    "required": [
+      "base_url"
+    ]
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the Cybereason console by verifying session authentication",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "isolate_machine",
+      "name": "Isolate Machine (Malop)",
+      "description": "Block all communication for machines associated with a malop. Communication with the Cybereason platform is not affected.",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "isolate_machine",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malop_id": {
+            "type": "string",
+            "description": "The malop ID for which to isolate machines"
+          }
+        },
+        "required": [
+          "malop_id"
+        ]
+      }
+    },
+    {
+      "id": "unisolate_machine",
+      "name": "Unisolate Machine (Malop)",
+      "description": "Unblock all communication for machines associated with a malop.",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "unisolate_machine",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malop_id": {
+            "type": "string",
+            "description": "The malop ID for which to unisolate machines"
+          }
+        },
+        "required": [
+          "malop_id"
+        ]
+      }
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Isolate a specific machine by name or IP from the network. Communication with the Cybereason platform is not affected.",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "quarantine_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "machine_name_or_ip": {
+            "type": "string",
+            "description": "Name or IP address of the machine to isolate"
+          }
+        },
+        "required": [
+          "machine_name_or_ip"
+        ]
+      }
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Release a specific machine by name or IP from network isolation.",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "unquarantine_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "machine_name_or_ip": {
+            "type": "string",
+            "description": "Name or IP address of the machine to unquarantine"
+          }
+        },
+        "required": [
+          "machine_name_or_ip"
+        ]
+      }
+    },
+    {
+      "id": "query_processes",
+      "name": "Query Processes",
+      "description": "Query a malop to retrieve all associated processes with their owner machines.",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "query_processes",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malop_id": {
+            "type": "string",
+            "description": "The malop ID for which to retrieve process details"
+          }
+        },
+        "required": [
+          "malop_id"
+        ]
+      }
+    },
+    {
+      "id": "query_machines",
+      "name": "Query Machines",
+      "description": "Query machine details by name, including OS version, architecture, and connectivity status.",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "query_machines",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Machine name to search for (supports wildcards)"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "id": "get_sensor_status",
+      "name": "Get Sensor Status",
+      "description": "Get the connectivity status (Online/Offline) for all machine sensors in a malop.",
+      "categories": [
+        "investigation",
+        "health_monitoring"
+      ],
+      "cy_name": "get_sensor_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malop_id": {
+            "type": "string",
+            "description": "The malop ID for which to get sensor status"
+          }
+        },
+        "required": [
+          "malop_id"
+        ]
+      }
+    },
+    {
+      "id": "kill_process",
+      "name": "Kill Process",
+      "description": "Kill an active process on a machine via the Cybereason remediation API.",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "kill_process",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malop_id": {
+            "type": "string",
+            "description": "The malop ID associated with the process"
+          },
+          "machine_id": {
+            "type": "string",
+            "description": "Machine ID where the process is running"
+          },
+          "process_id": {
+            "type": "string",
+            "description": "Cybereason process ID to kill"
+          },
+          "remediation_user": {
+            "type": "string",
+            "description": "User ID requesting the remediation"
+          }
+        },
+        "required": [
+          "malop_id",
+          "machine_id",
+          "process_id",
+          "remediation_user"
+        ]
+      }
+    },
+    {
+      "id": "set_reputation",
+      "name": "Set Reputation",
+      "description": "Set custom reputation (whitelist/blacklist/remove) for a file hash.",
+      "categories": [
+        "threat_response",
+        "containment"
+      ],
+      "cy_name": "set_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "reputation_item_hash": {
+            "type": "string",
+            "description": "The file hash for which to set reputation"
+          },
+          "custom_reputation": {
+            "type": "string",
+            "description": "Reputation classification to set",
+            "enum": [
+              "whitelist",
+              "blacklist",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "reputation_item_hash",
+          "custom_reputation"
+        ]
+      }
+    }
+  ]
+}

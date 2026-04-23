@@ -1,0 +1,257 @@
+{
+  "name": "Splunk: IP Event Search and Correlation",
+  "cy_name": "splunk_ip_event_search",
+  "description": "Enriches alerts by searching Splunk SIEM for security events related to the primary IOC IP address. Queries across all indexes for the last 24 hours, analyzes event patterns, and provides AI-powered correlation analysis linking events to the original alert.",
+  "app": "Splunk",
+  "directive": "You are a security analyst specializing in SIEM event correlation and analysis. Analyze Splunk search results to identify patterns, assess event volume and frequency, correlate findings with the original security alert, and provide actionable investigation guidance. Focus on timeline analysis, baseline deviation detection, and clear next steps for SOC analysts.",
+  "script_file": "splunk_ip_event_search.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Splunk",
+    "SIEM",
+    "Event Correlation",
+    "IP Analysis",
+    "Alert Enrichment",
+    "Investigation",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 2000
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "High Volume IP Activity - Firewall Block",
+      "description": "Firewall alert for malicious IP with high volume of related events in Splunk (87 events found)",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "severity": "high",
+        "source_product": "Next-Generation Firewall",
+        "enrichments": null,
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Outbound Connection to Threat Intelligence Feed IP",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Network Threat"
+          ]
+        },
+        "rule_name": "Outbound Connection to Threat Intelligence Feed IP",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.2.145",
+              "port": 49325
+            },
+            "dst_endpoint": {
+              "ip": "185.220.101.45",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-045.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"FW-2025-10-23-14352\", \"severity\": \"high\", \"action\": \"blocked\", \"src\": \"10.50.2.145\", \"dst\": \"185.220.101.45\", \"port\": 443}"
+      }
+    },
+    {
+      "name": "Medium Volume IP Activity - IDS Detection",
+      "description": "IDS alert for suspicious activity with moderate event volume (15 events found)",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:20:15Z",
+        "severity": "medium",
+        "source_product": "IDS/IPS",
+        "enrichments": null,
+        "title": "Potential Data Exfiltration Detected",
+        "source_vendor": "Suricata",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Potential Data Exfiltration Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Abnormal Data Transfer Volume",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Data Exfiltration"
+          ]
+        },
+        "rule_name": "Abnormal Data Transfer Volume",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:IDS/IPS"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "203.0.113.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.10.50"
+            },
+            "dst_endpoint": {
+              "ip": "203.0.113.45",
+              "port": 8080
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "192.168.10.50"
+        },
+        "raw_data": "{\"alert_id\": \"IDS-2025-10-23-16201\", \"signature\": \"Data Exfil\", \"src\": \"192.168.10.50\", \"dst\": \"203.0.113.45\"}"
+      }
+    },
+    {
+      "name": "Low Volume IP Activity - Clean DNS",
+      "description": "DNS security alert for benign IP with minimal event history (2 events found)",
+      "input": {
+        "triggering_event_time": "2025-10-23T18:45:30Z",
+        "severity": "low",
+        "source_product": "DNS Security",
+        "enrichments": null,
+        "title": "New Domain Resolution Observed",
+        "source_vendor": "Cisco Umbrella",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "New Domain Resolution Observed",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "First-Seen Domain",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Reconnaissance"
+          ]
+        },
+        "rule_name": "First-Seen Domain",
+        "disposition_id": 1,
+        "disposition": "Allowed",
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "8.8.8.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.50.100"
+            },
+            "dst_endpoint": {
+              "ip": "8.8.8.8",
+              "port": 53
+            },
+            "connection_info": {
+              "protocol_name": "UDP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "laptop-125.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"DNS-2025-10-23-18453\", \"domain\": \"new-service.example.com\", \"resolved_ip\": \"8.8.8.8\"}"
+      }
+    },
+    {
+      "name": "Non-IP IOC - Domain Alert",
+      "description": "Alert with domain IOC should be returned unchanged (no IP-based Splunk search)",
+      "input": {
+        "triggering_event_time": "2025-10-23T19:30:00Z",
+        "severity": "critical",
+        "source_product": "DNS Security",
+        "enrichments": null,
+        "title": "Suspicious DNS Query to Command and Control Domain",
+        "source_vendor": "Cisco Umbrella",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Suspicious DNS Query to Command and Control Domain",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Known C2 Domain",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Command and Control"
+          ]
+        },
+        "rule_name": "Known C2 Domain",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-c2.example.com"
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"DNS-2025-10-23-19300\", \"domain\": \"malicious-c2.example.com\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "splunk",
+    "siem",
+    "event-correlation",
+    "ip-investigation",
+    "enrichment",
+    "automated-analysis"
+  ]
+}

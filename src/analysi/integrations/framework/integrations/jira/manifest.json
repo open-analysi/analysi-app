@@ -1,0 +1,364 @@
+{
+  "id": "jira",
+  "app": "jira",
+  "name": "JIRA",
+  "version": "1.0.0",
+  "description": "JIRA ticketing system integration for creating, updating, and managing tickets",
+  "archetypes": [
+    "TicketingSystem"
+  ],
+  "priority": 65,
+  "integration_id_config": {
+    "default": "jira-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "jira-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "TicketingSystem": {
+      "create_ticket": "create_ticket",
+      "update_ticket": "update_ticket",
+      "get_ticket_status": "get_ticket",
+      "add_comment": "add_comment",
+      "close_ticket": "set_ticket_status",
+      "assign_ticket": "update_ticket"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "JIRA username or email",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password/API Token",
+        "description": "JIRA password (on-prem) or API token (cloud)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "display_name": "JIRA URL",
+        "description": "JIRA instance URL (e.g., https://yourcompany.atlassian.net)",
+        "required": true
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify SSL certificates for HTTPS requests",
+        "default": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to JIRA API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new JIRA ticket (issue)",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "create_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Ticket summary/title"
+          },
+          "project_key": {
+            "type": "string",
+            "description": "Project key (e.g., 'PROJ')"
+          },
+          "issue_type": {
+            "type": "string",
+            "description": "Issue type (e.g., 'Bug', 'Task', 'Story')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Ticket description (optional)"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Priority (e.g., 'High', 'Medium', 'Low') (optional)"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Assignee username (optional)"
+          },
+          "labels": {
+            "type": "string",
+            "description": "Comma-separated labels (optional)"
+          },
+          "fields": {
+            "type": "object",
+            "description": "Additional custom fields as JSON object (optional)"
+          }
+        },
+        "required": [
+          "summary",
+          "project_key",
+          "issue_type"
+        ]
+      }
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get JIRA ticket (issue) information",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "get_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Ticket ID or key (e.g., 'PROJ-123')"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ]
+      }
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update a JIRA ticket (issue)",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "update_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Ticket ID or key (e.g., 'PROJ-123')"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Updated summary (optional)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated description (optional)"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Updated priority (optional)"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Updated assignee username (optional)"
+          },
+          "labels": {
+            "type": "string",
+            "description": "Updated comma-separated labels (optional)"
+          },
+          "fields": {
+            "type": "object",
+            "description": "Additional fields to update (optional)"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ]
+      }
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to a JIRA ticket",
+      "categories": [
+        "ticketing",
+        "communication"
+      ],
+      "cy_name": "add_comment",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Ticket ID or key (e.g., 'PROJ-123')"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment text"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "set_ticket_status",
+      "name": "Set Ticket Status",
+      "description": "Set the status of a JIRA ticket (via transition)",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "set_ticket_status",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Ticket ID or key (e.g., 'PROJ-123')"
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status (e.g., 'In Progress', 'Done', 'Closed')"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional comment to add with status change"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "delete_ticket",
+      "name": "Delete Ticket",
+      "description": "Delete a JIRA ticket (issue)",
+      "categories": [
+        "ticketing"
+      ],
+      "cy_name": "delete_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Ticket ID or key (e.g., 'PROJ-123')"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ]
+      }
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all accessible JIRA projects",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "list_projects",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List JIRA tickets (issues) using JQL query",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "list_tickets",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "project_key": {
+            "type": "string",
+            "description": "Filter by project key (optional)"
+          },
+          "jql": {
+            "type": "string",
+            "description": "Custom JQL query (optional)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 100)"
+          },
+          "start_index": {
+            "type": "integer",
+            "description": "Starting index for pagination (default: 0)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "search_users",
+      "name": "Search Users",
+      "description": "Search for JIRA users by username or display name",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "search_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query (username or display name)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results (optional)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

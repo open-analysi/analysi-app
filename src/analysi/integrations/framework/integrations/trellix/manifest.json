@@ -1,0 +1,294 @@
+{
+  "id": "trellix",
+  "app": "trellix",
+  "name": "Trellix EDR",
+  "version": "1.0.0",
+  "description": "Trellix EDR (formerly FireEye HX) endpoint security integration for host containment, alert investigation, and IOC management",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "trellix-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "trellix-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Trellix EDR integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "get_host_details": "get_endpoint",
+      "isolate_host": "quarantine_endpoint",
+      "release_host": "unquarantine_endpoint"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "HX API Username",
+        "description": "Username for Trellix HX API authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "HX API Password",
+        "description": "Password for Trellix HX API authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "HX Appliance URL",
+        "description": "Base URL for the Trellix HX appliance (e.g., https://hx.customer.com)",
+        "placeholder": "https://hx.customer.com"
+      },
+      "port": {
+        "type": "integer",
+        "display_name": "HX Port",
+        "description": "Port number for the HX appliance API",
+        "default": 3000
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Whether to verify SSL certificates",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify Trellix HX API connectivity by requesting an auth token",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Endpoint",
+      "description": "Get system information for an endpoint by agent ID",
+      "categories": ["investigation"],
+      "cy_name": "get_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "HX agent identifier for the endpoint"
+          }
+        },
+        "required": ["agent_id"]
+      }
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List and search endpoints on HX",
+      "categories": ["investigation"],
+      "cy_name": "list_endpoints",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Search term to filter endpoints"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "quarantine_endpoint",
+      "name": "Quarantine Endpoint",
+      "description": "Request containment (isolation) for an endpoint",
+      "categories": ["containment"],
+      "cy_name": "quarantine_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "HX agent identifier to contain"
+          }
+        },
+        "required": ["agent_id"]
+      }
+    },
+    {
+      "id": "unquarantine_endpoint",
+      "name": "Unquarantine Endpoint",
+      "description": "Cancel containment (release) for an endpoint",
+      "categories": ["containment"],
+      "cy_name": "unquarantine_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "HX agent identifier to release from containment"
+          }
+        },
+        "required": ["agent_id"]
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get details for a specific alert by ID",
+      "categories": ["investigation"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "HX alert identifier"
+          }
+        },
+        "required": ["alert_id"]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts from HX with optional filtering",
+      "categories": ["investigation"],
+      "cy_name": "list_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 50
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort field (e.g., reported_at+descending)"
+          },
+          "min_id": {
+            "type": "string",
+            "description": "Minimum alert ID for filtering"
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Filter alerts by agent/host ID"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "search_iocs",
+      "name": "Search IOCs",
+      "description": "Search for indicators of compromise in HX",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "search_iocs",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Search term to filter indicators"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          },
+          "category": {
+            "type": "string",
+            "description": "IOC category filter"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "add_ioc",
+      "name": "Add IOC",
+      "description": "Add an indicator of compromise to the HX detection list",
+      "categories": ["response"],
+      "cy_name": "add_ioc",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "IOC category (e.g., custom)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name for the indicator"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the indicator"
+          }
+        },
+        "required": ["category", "name"]
+      }
+    },
+    {
+      "id": "get_file_acquisition",
+      "name": "Get File Acquisition",
+      "description": "Get the status and details of a file acquisition",
+      "categories": ["investigation", "forensics"],
+      "cy_name": "get_file_acquisition",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "acquisition_id": {
+            "type": "string",
+            "description": "File acquisition identifier"
+          }
+        },
+        "required": ["acquisition_id"]
+      }
+    }
+  ]
+}

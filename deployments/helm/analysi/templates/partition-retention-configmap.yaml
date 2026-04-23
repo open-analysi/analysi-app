@@ -1,0 +1,78 @@
+{{- if .Values.postgresql.partitioning.enabled }}
+# ConfigMap containing SQL to configure pg_partman retention policies.
+# Applied by the partition-retention-job after Flyway migrations complete.
+# Values are overridable per environment via values.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "analysi.fullname" . }}-partition-retention
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+data:
+  configure-retention.sql: |
+    -- Auto-generated from Helm values. Do not edit manually.
+    -- Updates pg_partman retention policies per environment.
+
+    {{- /* Whitelist of valid partitioned table names (must match partition_management.py) */ -}}
+    {{- $validTables := list "task_runs" "artifacts" "alerts" "alert_analyses" "workflow_runs" "workflow_node_instances" "workflow_edge_instances" "activity_audit_trails" "control_events" "hitl_questions" "chat_messages" "job_runs" -}}
+    {{- range $table, $retention := .Values.postgresql.partitioning.retention }}
+    {{- if not (has $table $validTables) }}
+    {{- fail (printf "Invalid partitioned table name in postgresql.partitioning.retention: %q. Valid tables: %s" $table (join ", " $validTables)) }}
+    {{- end }}
+    {{- if not (regexMatch "^[0-9]+ (days?|months?|years?)$" $retention) }}
+    {{- fail (printf "Invalid retention value for table %q: %q. Must match pattern '<number> <days|months|years>' (e.g., '90 days')" $table $retention) }}
+    {{- end }}
+    UPDATE partman.part_config
+    SET retention = '{{ $retention }}'
+    WHERE parent_table = 'public.{{ $table }}';
+    {{- end }}
+---
+# Job that applies the retention configuration after Flyway migrations
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "analysi.fullname" . }}-partition-retention
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: partition-retention
+  annotations:
+    # Run after Flyway migrations
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" "partition-retention") | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: configure-retention
+          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          command:
+            - psql
+            - -h
+            - {{ .Values.global.database.host }}
+            - -U
+            - {{ .Values.global.database.user }}
+            - -d
+            - {{ .Values.global.database.name }}
+            - -f
+            - /sql/configure-retention.sql
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "analysi.fullname" . }}-secrets
+                  key: database-password
+          volumeMounts:
+            - name: sql
+              mountPath: /sql
+              readOnly: true
+      volumes:
+        - name: sql
+          configMap:
+            name: {{ include "analysi.fullname" . }}-partition-retention
+{{- end }}

@@ -1,0 +1,24 @@
+{
+  "edges": [
+    {
+      "from": "Splunk (Playground): Triggering Event Retrieval with SPL Generation and LLM Summarization",
+      "to": "Splunk: Sourcetype to CIM Datamodel Mapping (Complete)",
+      "relationship": "uses",
+      "description": "SPL generation uses CIM datamodel mappings for accurate queries",
+      "metadata": {
+        "dependency_type": "query_generation",
+        "strength": "strong"
+      }
+    },
+    {
+      "from": "Splunk (Playground): Triggering Event Retrieval with SPL Generation and LLM Summarization",
+      "to": "Splunk: CIM Datamodel to Sourcetypes Mapping",
+      "relationship": "uses",
+      "description": "Event retrieval uses datamodel-to-sourcetype mappings for targeted searches",
+      "metadata": {
+        "dependency_type": "search_optimization",
+        "strength": "strong"
+      }
+    }
+  ]
+}

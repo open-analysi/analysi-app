@@ -1,0 +1,6 @@
+# pip-audit ignore list — CVEs listed here are skipped during CI audit.
+# Use this ONLY for CVEs that have no fix available yet (upstream delay).
+# Remove entries as soon as the fix version is released and updated in poetry.lock.
+#
+# Format: one CVE ID per line (e.g., CVE-2026-12345)
+# Lines starting with # are comments.

@@ -1,0 +1,355 @@
+{
+  "tables": [
+    {
+      "name": "Critical Assets Registry",
+      "description": "Registry of critical infrastructure and crown jewel assets",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "criticality": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          }
+        }
+      },
+      "content": [
+        {
+          "asset_id": "ASSET-001",
+          "name": "Customer Database",
+          "type": "database",
+          "criticality": "critical",
+          "owner": "data_team",
+          "location": "us-east-1"
+        },
+        {
+          "asset_id": "ASSET-002",
+          "name": "Payment Gateway",
+          "type": "application",
+          "criticality": "critical",
+          "owner": "payments_team",
+          "location": "us-west-2"
+        },
+        {
+          "asset_id": "ASSET-003",
+          "name": "Identity Provider",
+          "type": "service",
+          "criticality": "critical",
+          "owner": "identity_team",
+          "location": "global"
+        }
+      ],
+      "row_count": 3,
+      "column_count": 6,
+      "tags": [
+        "assets",
+        "critical-infrastructure",
+        "crown-jewels"
+      ]
+    },
+    {
+      "name": "Threat Actor Database",
+      "description": "Known threat actors and their characteristics",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "actor_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "sophistication": {
+            "type": "string"
+          },
+          "targets": {
+            "type": "array"
+          },
+          "ttps": {
+            "type": "array"
+          }
+        }
+      },
+      "content": [
+        {
+          "actor_id": "APT-001",
+          "name": "Lazarus Group",
+          "type": "nation-state",
+          "sophistication": "advanced",
+          "targets": [
+            "financial",
+            "cryptocurrency"
+          ],
+          "ttps": [
+            "spear-phishing",
+            "supply-chain",
+            "zero-day"
+          ]
+        },
+        {
+          "actor_id": "APT-002",
+          "name": "FIN7",
+          "type": "criminal",
+          "sophistication": "advanced",
+          "targets": [
+            "retail",
+            "hospitality"
+          ],
+          "ttps": [
+            "pos-malware",
+            "social-engineering",
+            "insider-threat"
+          ]
+        }
+      ],
+      "row_count": 2,
+      "column_count": 6,
+      "tags": [
+        "threat-actors",
+        "threat-intelligence",
+        "apt"
+      ]
+    },
+    {
+      "name": "Splunk: Alert Source Categories to CIM Datamodel Mappings",
+      "description": "Mapping of alert source categories (Firewall, EDR, Identity, etc.) to Splunk CIM datamodels",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "source_category": {
+            "type": "string"
+          },
+          "primary_cim_datamodel": {
+            "type": "string"
+          },
+          "secondary_cim_models": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "content": [
+        {
+          "source_category": "Firewall",
+          "primary_cim_datamodel": "Network Traffic",
+          "secondary_cim_models": [
+            "Network Sessions"
+          ]
+        },
+        {
+          "source_category": "EDR",
+          "primary_cim_datamodel": "Endpoint",
+          "secondary_cim_models": [
+            "Malware",
+            "Intrusion Detection"
+          ]
+        },
+        {
+          "source_category": "Identity",
+          "primary_cim_datamodel": "Authentication",
+          "secondary_cim_models": [
+            "Change",
+            "Data Access"
+          ]
+        },
+        {
+          "source_category": "Cloud",
+          "primary_cim_datamodel": "Application State",
+          "secondary_cim_models": [
+            "Authentication",
+            "Web"
+          ]
+        },
+        {
+          "source_category": "DLP",
+          "primary_cim_datamodel": "Data Loss Prevention",
+          "secondary_cim_models": [
+            "Email",
+            "Web"
+          ]
+        },
+        {
+          "source_category": "WAF",
+          "primary_cim_datamodel": "Web",
+          "secondary_cim_models": [
+            "Intrusion Detection"
+          ]
+        },
+        {
+          "source_category": "Web",
+          "primary_cim_datamodel": "Web",
+          "secondary_cim_models": [
+            "Network Traffic"
+          ]
+        },
+        {
+          "source_category": "IDS/IPS",
+          "primary_cim_datamodel": "Intrusion Detection",
+          "secondary_cim_models": [
+            "Network Traffic"
+          ]
+        },
+        {
+          "source_category": "Email",
+          "primary_cim_datamodel": "Email",
+          "secondary_cim_models": [
+            "Malware"
+          ]
+        },
+        {
+          "source_category": "NDR",
+          "primary_cim_datamodel": "Network Traffic",
+          "secondary_cim_models": [
+            "Network Sessions",
+            "Intrusion Detection"
+          ]
+        },
+        {
+          "source_category": "CASB",
+          "primary_cim_datamodel": "Web",
+          "secondary_cim_models": [
+            "Authentication",
+            "Data Access"
+          ]
+        },
+        {
+          "source_category": "Vulnerability",
+          "primary_cim_datamodel": "Vulnerabilities",
+          "secondary_cim_models": []
+        },
+        {
+          "source_category": "Database",
+          "primary_cim_datamodel": "Databases",
+          "secondary_cim_models": [
+            "Data Access"
+          ]
+        },
+        {
+          "source_category": "Network",
+          "primary_cim_datamodel": "Network Traffic",
+          "secondary_cim_models": [
+            "Network Sessions"
+          ]
+        },
+        {
+          "source_category": "Printer",
+          "primary_cim_datamodel": "Endpoint",
+          "secondary_cim_models": [
+            "Change"
+          ]
+        }
+      ],
+      "row_count": 15,
+      "column_count": 3,
+      "tags": [
+        "splunk",
+        "nas",
+        "cim",
+        "datamodels",
+        "source-mapping"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "name": "Incident Response Playbook",
+      "description": "Comprehensive incident response procedures and guidelines",
+      "content": "# Incident Response Playbook\n\n## Overview\nThis playbook provides step-by-step procedures for responding to security incidents.\n\n## Incident Classification\n- **P1 - Critical**: Business critical systems compromised\n- **P2 - High**: Significant security breach with potential data loss\n- **P3 - Medium**: Security event requiring investigation\n- **P4 - Low**: Minor security anomaly\n\n## Response Procedures\n\n### Initial Response (0-30 minutes)\n1. Validate the incident\n2. Assess initial scope\n3. Activate response team\n4. Begin containment\n\n### Investigation (30 minutes - 2 hours)\n1. Collect forensic evidence\n2. Identify attack vectors\n3. Determine data exposure\n4. Document findings\n\n### Containment & Eradication (2-4 hours)\n1. Isolate affected systems\n2. Remove malicious artifacts\n3. Patch vulnerabilities\n4. Validate remediation\n\n### Recovery (4+ hours)\n1. Restore systems from backups\n2. Monitor for reinfection\n3. Implement additional controls\n4. Update security posture\n\n### Post-Incident (24-48 hours)\n1. Conduct lessons learned\n2. Update playbooks\n3. Report to stakeholders\n4. Improve defenses",
+      "tags": [
+        "incident-response",
+        "playbook",
+        "procedures"
+      ],
+      "metadata": {
+        "version": "2.0",
+        "last_updated": "2025-01-15",
+        "approved_by": "CISO"
+      }
+    },
+    {
+      "name": "Security Architecture Guidelines",
+      "description": "Enterprise security architecture standards and best practices",
+      "content": "# Security Architecture Guidelines\n\n## Defense in Depth Strategy\n\n### Network Security\n- Segmentation using VLANs and firewalls\n- Zero Trust Network Access (ZTNA)\n- Encrypted communications (TLS 1.3+)\n\n### Identity & Access Management\n- Multi-factor authentication (MFA)\n- Privileged access management (PAM)\n- Regular access reviews\n\n### Data Protection\n- Encryption at rest (AES-256)\n- Encryption in transit (TLS)\n- Data loss prevention (DLP)\n\n### Application Security\n- Secure SDLC practices\n- Regular vulnerability assessments\n- Web Application Firewall (WAF)\n\n### Cloud Security\n- Cloud Security Posture Management (CSPM)\n- Cloud Workload Protection (CWP)\n- Infrastructure as Code (IaC) scanning\n\n## Monitoring & Detection\n- SIEM correlation rules\n- User behavior analytics (UBA)\n- Threat hunting procedures\n- 24/7 SOC operations",
+      "tags": [
+        "architecture",
+        "security-standards",
+        "best-practices"
+      ],
+      "metadata": {
+        "version": "3.1",
+        "framework": "NIST",
+        "compliance": [
+          "ISO27001",
+          "SOC2",
+          "PCI-DSS"
+        ]
+      }
+    }
+  ],
+  "indexes": [
+    {
+      "name": "Security Knowledge Base",
+      "description": "Comprehensive index of security documentation and procedures",
+      "entries": [
+        {
+          "key": "incident-response",
+          "value": "References to all incident response procedures and playbooks",
+          "references": [
+            "Incident Response Playbook",
+            "Security Runbooks",
+            "Crisis Management"
+          ]
+        },
+        {
+          "key": "threat-intelligence",
+          "value": "Threat actor information and intelligence reports",
+          "references": [
+            "Threat Actor Database",
+            "IOC Repository",
+            "Vulnerability Database"
+          ]
+        },
+        {
+          "key": "compliance",
+          "value": "Compliance frameworks and regulatory requirements",
+          "references": [
+            "NIST Framework",
+            "ISO27001",
+            "GDPR",
+            "PCI-DSS"
+          ]
+        }
+      ],
+      "metadata": {
+        "total_entries": 25,
+        "last_indexed": "2025-01-15"
+      },
+      "tags": [
+        "knowledge-base",
+        "index",
+        "reference"
+      ]
+    }
+  ],
+  "categories": [
+    "Foundation"
+  ]
+}

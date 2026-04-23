@@ -1,0 +1,65 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+.venv
+env/
+venv/
+*.egg-info/
+build/
+htmlcov/
+
+# Testing
+tests/
+.pytest_cache
+.hypothesis
+.coverage
+.coverage.*
+coverage.xml
+nosetests.xml
+
+# Documentation
+docs/
+*.md
+!README.md
+!agents/dist/*.md
+
+# IDE / Editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# CI / Tools
+.tox/
+.cache
+.mypy_cache
+pip-log.txt
+pip-delete-this-directory.txt
+*.log
+
+# Deployment configs (not needed inside images)
+deployments/terraform/
+deployments/compose/
+deployments/helm/
+deployments/docker/configs/
+
+# Scripts (not needed in production images)
+scripts/
+
+# Docker data volumes
+docker/postgres/data/
+docker/pgadmin/data/

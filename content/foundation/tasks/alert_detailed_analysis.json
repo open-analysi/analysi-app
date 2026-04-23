@@ -1,0 +1,366 @@
+{
+  "name": "Alert Detailed Analysis",
+  "cy_name": "alert_detailed_analysis",
+  "description": "Performs comprehensive security analysis of alerts using LLM-powered reasoning. Analyzes threat assessment, attack chain reconstruction, impact analysis, and recommended response actions. Leverages existing enrichment data to provide context-aware security insights. Adds detailed analysis to alert enrichments.",
+  "app": "default",
+  "directive": "You are a senior security analyst specializing in threat analysis and incident response. Provide comprehensive, actionable security assessments that help analysts understand the full scope of security events. Focus on attack chain reconstruction, business impact, and prioritized response actions. Use MITRE ATT&CK framework where applicable and correlate findings with threat intelligence data.",
+  "script_file": "alert_detailed_analysis.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Alert Analysis",
+    "Security Assessment",
+    "Threat Intelligence",
+    "Incident Response",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 2500
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "High Severity Malicious IP with VirusTotal Enrichment",
+      "description": "Firewall alert for outbound connection to known malicious IP with existing VirusTotal reputation data",
+      "input": {
+        "source_product": "Next-Generation Firewall",
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity": "high",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 16.84,
+            "threat_level": "Critical",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 16,
+              "suspicious": 2,
+              "harmless": 49,
+              "undetected": 28,
+              "total_engines": 95,
+              "detection_ratio": 0.1684
+            },
+            "recommended_action": "BLOCK_IMMEDIATELY",
+            "llm_analysis": "This IP address shows significant malicious indicators with 16 out of 95 security engines flagging it as malicious. The detection ratio of 16.8% combined with 2 additional suspicious flags suggests active malicious infrastructure. Immediate blocking is recommended."
+          }
+        },
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Outbound Connection to Threat Intelligence Feed IP",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Network Threat"
+          ]
+        },
+        "rule_name": "Outbound Connection to Threat Intelligence Feed IP",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.2.145",
+              "port": 49325
+            },
+            "dst_endpoint": {
+              "ip": "185.220.101.45",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-045.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"FW-2025-10-23-14352\", \"severity\": \"high\", \"action\": \"blocked\", \"src\": \"10.50.2.145\", \"dst\": \"185.220.101.45\", \"port\": 443}"
+      }
+    },
+    {
+      "name": "Critical EDR Alert with Process and File Hash",
+      "description": "EDR behavioral alert for PowerShell execution with suspicious file hash",
+      "input": {
+        "source_product": "Falcon EDR",
+        "triggering_event_time": "2025-10-23T16:22:15Z",
+        "title": "Suspicious PowerShell Execution with Obfuscation",
+        "source_vendor": "CrowdStrike",
+        "severity": "critical",
+        "enrichments": {
+          "virustotal_file_hash_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 92.5,
+            "threat_level": "Critical",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 63,
+              "suspicious": 5,
+              "harmless": 0,
+              "undetected": 0,
+              "total_engines": 68,
+              "detection_ratio": 0.926
+            },
+            "recommended_action": "QUARANTINE_IMMEDIATELY",
+            "llm_analysis": "This file hash is flagged by 63 out of 68 security engines as malicious with a 92.6% detection rate. The unanimous verdict from major antivirus vendors indicates this is a well-known malware sample. Immediate quarantine and forensic analysis required."
+          },
+          "ad_ldap_user_context": {
+            "data_source": "Active Directory",
+            "user_found": true,
+            "username": "jsmith",
+            "display_name": "John Smith",
+            "is_privileged": true,
+            "privileged_groups": [
+              "Domain Admins",
+              "Enterprise Admins"
+            ],
+            "account_enabled": true,
+            "last_logon": "2025-10-23T14:15:00Z",
+            "department": "IT Operations",
+            "risk_assessment": "High Risk - Privileged Account Compromise",
+            "llm_analysis": "This is a privileged account with Domain Admin and Enterprise Admin rights. Compromise of this account could lead to full domain takeover. Immediate password reset and session termination recommended."
+          }
+        },
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Suspicious PowerShell Execution with Obfuscation",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "PowerShell Execution with Command Line Obfuscation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malicious Activity"
+          ]
+        },
+        "rule_name": "PowerShell Execution with Command Line Obfuscation",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 9,
+            "type": "Process Name",
+            "value": "powershell.exe"
+          },
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "abc123def456789012345678901234567890abcd"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "powershell.exe",
+              "file": {
+                "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                "hashes": [
+                  {
+                    "value": "abc123def456789012345678901234567890abcd"
+                  }
+                ]
+              },
+              "cmd_line": "powershell.exe -ExecutionPolicy Bypass -EncodedCommand JABzAD0ATgBlAHcALQBPAGIAagBlAGMAdAAgAEkATwAuAE0A...",
+              "pid": 4532,
+              "parent_process": {
+                "name": "cmd.exe",
+                "pid": 2184
+              }
+            }
+          }
+        ],
+        "device": {
+          "hostname": "admin-laptop-012.corp.local"
+        },
+        "actor": {
+          "user": {
+            "name": "jsmith"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"EDR-2025-10-23-16221\", \"severity\": \"critical\", \"technique\": \"T1059.001\", \"device\": \"admin-laptop-012\", \"user\": \"jsmith\"}"
+      }
+    },
+    {
+      "name": "Medium Severity IDS Alert - Clean IP",
+      "description": "IDS alert with benign IP reputation showing false positive scenario",
+      "input": {
+        "source_product": "IDS/IPS",
+        "triggering_event_time": "2025-10-23T15:12:08Z",
+        "title": "Unusual Port Scan Activity Detected",
+        "source_vendor": "Suricata",
+        "severity": "medium",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 0.0,
+            "threat_level": "Low",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 0,
+              "suspicious": 0,
+              "harmless": 87,
+              "undetected": 8,
+              "total_engines": 95,
+              "detection_ratio": 0.0
+            },
+            "recommended_action": "ALLOW",
+            "llm_analysis": "This IP address (8.8.8.8 - Google Public DNS) is flagged as harmless by all 87 engines that provided verdicts. No malicious or suspicious indicators found. This is a legitimate Google service IP."
+          }
+        },
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Unusual Port Scan Activity Detected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Port Scan Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Reconnaissance"
+          ]
+        },
+        "rule_name": "Port Scan Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:IDS/IPS"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "8.8.8.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.50.100"
+            },
+            "dst_endpoint": {
+              "ip": "8.8.8.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "192.168.50.100"
+        },
+        "raw_data": "{\"alert_id\": \"IDS-2025-10-23-15120\", \"signature\": \"Port Scan\", \"src\": \"192.168.50.100\", \"dst\": \"8.8.8.8\"}"
+      }
+    },
+    {
+      "name": "Critical Phishing Alert with No Prior Enrichments",
+      "description": "Email security alert without any existing enrichments to test baseline analysis",
+      "input": {
+        "source_product": "Email Security",
+        "triggering_event_time": "2025-10-23T09:45:30Z",
+        "title": "Phishing Email with Credential Harvesting Link",
+        "source_vendor": "Proofpoint",
+        "severity": "critical",
+        "enrichments": null,
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Phishing Email with Credential Harvesting Link",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Credential Phishing Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Phishing"
+          ]
+        },
+        "rule_name": "Credential Phishing Detection",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:Email"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 6,
+            "type": "URL String",
+            "value": "http://fake-microsoft-login.malicious-domain.com/auth"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-domain.com"
+          },
+          {
+            "type_id": 4,
+            "type": "User Name",
+            "value": "attacker@external-domain.com"
+          }
+        ],
+        "evidences": [
+          {
+            "url": {
+              "url_string": "http://fake-microsoft-login.malicious-domain.com/auth",
+              "hostname": "malicious-domain.com"
+            },
+            "http_request": {
+              "http_method": "GET",
+              "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "mary.jones@company.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"EMAIL-2025-10-23-09453\", \"recipient\": \"mary.jones@company.com\", \"subject\": \"Urgent: Verify Your Microsoft Account\", \"sender\": \"attacker@external-domain.com\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "alert-analysis",
+    "detailed-assessment",
+    "threat-intelligence",
+    "incident-response",
+    "enrichment",
+    "llm-powered"
+  ]
+}

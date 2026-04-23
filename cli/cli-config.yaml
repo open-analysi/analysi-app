@@ -1,0 +1,622 @@
+# Analysi CLI Configuration
+# This file controls which API endpoints are exposed as CLI commands.
+# To add/remove commands, edit this file and run: npm run generate
+
+cli:
+  name: analysi
+  description: Analysi Security Platform CLI
+  base_url: http://localhost:8001
+  api_version: v1
+
+# Each top-level key becomes a command topic (e.g., `analysi alerts list`)
+# Each operation maps to an SDK/API call with its arguments and flags.
+
+commands:
+  alerts:
+    description: Manage security alerts
+    operations:
+      list:
+        description: List alerts with optional filters
+        method: GET
+        path: /alerts
+        flags:
+          status:
+            type: string
+            description: Filter by analysis status
+          severity:
+            type: string
+            description: Filter by severity
+          source_vendor:
+            type: string
+            description: Filter by source vendor (e.g. Splunk)
+          source_product:
+            type: string
+            description: Filter by source product
+          disposition_category:
+            type: string
+            description: Filter by disposition category
+          sort_by:
+            type: string
+            description: Sort field
+            options: [human_readable_id, title, severity, analysis_status, triggering_event_time, created_at, updated_at]
+          sort_order:
+            type: string
+            description: Sort order (asc, desc)
+            options: [asc, desc]
+          include_short_summary:
+            type: boolean
+            description: Include short summary in results
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get:
+        description: Get alert details
+        method: GET
+        path: /alerts/{alert_id}
+        args:
+          alert_id:
+            required: true
+            description: Alert ID
+
+      search:
+        description: Search alerts by query
+        method: GET
+        path: /alerts/search
+        flags:
+          q:
+            type: string
+            required: true
+            description: Search query
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+
+      analyze:
+        description: Start analysis on an alert
+        method: POST
+        path: /alerts/{alert_id}/analyze
+        args:
+          alert_id:
+            required: true
+            description: Alert ID to analyze
+
+  tasks:
+    description: Manage tasks
+    operations:
+      list:
+        description: List tasks
+        method: GET
+        path: /tasks
+        flags:
+          function:
+            type: string
+            description: Filter by task function
+          scope:
+            type: string
+            description: Filter by task scope
+          q:
+            type: string
+            description: Search query (name, description, tags)
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+
+      get:
+        description: Get task details
+        method: GET
+        path: /tasks/{task_id}
+        args:
+          task_id:
+            required: true
+            description: Task ID
+
+      run:
+        description: Execute a task
+        method: POST
+        path: /tasks/{task_id}/run
+        args:
+          task_id:
+            required: true
+            description: Task ID to execute
+        flags:
+          data:
+            type: string
+            description: JSON input data (or @filepath to read from file)
+
+  workflows:
+    description: Manage workflows
+    operations:
+      list:
+        description: List workflows
+        method: GET
+        path: /workflows
+        flags:
+          name:
+            type: string
+            description: Filter by workflow name
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get:
+        description: Get workflow details
+        method: GET
+        path: /workflows/{workflow_id}
+        args:
+          workflow_id:
+            required: true
+            description: Workflow ID
+
+      update:
+        description: Update workflow metadata
+        method: PATCH
+        path: /workflows/{workflow_id}
+        args:
+          workflow_id:
+            required: true
+            description: Workflow ID
+        flags:
+          data:
+            type: string
+            required: true
+            description: 'JSON update data (or @filepath). Fields: name, description, io_schema, data_samples'
+
+      delete:
+        description: Delete a workflow
+        method: DELETE
+        path: /workflows/{workflow_id}
+        args:
+          workflow_id:
+            required: true
+            description: Workflow ID to delete
+
+      node-templates:
+        description: List available workflow node templates (identity, merge, collect)
+        method: GET
+        path: /workflows/node-templates
+        flags:
+          name:
+            type: string
+            description: Filter by template name
+          enabled_only:
+            type: boolean
+            description: Only return enabled templates
+
+      run:
+        description: Execute a workflow
+        method: POST
+        path: /workflows/{workflow_id}/run
+        args:
+          workflow_id:
+            required: true
+            description: Workflow ID to execute
+        flags:
+          data:
+            type: string
+            description: JSON input data (or @filepath to read from file)
+
+  integrations:
+    description: Manage integrations
+    operations:
+      list:
+        description: List configured integrations
+        method: GET
+        path: /integrations
+        flags:
+          enabled:
+            type: boolean
+            description: Filter by enabled status
+
+      get:
+        description: Get integration details
+        method: GET
+        path: /integrations/{integration_id}
+        args:
+          integration_id:
+            required: true
+            description: Integration ID
+
+      health:
+        description: Check integration health
+        method: GET
+        path: /integrations/{integration_id}/health
+        args:
+          integration_id:
+            required: true
+            description: Integration ID
+
+      tools:
+        description: List tools available for an integration type
+        method: GET
+        path: /integrations/registry/{integration_type}
+        args:
+          integration_type:
+            required: true
+            description: Integration TYPE (e.g. splunk, virustotal), not instance ID
+
+  task-runs:
+    description: View task execution runs
+    operations:
+      list:
+        description: List task runs
+        method: GET
+        path: /task-runs
+        flags:
+          task_id:
+            type: string
+            description: Filter by task ID
+          workflow_run_id:
+            type: string
+            description: Filter by workflow run ID
+          status:
+            type: string
+            description: Filter by run status
+            options: [running, completed, failed]
+          sort:
+            type: string
+            description: Sort field
+            options: [created_at, updated_at, status, duration]
+          order:
+            type: string
+            description: Sort order (asc, desc)
+            options: [asc, desc]
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+
+      get:
+        description: Get task run details
+        method: GET
+        path: /task-runs/{task_run_id}
+        args:
+          task_run_id:
+            required: true
+            description: Task run ID
+
+  workflow-runs:
+    description: View workflow execution runs
+    operations:
+      list:
+        description: List workflow runs
+        method: GET
+        path: /workflow-runs
+        flags:
+          workflow_id:
+            type: string
+            description: Filter by workflow ID
+          status:
+            type: string
+            description: Filter by run status
+            options: [running, completed, failed, cancelled]
+          sort:
+            type: string
+            description: Sort field
+            options: [created_at, started_at, completed_at, status]
+          order:
+            type: string
+            description: Sort order (asc, desc)
+            options: [asc, desc]
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+
+      get:
+        description: Get workflow run details
+        method: GET
+        path: /workflow-runs/{workflow_run_id}
+        args:
+          workflow_run_id:
+            required: true
+            description: Workflow run ID
+
+      status:
+        description: Get workflow run status
+        method: GET
+        path: /workflow-runs/{workflow_run_id}/status
+        args:
+          workflow_run_id:
+            required: true
+            description: Workflow run ID
+
+  skills:
+    description: Manage skills (knowledge modules)
+    operations:
+      list:
+        description: List skills with optional search and filters
+        method: GET
+        path: /skills
+        flags:
+          q:
+            type: string
+            description: Search query (name, description, categories)
+          status:
+            type: string
+            description: Filter by status
+            options: [enabled, disabled]
+          app:
+            type: string
+            description: Filter by content pack name
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get:
+        description: Get skill details
+        method: GET
+        path: /skills/{id}
+        args:
+          id:
+            required: true
+            description: Skill ID
+
+      delete:
+        description: Delete a skill
+        method: DELETE
+        path: /skills/{id}
+        args:
+          id:
+            required: true
+            description: Skill ID to delete
+
+      tree:
+        description: Get the file tree for a skill
+        method: GET
+        path: /skills/{id}/tree
+        args:
+          id:
+            required: true
+            description: Skill ID
+
+  knowledge-units:
+    description: Manage knowledge units (tables, documents, indexes)
+    operations:
+      search:
+        description: Search across all knowledge unit types
+        method: GET
+        path: /knowledge-units
+        flags:
+          q:
+            type: string
+            description: Search query (name, description)
+          ku_type:
+            type: string
+            description: Filter by KU type
+            options: [table, document, index]
+          status:
+            type: string
+            description: Filter by status
+            options: [enabled, disabled]
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      list-tables:
+        description: List table knowledge units
+        method: GET
+        path: /knowledge-units/tables
+        flags:
+          app:
+            type: string
+            description: Filter by content pack name
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get-table:
+        description: Get a table knowledge unit
+        method: GET
+        path: /knowledge-units/tables/{id}
+        args:
+          id:
+            required: true
+            description: Table KU ID
+
+      list-documents:
+        description: List document knowledge units
+        method: GET
+        path: /knowledge-units/documents
+        flags:
+          app:
+            type: string
+            description: Filter by content pack name
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get-document:
+        description: Get a document knowledge unit
+        method: GET
+        path: /knowledge-units/documents/{id}
+        args:
+          id:
+            required: true
+            description: Document KU ID
+
+      list-indexes:
+        description: List index knowledge units
+        method: GET
+        path: /knowledge-units/indexes
+        flags:
+          app:
+            type: string
+            description: Filter by content pack name
+          limit:
+            type: integer
+            default: 25
+            description: Maximum number of results
+          offset:
+            type: integer
+            default: 0
+            description: Offset for pagination
+
+      get-index:
+        description: Get an index knowledge unit
+        method: GET
+        path: /knowledge-units/indexes/{id}
+        args:
+          id:
+            required: true
+            description: Index KU ID
+
+  schedules:
+    description: Manage schedules
+    operations:
+      list:
+        description: List schedules with optional filters
+        method: GET
+        path: /schedules
+        flags:
+          target_type:
+            type: string
+            description: Filter by target type
+            options: [task, workflow]
+          integration_id:
+            type: string
+            description: Filter by integration ID
+          origin_type:
+            type: string
+            description: Filter by origin type
+          enabled:
+            type: boolean
+            description: Filter by enabled status
+          skip:
+            type: integer
+            default: 0
+            description: Offset for pagination
+          limit:
+            type: integer
+            default: 50
+            description: Maximum number of results
+
+      create:
+        description: Create a new schedule
+        method: POST
+        path: /schedules
+        flags:
+          data:
+            type: string
+            required: true
+            description: 'JSON schedule data (or @filepath). Fields: target_type, target_id, schedule_type, schedule_value, timezone, enabled, params'
+
+      update:
+        description: Update a schedule
+        method: PATCH
+        path: /schedules/{schedule_id}
+        args:
+          schedule_id:
+            required: true
+            description: Schedule ID
+        flags:
+          data:
+            type: string
+            required: true
+            description: 'JSON update data (or @filepath). Fields: schedule_value, timezone, enabled, params'
+
+      delete:
+        description: Delete a schedule
+        method: DELETE
+        path: /schedules/{schedule_id}
+        args:
+          schedule_id:
+            required: true
+            description: Schedule ID to delete
+
+  control-event-rules:
+    description: Manage control event rules
+    operations:
+      list:
+        description: List control event rules
+        method: GET
+        path: /control-event-rules
+        flags:
+          channel:
+            type: string
+            description: Filter by channel
+          enabled_only:
+            type: boolean
+            description: Return only enabled rules
+
+      get:
+        description: Get a control event rule
+        method: GET
+        path: /control-event-rules/{rule_id}
+        args:
+          rule_id:
+            required: true
+            description: Rule ID
+
+      create:
+        description: Create a control event rule
+        method: POST
+        path: /control-event-rules
+        flags:
+          data:
+            type: string
+            required: true
+            description: 'JSON rule data (or @filepath). Fields: channel, target_type, target_id, name, enabled, config'
+
+      update:
+        description: Update a control event rule
+        method: PATCH
+        path: /control-event-rules/{rule_id}
+        args:
+          rule_id:
+            required: true
+            description: Rule ID
+        flags:
+          data:
+            type: string
+            required: true
+            description: 'JSON update data (or @filepath). Fields: channel, target_type, target_id, name, enabled, config'
+
+      delete:
+        description: Delete a control event rule
+        method: DELETE
+        path: /control-event-rules/{rule_id}
+        args:
+          rule_id:
+            required: true
+            description: Rule ID to delete
+
+  tools:
+    description: Discover Cy language tools
+    operations:
+      list:
+        description: List all active Cy tool FQNs (native + integration tools)
+        method: GET
+        path: /integrations/tools/all

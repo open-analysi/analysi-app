@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "runbook-to-workflow",
+  "cy_name": "runbook_to_workflow",
+  "description": "Convert standardized runbook.md files into executable Tasks and Workflows. Use when transforming investigation runbooks into automated alert processing workflows. (project, gitignored)"
+}

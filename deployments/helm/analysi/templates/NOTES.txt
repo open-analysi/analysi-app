@@ -1,0 +1,20 @@
+Analysi has been deployed!
+
+Components:
+  - API: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" "api") }}
+  - Alerts Worker: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" "alerts-worker") }}
+  - Integrations Worker: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" "integrations-worker") }}
+
+{{- if .Values.api.ingress.enabled }}
+
+API is accessible at:
+{{- range .Values.api.ingress.hosts }}
+  http{{ if $.Values.api.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+
+To access the API, run:
+  kubectl port-forward svc/{{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" "api") }} 8000:{{ .Values.api.service.port }}
+{{- end }}
+
+Health check: GET /health

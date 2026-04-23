@@ -1,0 +1,14 @@
+### LFI Pattern & Payload Analysis ★
+- **Action:** Extract file inclusion attempts and analyze traversal patterns
+- **Purpose:** Validates: "Automated scanning" vs "Targeted file access"
+- **Pattern:** integration_query
+- **Integration:** siem
+- **Focus:** Directory traversal sequences (../, ../../), sensitive file targets (/etc/passwd, /etc/shadow, config files), traversal depth, URL encoding techniques, path manipulation methods, parameter usage patterns
+- **Fields:** get_src_ip(alert), get_dst_ip(alert)
+- **Output:** lfi_payload_analysis
+- **Decision Points:**
+  - Single file path → Manual testing
+  - Multiple traversal depths → Probing for correct path
+  - Multiple target files → Automated scanner
+  - System files only (/etc/passwd) → Reconnaissance
+  - Application config files → Targeted exploitation

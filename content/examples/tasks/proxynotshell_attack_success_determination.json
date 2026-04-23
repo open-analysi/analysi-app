@@ -1,0 +1,34 @@
+{
+  "name": "ProxyNotShell Attack Success Determination",
+  "cy_name": "proxynotshell_attack_success_determination",
+  "description": "Purpose: Determine if ProxyNotShell exploitation succeeded and assess Exchange server compromise level based on multiple evidence sources.\n\nInputs: enrichments.splunk_supporting_evidence.response_patterns, enrichments.payload_analysis, enrichments.echo_edr_comprehensive_behavioral_analysis.endpoint_command_history, alert.web_info.device_action.\n\nProcess: Use LLM to correlate evidence and determine attack success using decision logic:\n- All device_action == blocked \u2192 Attack blocked at perimeter\n- HTTP status 200 AND endpoint shows PowerShell execution \u2192 Successful exploitation confirmed\n- HTTP status 403/500 \u2192 WAF/IIS blocked the request\n- HTTP status 200 BUT no endpoint_history \u2192 Request allowed but no execution\n- Outbound connections present in EDR \u2192 Callback established, possible RCE\n- PowerShell executed as SYSTEM \u2192 Full Exchange compromise\n- Mailbox access indicators \u2192 Email data exposed\n- Persistence mechanisms (scheduled tasks, services) \u2192 Long-term access established\n\nOutputs: enrichments.attack_verdict containing exploitation_success (boolean), confidence_score (0.0-1.0), attack_phase_reached (blocked_at_perimeter | backend_accessed | powershell_executed | callback_established | persistence_achieved), compromise_level (none | partial | full), evidence_summary.\n\nNAS Field Mapping: Uses alert.web_info.device_action (actual NAS path), not symbolic 'alert.action'.",
+  "app": "default",
+  "directive": "You are a security analyst determining ProxyNotShell exploitation success. Correlate HTTP responses, device actions, EDR data, and PowerShell execution evidence to assess attack success with confidence scoring. Apply structured decision logic to classify attack phases and compromise levels.",
+  "script_file": "proxynotshell_attack_success_determination.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "ProxyNotShell",
+    "Exchange",
+    "Attack Verdict",
+    "Reasoning"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 1000
+  },
+  "authored_by": "system",
+  "tags": [
+    "proxynotshell",
+    "cve-2022-41082",
+    "exchange",
+    "attack-success",
+    "verdict"
+  ]
+}

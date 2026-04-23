@@ -1,0 +1,28 @@
+{
+  "name": "Slack: Notify Disposition Ready",
+  "cy_name": "slack_notify_disposition_ready",
+  "description": "Sends a Slack notification to a configured channel when an alert analysis reaches disposition. Triggered by the disposition:ready control event channel. Input is the control event payload (not an alert).",
+  "app": "default",
+  "script_file": "slack_notify_disposition_ready.cy",
+  "function": "notification",
+  "scope": "output",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "authored_by": "system",
+  "categories": [
+    "Foundation",
+    "Notification",
+    "Slack",
+    "Disposition",
+    "Control Events"
+  ],
+  "tags": [
+    "slack",
+    "notification",
+    "disposition",
+    "control-events",
+    "output"
+  ]
+}

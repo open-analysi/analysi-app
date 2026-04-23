@@ -1,0 +1,232 @@
+{
+  "name": "Alert Context Generation",
+  "cy_name": "alert_context_generation",
+  "description": "Enriches alerts with concise, LLM-ready context summaries for downstream AI analysis and workflow composition. Generates structured context under enrichments['alert_context'] with completeness scoring and metadata.",
+  "app": "default",
+  "directive": "You are a security analyst creating concise alert summaries for AI-powered analysis. Extract the most critical information to create clear, actionable context that supports downstream investigation and decision-making.",
+  "script_file": "alert_context_generation.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Alert Analysis",
+    "Context Generation",
+    "Alert Enrichment",
+    "AI",
+    "Workflow"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 300
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Exchange CVE Exploitation - Critical Severity",
+      "description": "High-severity web attack against Exchange server with PowerShell payload blocked by firewall",
+      "input": {
+        "triggering_event_time": "2025-10-23T07:19:00Z",
+        "severity": "critical",
+        "source_product": "Exchange IIS",
+        "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+        "source_vendor": "Microsoft",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "PowerShell_in_URL_Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack - CVE Exploitation"
+          ]
+        },
+        "rule_name": "PowerShell_in_URL_Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "58.237.200.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "58.237.200.6"
+            },
+            "dst_endpoint": {
+              "ip": "172.16.20.8",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.20.8"
+        },
+        "raw_data": "{\"url\": \"/autodiscover/autodiscover.json?@evil.com/owa/&Email=autodiscover/autodiscover.json%3f@evil.com&Protocol=XYZ&FooProtocol=Powershell\"}"
+      }
+    },
+    {
+      "name": "SQL Injection - Blocked Attack",
+      "description": "High-severity SQL injection attempt blocked by WAF with URL IOC",
+      "input": {
+        "triggering_event_time": "2025-10-23T09:45:00Z",
+        "severity": "high",
+        "source_product": "Web Application Firewall",
+        "title": "SQL Injection Attempt Detected",
+        "source_vendor": "ModSecurity",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "SQL Injection Attempt Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "sql_injection_detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "SQL Injection"
+          ]
+        },
+        "rule_name": "sql_injection_detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:WAF"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 6,
+            "type": "URL String",
+            "value": "https://app.example.com/login?user=admin"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "185.220.101.45"
+            },
+            "dst_endpoint": {
+              "ip": "172.16.17.18",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.17.18"
+        },
+        "raw_data": "{\"payload\": \"1' OR '1'='1'; DROP TABLE users; --\"}"
+      }
+    },
+    {
+      "name": "Data Exfiltration - Detection Only",
+      "description": "Medium-severity cloud data transfer detected but not blocked, user-based risk entity",
+      "input": {
+        "triggering_event_time": "2025-10-23T02:30:00Z",
+        "severity": "medium",
+        "source_product": "CloudTrail",
+        "title": "Large Data Transfer to External S3 Bucket",
+        "source_vendor": "AWS",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Large Data Transfer to External S3 Bucket",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "excessive_data_transfer",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Data Exfiltration"
+          ]
+        },
+        "rule_name": "excessive_data_transfer",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Cloud"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "suspicious-bucket.s3.amazonaws.com"
+          }
+        ],
+        "evidences": [
+          {
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "alice@company.com"
+          }
+        },
+        "raw_data": "{\"bytes_sent\": 2576980377, \"destination\": \"s3://suspicious-bucket/\"}"
+      }
+    },
+    {
+      "name": "Minimal Alert - No IOC or Entity",
+      "description": "Edge case: Alert with minimal fields (no primary IOC or risk entity)",
+      "input": {
+        "triggering_event_time": "2025-10-23T12:00:00Z",
+        "severity": "low",
+        "source_product": "Security Monitor",
+        "title": "System Anomaly Detected",
+        "source_vendor": "Custom",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "System Anomaly Detected",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "System Anomaly Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [],
+        "raw_data": "{\"anomaly_type\": \"unknown\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "alert-context",
+    "nas-format",
+    "enrichment",
+    "llm-preparation",
+    "workflow-composition"
+  ]
+}

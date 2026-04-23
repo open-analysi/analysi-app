@@ -1,0 +1,286 @@
+{
+  "name": "Splunk (Playground): Triggering Event Retrieval with SPL Generation and LLM Summarization",
+  "cy_name": "splunk_playground_triggering_event_retrieval",
+  "description": "NAS Alert enrichment task (playground/experimental version) that retrieves triggering events from Splunk using auto-generated SPL queries and adds experimental LLM-analyzed event context to alert['enrichments']['splunk_triggering_events_playground']. Designed for testing SPL generation and event correlation improvements.",
+  "app": "Splunk",
+  "directive": "You are a security analyst with Splunk expertise conducting experimental analysis. Analyze triggering events retrieved from Splunk and provide detailed security assessments that help investigators understand alert context. Include experimental observations about event correlation quality and SPL query effectiveness.",
+  "script_file": "splunk_playground_triggering_event_retrieval.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Playground",
+    "Splunk",
+    "SPL",
+    "Event Retrieval",
+    "AI",
+    "Investigation",
+    "Enrichment",
+    "NAS Alert",
+    "Experimental"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 512
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "High Severity PowerShell Exploit - Events Found",
+      "description": "Palo Alto firewall alert for suspicious PowerShell activity - experimental SPL should retrieve related events",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Palo Alto Networks",
+        "source_product": "Next-Generation Firewall",
+        "title": "Suspicious PowerShell Activity Detected",
+        "triggering_event_time": "2025-09-24T14:30:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious PowerShell Activity Detected",
+          "analytic": {
+            "name": "PowerShell Exploit Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "vulnerability_exploit"
+          ]
+        },
+        "rule_name": "PowerShell Exploit Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "58.237.200.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "58.237.200.6"
+            },
+            "dst_endpoint": {
+              "ip": "172.16.20.8",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          },
+          {
+            "process": {
+              "name": "powershell.exe",
+              "cmd_line": "powershell.exe -encodedCommand ZQBjAGgAbwAgACIASABlAGwAbABvACIA"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.20.8"
+        },
+        "raw_data": "{\"threat_name\": \"Autodiscover-Exploit-Block\", \"action\": \"block\", \"threat_id\": \"52000\"}"
+      }
+    },
+    {
+      "name": "Legacy Alert with No Events",
+      "description": "Old alert from legacy system - likely no events in Splunk (testing empty result handling)",
+      "input": {
+        "severity": "low",
+        "source_vendor": "Legacy Scanner",
+        "source_product": "Vulnerability Scanner v1.0",
+        "title": "Legacy Security Alert from Archived System",
+        "triggering_event_time": "2020-01-01T10:00:00Z",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Legacy Security Alert from Archived System",
+          "types": [
+            "scan_result"
+          ],
+          "analytic": {
+            "name": "Legacy Security Alert from Archived System",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Vulnerability"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "192.168.1.100"
+        },
+        "raw_data": "{\"old_system\": true, \"scan_id\": \"LEGACY-2020-001\"}"
+      }
+    },
+    {
+      "name": "Critical Malware Detection - EDR Alert",
+      "description": "Critical severity malware detection with detailed event trail (testing complex event correlation)",
+      "input": {
+        "severity": "critical",
+        "source_vendor": "CrowdStrike",
+        "source_product": "Falcon EDR",
+        "title": "Critical: Emotet Malware Execution Detected",
+        "triggering_event_time": "2025-09-24T15:45:30Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Critical: Emotet Malware Execution Detected",
+          "analytic": {
+            "name": "Emotet Malware Family Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "malware_detected"
+          ]
+        },
+        "rule_name": "Emotet Malware Family Detection",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.102.8"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-c2.example.com"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.5.142"
+            },
+            "dst_endpoint": {
+              "ip": "185.220.102.8",
+              "port": 8080
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          },
+          {
+            "process": {
+              "name": "malware.exe",
+              "file": {
+                "path": "C:\\Users\\john.doe\\Downloads\\malware.exe"
+              },
+              "cmd_line": "malware.exe --stealth --c2 185.220.102.8:8080",
+              "pid": 4892,
+              "parent_process": {
+                "name": "explorer.exe"
+              }
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "john.doe@corp.com"
+          }
+        },
+        "raw_data": "{\"malware_family\": \"Emotet\", \"variant\": \"v3.2\", \"action\": \"quarantine\", \"severity\": \"critical\"}"
+      }
+    },
+    {
+      "name": "SQL Injection Attempt - Web Application Alert",
+      "description": "Medium severity SQL injection attempt detected by WAF (testing web-specific event correlation)",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Cloudflare",
+        "source_product": "Web Application Firewall",
+        "title": "SQL Injection Attempt Detected",
+        "triggering_event_time": "2025-09-24T16:20:15Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "SQL Injection Attempt Detected",
+          "analytic": {
+            "name": "SQL Injection Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "web_attack"
+          ]
+        },
+        "rule_name": "SQL Injection Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:WAF"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "203.0.113.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.45"
+            },
+            "dst_endpoint": {
+              "ip": "10.0.0.50",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          },
+          {
+            "url": {
+              "url_string": "https://app.example.com/login?user=admin' OR '1'='1"
+            },
+            "http_request": {
+              "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          }
+        ],
+        "raw_data": "{\"attack_type\": \"SQLi\", \"payload\": \"' OR '1'='1\", \"blocked\": true}"
+      }
+    }
+  ],
+  "tags": [
+    "splunk",
+    "spl",
+    "playground",
+    "event-retrieval",
+    "llm",
+    "investigation",
+    "triggering-events",
+    "enrichment",
+    "nas-alert",
+    "workflow",
+    "experimental"
+  ]
+}

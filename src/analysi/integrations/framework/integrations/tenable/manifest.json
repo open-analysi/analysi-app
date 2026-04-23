@@ -1,0 +1,188 @@
+{
+  "id": "tenable",
+  "app": "tenable",
+  "name": "Tenable.io",
+  "version": "1.0.0",
+  "description": "Tenable.io integration for vulnerability scanning and management",
+  "archetypes": [
+    "VulnerabilityManagement"
+  ],
+  "priority": 65,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_key": {
+        "type": "string",
+        "description": "Tenable.io Access Key",
+        "secret": true,
+        "format": "password"
+      },
+      "secret_key": {
+        "type": "string",
+        "description": "Tenable.io Secret Key",
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "access_key",
+      "secret_key"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 60,
+        "minimum": 1,
+        "maximum": 300
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Tenable.io API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "Retrieve list of configured vulnerability scans",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "list_scans",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "folder_id": {
+            "type": "integer",
+            "description": "Only return scans within the folder with this ID"
+          },
+          "last_modified": {
+            "type": "string",
+            "description": "Only return scans modified since this timestamp (Unix timestamp or ISO datetime)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_scanners",
+      "name": "List Scanners",
+      "description": "Retrieve list of scanners available to the user",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "list_scanners",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve list of configured scan policies",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "list_policies",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "scan_host",
+      "name": "Scan Host",
+      "description": "Scan a host or endpoint using specified scan policy",
+      "categories": [
+        "investigation",
+        "vulnerability_management",
+        "containment"
+      ],
+      "cy_name": "scan_host",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "target_to_scan": {
+            "type": "string",
+            "description": "Target to scan (IP address or hostname)"
+          },
+          "policy_id": {
+            "type": [
+              "string",
+              "integer"
+            ],
+            "description": "ID of the scan policy to use"
+          },
+          "scan_name": {
+            "type": "string",
+            "description": "Name for the scan (optional)"
+          },
+          "scanner_id": {
+            "type": "string",
+            "description": "Scanner or scanner group UUID or name (optional)"
+          },
+          "scan_timeout": {
+            "type": "integer",
+            "description": "Time in seconds to wait for scan to complete (default: 3600)",
+            "default": 3600,
+            "minimum": 0,
+            "maximum": 14400
+          }
+        },
+        "required": [
+          "target_to_scan",
+          "policy_id"
+        ]
+      }
+    },
+    {
+      "id": "delete_scan",
+      "name": "Delete Scan",
+      "description": "Delete a vulnerability scan",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "delete_scan",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_id": {
+            "type": "integer",
+            "description": "The unique identifier for the scan to delete"
+          }
+        },
+        "required": [
+          "scan_id"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "VulnerabilityManagement": {
+      "scan_assets": "scan_host",
+      "get_vulnerabilities": "list_scans"
+    }
+  }
+}

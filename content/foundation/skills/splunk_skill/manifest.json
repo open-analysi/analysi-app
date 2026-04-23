@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "splunk-skill",
+  "cy_name": "splunk_skill",
+  "description": "Use this skill when working with Splunk queries, Search Processing Language (SPL), building Splunk searches, creating dashboards, or analyzing log data. This skill provides comprehensive reference material for SPL commands, eval functions, stats functions, regex patterns, and query optimization techniques."
+}

@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "ad-ldap-integration",
+  "cy_name": "ad_ldap_integration",
+  "description": "Active Directory LDAP user attribute lookups and identity context queries during SOC alert triage. Use when investigating user accounts, group memberships, authentication anomalies, lockouts, privileged access, or correlating alerts with AD data via Analysi."
+}

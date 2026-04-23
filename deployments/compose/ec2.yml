@@ -1,0 +1,32 @@
+# EC2 deployment overlay
+# Overrides ui to build the production image (nginx) without dev volume mounts.
+#
+# Usage:
+#   docker compose -f core.yml -f deps.yml -f ec2.yml up -d
+
+services:
+  ui:
+    build:
+      context: ../../ui
+      dockerfile: ../deployments/docker/ui/Dockerfile
+      target: production
+    ports:
+      - "${UI_EXTERNAL_PORT:-5173}:5173"
+    environment:
+      - VITE_BACKEND_API_URL=http://api:8000
+      - VITE_BACKEND_API_TENANT=default
+      - VITE_BACKEND_API_TIMEOUT=5000
+      - VITE_ENABLE_MOCK_API=false
+      - VITE_ENABLE_DEBUG_TOOLS=false
+      - VITE_ALERTS_VERSION=v2
+      - VITE_KNOWLEDGE_GRAPH_VERSION=v1
+      - VITE_INTEGRATIONS_VERSION=v2
+    volumes: []
+    depends_on:
+      api:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+    restart: unless-stopped

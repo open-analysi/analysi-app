@@ -1,0 +1,206 @@
+{
+  "id": "ciscosecureendpoint",
+  "app": "ciscosecureendpoint",
+  "name": "Cisco Secure Endpoint",
+  "version": "1.0.0",
+  "description": "Cisco Secure Endpoint (formerly AMP for Endpoints) integration for endpoint detection and response, host isolation, event retrieval, and file analysis",
+  "archetypes": ["EDR"],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ciscosecureendpoint-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ciscosecureendpoint-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco Secure Endpoint instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "isolate_host",
+      "release_host": "unisolate_host",
+      "get_host_details": "get_computer",
+      "collect_forensics": "get_file_analysis"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_client_id": {
+        "type": "string",
+        "display_name": "API Client ID",
+        "description": "API Client ID for Cisco Secure Endpoint authentication",
+        "format": "password",
+        "required": true
+      },
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "API Key for Cisco Secure Endpoint authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Cisco Secure Endpoint API base URL",
+        "default": "https://api.amp.cisco.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 10,
+        "maximum": 120
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate connectivity by calling the API version endpoint",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "isolate_host",
+      "name": "Isolate Host",
+      "description": "Start host isolation (quarantine) on a device by connector GUID",
+      "categories": ["containment", "incident_response"],
+      "cy_name": "isolate_host",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "connector_guid": {
+            "type": "string",
+            "description": "Connector GUID of the endpoint to isolate"
+          }
+        },
+        "required": ["connector_guid"]
+      }
+    },
+    {
+      "id": "unisolate_host",
+      "name": "Unisolate Host",
+      "description": "Stop host isolation (unquarantine) on a device by connector GUID",
+      "categories": ["containment", "incident_response"],
+      "cy_name": "unisolate_host",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "connector_guid": {
+            "type": "string",
+            "description": "Connector GUID of the endpoint to unisolate"
+          }
+        },
+        "required": ["connector_guid"]
+      }
+    },
+    {
+      "id": "get_computer",
+      "name": "Get Computer",
+      "description": "Get information about a device by its connector GUID",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_computer",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "connector_guid": {
+            "type": "string",
+            "description": "Connector GUID of the endpoint"
+          }
+        },
+        "required": ["connector_guid"]
+      }
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "Retrieve device events with optional filtering",
+      "categories": ["investigation", "threat_hunting"],
+      "cy_name": "list_events",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "connector_guid": {
+            "type": "string",
+            "description": "Filter by connector GUID"
+          },
+          "detection_sha256": {
+            "type": "string",
+            "description": "Filter by detection SHA256 hash"
+          },
+          "application_sha256": {
+            "type": "string",
+            "description": "Filter by application SHA256 hash"
+          },
+          "group_guid": {
+            "type": "string",
+            "description": "Filter by group GUID"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Filter by event start date (ISO 8601)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Results offset for pagination"
+          },
+          "event_type": {
+            "type": "string",
+            "description": "Filter by event type"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_file_analysis",
+      "name": "Get File Analysis",
+      "description": "Search for endpoints that have observed a file hash and optionally check execution status",
+      "categories": ["investigation", "threat_hunting"],
+      "cy_name": "get_file_analysis",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "SHA256 hash of the file to search for"
+          },
+          "check_execution": {
+            "type": "boolean",
+            "description": "Whether to check if the file was executed on each endpoint",
+            "default": false
+          }
+        },
+        "required": ["hash"]
+      }
+    }
+  ]
+}

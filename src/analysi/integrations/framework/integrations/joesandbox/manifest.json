@@ -1,0 +1,212 @@
+{
+  "id": "joesandbox",
+  "app": "joesandbox",
+  "name": "Joe Sandbox",
+  "version": "1.0.0",
+  "description": "Joe Sandbox advanced malware analysis with behavioral analysis, URL detonation, reputation lookups, and cookbook-based automation",
+  "archetypes": [
+    "Sandbox"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "joesandbox-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "joesandbox-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Joe Sandbox integration instance"
+  },
+
+  "archetype_mappings": {
+    "Sandbox": {
+      "submit_url": "detonate_url",
+      "get_analysis_status": "check_status",
+      "get_analysis_report": "get_report"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Joe Sandbox API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Base URL of Joe Sandbox API",
+        "default": "https://jbxcloud.joesecurity.org"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "analysis_time": {
+        "type": "integer",
+        "display_name": "Analysis Time",
+        "description": "Maximum time for detonation analysis in seconds (30-300)",
+        "default": 120
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API key and connectivity to Joe Sandbox",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate URL",
+      "description": "Submit a URL for Joe Sandbox analysis",
+      "categories": ["sandbox", "analysis"],
+      "cy_name": "detonate_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to submit for analysis"
+          },
+          "internet_access": {
+            "type": "boolean",
+            "description": "Allow full internet access during analysis",
+            "default": false
+          },
+          "report_cache": {
+            "type": "boolean",
+            "description": "Enable report cache to use existing analysis results",
+            "default": false
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "check_status",
+      "name": "Check Status",
+      "description": "Check analysis status of a submitted sample by web ID",
+      "categories": ["sandbox", "investigation"],
+      "cy_name": "check_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "webid": {
+            "type": "string",
+            "description": "Web ID of the Joe Sandbox analysis process"
+          }
+        },
+        "required": ["webid"]
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve JSON analysis report for a completed analysis by web ID",
+      "categories": ["sandbox", "investigation"],
+      "cy_name": "get_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "webid": {
+            "type": "string",
+            "description": "Web ID of the Joe Sandbox analysis process"
+          }
+        },
+        "required": ["webid"]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Query Joe Sandbox for URL reputation based on existing analyses",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "url_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to check reputation for"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Query Joe Sandbox for file reputation by hash (MD5, SHA-1, or SHA-256)",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "file_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5, SHA-1, or SHA-256) to check reputation for"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "list_cookbooks",
+      "name": "List Cookbooks",
+      "description": "List all available analysis cookbooks",
+      "categories": ["sandbox", "investigation"],
+      "cy_name": "list_cookbooks",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_cookbook",
+      "name": "Get Cookbook",
+      "description": "Get details and code of a specific cookbook by ID",
+      "categories": ["sandbox", "investigation"],
+      "cy_name": "get_cookbook",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "cookbook_id": {
+            "type": "string",
+            "description": "ID of the cookbook to retrieve"
+          }
+        },
+        "required": ["cookbook_id"]
+      }
+    }
+  ]
+}

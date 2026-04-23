@@ -1,0 +1,10 @@
+apiVersion: v2
+name: analysi
+description: Analysi — Security Automation Platform
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+# No external sub-chart dependencies.
+# PostgreSQL, Valkey, Vault, MinIO, and Keycloak are deployed via our own
+# templates using the same official images as the compose setup.

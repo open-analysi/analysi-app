@@ -1,0 +1,140 @@
+{
+  "class_uid": 2004,
+  "class_name": "Detection Finding",
+  "severity_id": 3,
+  "severity": "high",
+  "status_id": 1,
+  "status": "new",
+  "activity_id": 1,
+  "activity_name": "Create",
+  "finding_info": {
+    "title": "Possible SQL Injection Payload Detected",
+    "uid": "SQL-INJ-001",
+    "types": ["Web Attack"],
+    "src_url": "firewall://http-parsing-firewall/sql-injection-rule"
+  },
+  "metadata": {
+    "version": "1.3.0",
+    "product": {
+      "name": "HTTP Parsing Firewall",
+      "vendor_name": "Firewall"
+    },
+    "log_name": "Firewall",
+    "logged_time": "2022-02-25T11:34:00Z"
+  },
+  "time": "2022-02-25T11:34:00Z",
+  "message": "Possible SQL Injection Payload Detected",
+  "actor": {},
+  "device": {
+    "name": "WebServer1001",
+    "hostname": "WebServer1001",
+    "ip": "172.16.17.18",
+    "type_id": 6,
+    "type": "Server"
+  },
+  "action_id": 1,
+  "action": "Allowed",
+  "observables": [
+    {
+      "name": "src_ip",
+      "type_id": 2,
+      "type": "IP Address",
+      "value": "167.99.169.17",
+      "reputation": {
+        "score_id": 4,
+        "score": "Suspicious"
+      }
+    },
+    {
+      "name": "request_url",
+      "type_id": 6,
+      "type": "URL String",
+      "value": "https://172.16.17.18/search/?q=%22%20OR%201%20%3D%201%20--%20-"
+    },
+    {
+      "name": "user_agent",
+      "type_id": 18,
+      "type": "User Agent",
+      "value": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"
+    }
+  ],
+  "evidences": [
+    {
+      "src_endpoint": {
+        "ip": "167.99.169.17",
+        "port": 48575,
+        "location": {
+          "desc": "Netherlands (DigitalOcean)"
+        }
+      },
+      "dst_endpoint": {
+        "ip": "172.16.17.18",
+        "port": 443
+      },
+      "connection_info": {
+        "protocol_name": "HTTPS"
+      },
+      "url": {
+        "url_string": "https://172.16.17.18/search/?q=%22%20OR%201%20%3D%201%20--%20-",
+        "query_string": "q=%22%20OR%201%20%3D%201%20--%20-"
+      },
+      "http_request": {
+        "http_method": "GET",
+        "user_agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"
+      },
+      "http_response": {
+        "code": 500,
+        "length": 948
+      }
+    }
+  ],
+  "other_activities": {
+    "alert_trigger_reason": "Requested URL Contains OR 1 = 1",
+    "log_source": "HTTP Firewall Logs",
+    "previous_attempts": [
+      {
+        "timestamp": "2022-02-25T11:33:00Z",
+        "url": "https://172.16.17.18/search/?q=%27%20OR%20%27x%27%3D%27x",
+        "decoded": "https://172.16.17.18/search/?q=' OR 'x'='x",
+        "response_status": 500,
+        "response_size": 948,
+        "action": "Allowed"
+      },
+      {
+        "timestamp": "2022-02-25T11:33:00Z",
+        "url": "https://172.16.17.18/search/?q=1%27%20ORDER%20BY%203--%2B",
+        "decoded": "https://172.16.17.18/search/?q=1' ORDER BY 3--+",
+        "response_status": 500,
+        "response_size": 948,
+        "action": "Allowed"
+      },
+      {
+        "timestamp": "2022-02-25T11:32:00Z",
+        "url": "https://172.16.17.18/search/?q=%27",
+        "decoded": "https://172.16.17.18/search/?q='",
+        "response_status": 500,
+        "response_size": 948,
+        "action": "Allowed"
+      },
+      {
+        "timestamp": "2022-02-25T11:32:00Z",
+        "url": "https://172.16.17.18/search/?q=%27%20OR%20%271",
+        "decoded": "https://172.16.17.18/search/?q=' OR '1",
+        "response_status": 500,
+        "response_size": 948,
+        "action": "Allowed"
+      },
+      {
+        "timestamp": "2022-02-25T11:30:00Z",
+        "url": "https://172.16.17.18/",
+        "decoded": "https://172.16.17.18/",
+        "response_status": 200,
+        "response_size": 3547,
+        "action": "Allowed"
+      }
+    ]
+  },
+  "enrichments": {},
+  "raw_data": "[See original_source.md for complete raw alert text]",
+  "raw_data_hash": null
+}

@@ -1,0 +1,255 @@
+{
+  "name": "Echo EDR: Browser History Analysis",
+  "cy_name": "echo_edr_browser_history_reasoning",
+  "description": "Enriches alerts with Echo EDR browser history analysis. Extracts IP address from alert (device, network_info, or IOC), retrieves browser activity data, performs AI-powered security analysis to identify suspicious web activity, IOCs, and compromise indicators. Adds structured enrichment data with risk scoring and recommended actions.",
+  "app": "Echo EDR",
+  "directive": "You are a cybersecurity analyst specializing in digital forensics and endpoint behavior analysis. Analyze browser history data from Echo EDR to identify suspicious web activity, potential compromise indicators, and security risks. Focus on detecting malicious domains, data exfiltration attempts, reconnaissance activity, and other threat indicators. Provide clear, actionable security assessments.",
+  "script_file": "echo_edr_browser_history_reasoning.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Alert Enrichment",
+    "Echo EDR",
+    "Browser Forensics",
+    "Behavioral Analysis",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 500
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "PowerShell Attack - Device IP Extraction",
+      "description": "High severity alert with device as primary risk entity. IP extracted from primary_risk_entity_value for browser history lookup.",
+      "input": {
+        "severity": "high",
+        "source_vendor": "CrowdStrike",
+        "source_product": "Falcon EDR",
+        "enrichments": {},
+        "title": "Suspicious PowerShell Execution Detected",
+        "triggering_event_time": "2025-10-23T14:22:15Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious PowerShell Execution Detected",
+          "analytic": {
+            "name": "PowerShell Obfuscation Detected",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malware Activity"
+          ]
+        },
+        "rule_name": "PowerShell Obfuscation Detected",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Endpoint Security"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 9,
+            "type": "Process Name",
+            "value": "powershell.exe -encodedcommand"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "powershell.exe",
+              "file": {
+                "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+              },
+              "cmd_line": "powershell.exe -encodedcommand SGVsbG8gV29ybGQ=",
+              "parent_process": {
+                "name": "cmd.exe"
+              }
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.20.8"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-2025-10-23-14221\", \"severity\": \"high\", \"device_ip\": \"172.16.20.8\", \"process\": \"powershell.exe\"}"
+      }
+    },
+    {
+      "name": "Network Alert - IP from network_info",
+      "description": "Medium severity network alert. IP extracted from network_info.src_ip field for browser history enrichment.",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Splunk",
+        "source_product": "Enterprise Security",
+        "enrichments": {},
+        "title": "Multiple Failed Login Attempts from Internal Host",
+        "triggering_event_time": "2025-10-23T09:45:30Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Multiple Failed Login Attempts from Internal Host",
+          "analytic": {
+            "name": "Brute Force Attack Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Authentication Anomaly"
+          ]
+        },
+        "rule_name": "Brute Force Attack Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:SIEM"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "172.16.20.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.20.8"
+            },
+            "dst_endpoint": {
+              "ip": "10.50.5.100",
+              "port": 445
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jdoe"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"SIEM-2025-10-23-09453\", \"src_ip\": \"172.16.20.8\", \"failed_attempts\": 15}"
+      }
+    },
+    {
+      "name": "Non-IP Alert - No Enrichment",
+      "description": "Alert without device IP information. Returned unchanged as browser history cannot be retrieved.",
+      "input": {
+        "severity": "critical",
+        "source_vendor": "VirusTotal",
+        "source_product": "Intelligence",
+        "enrichments": {},
+        "title": "Malicious File Hash Detected",
+        "triggering_event_time": "2025-10-23T16:30:45Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Malicious File Hash Detected",
+          "analytic": {
+            "name": "Malicious File Hash Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Threat Intelligence"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"VT-2025-10-23-16304\", \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}"
+      }
+    },
+    {
+      "name": "SQL Injection Alert - Device with Hostname",
+      "description": "High severity alert with device hostname. Falls back to network_info.src_ip for browser history lookup.",
+      "input": {
+        "severity": "high",
+        "source_vendor": "F5 Networks",
+        "source_product": "BIG-IP ASM",
+        "enrichments": {},
+        "title": "SQL Injection Attempt Detected",
+        "triggering_event_time": "2025-10-23T11:15:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "SQL Injection Attempt Detected",
+          "analytic": {
+            "name": "SQL Injection Attack",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack"
+          ]
+        },
+        "rule_name": "SQL Injection Attack",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Web Application Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 99,
+            "type": "Other",
+            "value": "'; DROP TABLE users--"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.17.18"
+            },
+            "dst_endpoint": {
+              "ip": "10.20.30.100",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          },
+          {
+            "url": {
+              "url_string": "/admin/login.php?id=1' OR '1'='1"
+            },
+            "http_request": {
+              "http_method": "POST",
+              "user_agent": "sqlmap/1.5.10"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "webserver-prod-01.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"WAF-2025-10-23-11150\", \"attack_type\": \"SQL Injection\", \"blocked\": true}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "echo-edr",
+    "browser-forensics",
+    "web-activity",
+    "threat-detection",
+    "behavioral-analysis",
+    "enrichment"
+  ]
+}

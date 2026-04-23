@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "abuseipdb-integration",
+  "cy_name": "abuseipdb_integration",
+  "description": "AbuseIPDB IP reputation lookups for SOC alert triage via Analysi. Use when checking IP abuse confidence scores, investigating brute force or scanning activity, or enriching alerts with crowd-sourced threat intelligence."
+}

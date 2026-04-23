@@ -1,0 +1,88 @@
+{
+  "id": "maxmind",
+  "app": "maxmind",
+  "name": "MaxMind GeoIP2",
+  "version": "1.0.0",
+  "description": "IP geolocation using MaxMind GeoIP2 Precision Web Services API",
+  "archetypes": [
+    "Geolocation"
+  ],
+  "priority": 50,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "license_key": {
+        "type": "string",
+        "description": "MaxMind license key",
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "license_key"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "account_id": {
+        "type": "string",
+        "description": "MaxMind account ID",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "test_ip": {
+        "type": "string",
+        "description": "IP address for health check testing",
+        "default": "8.8.8.8"
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test MaxMind API connectivity",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "geolocate_ip",
+      "name": "Geolocate IP",
+      "description": "Get IP address geolocation information",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "geolocate_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to geolocate"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "Geolocation": {
+      "lookup_ip": "geolocate_ip"
+    }
+  }
+}

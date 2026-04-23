@@ -1,0 +1,181 @@
+{
+  "id": "sumologic",
+  "app": "sumologic",
+  "name": "Sumo Logic",
+  "version": "1.0.0",
+  "description": "Sumo Logic cloud SIEM platform integration for log queries, search jobs, and event analysis",
+  "archetypes": [
+    "SIEM"
+  ],
+  "priority": 75,
+  "integration_id_config": {
+    "default": "sumologic-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "sumologic-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "run_query",
+      "get_alerts": "run_query"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_id": {
+        "type": "string",
+        "display_name": "Access ID",
+        "description": "Sumo Logic Access ID",
+        "required": true
+      },
+      "access_key": {
+        "type": "string",
+        "display_name": "Access Key",
+        "description": "Sumo Logic Access Key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "environment": {
+        "type": "string",
+        "display_name": "Environment Pod",
+        "description": "Sumo Logic environment/region",
+        "enum": [
+          "us1",
+          "us2",
+          "eu",
+          "au"
+        ],
+        "default": "us1",
+        "required": true
+      },
+      "timezone": {
+        "type": "string",
+        "display_name": "Timezone",
+        "description": "Timezone for search queries",
+        "default": "UTC"
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Sumo Logic API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on Sumo Logic platform",
+      "categories": [
+        "query",
+        "siem",
+        "investigation"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Query string to execute"
+          },
+          "from_time": {
+            "type": "integer",
+            "description": "UNIX timestamp for start time (optional, defaults to 5 days ago)"
+          },
+          "to_time": {
+            "type": "integer",
+            "description": "UNIX timestamp for end time (optional, defaults to now)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 100, max: 10000)",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "type": {
+            "type": "string",
+            "description": "Response type: 'messages' or 'records'",
+            "enum": [
+              "messages",
+              "records"
+            ],
+            "default": "messages"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "id": "get_results",
+      "name": "Get Results",
+      "description": "Retrieve results of a completed search job",
+      "categories": [
+        "query",
+        "siem",
+        "investigation"
+      ],
+      "cy_name": "get_results",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search_id": {
+            "type": "string",
+            "description": "Search job ID"
+          }
+        },
+        "required": [
+          "search_id"
+        ]
+      }
+    },
+    {
+      "id": "delete_job",
+      "name": "Delete Job",
+      "description": "Delete a search job",
+      "categories": [
+        "siem",
+        "cleanup"
+      ],
+      "cy_name": "delete_job",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search_id": {
+            "type": "string",
+            "description": "Search job ID to delete"
+          }
+        },
+        "required": [
+          "search_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

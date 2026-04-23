@@ -1,0 +1,34 @@
+{
+  "name": "CVE-2022-41082 Context Analysis",
+  "cy_name": "cve_2022_41082_context_analysis",
+  "description": "Research CVE-2022-41082 vulnerability details and understand ProxyNotShell attack patterns to provide technical context for the investigation. Queries NIST NVD for CVE data and uses LLM to correlate with alert URL patterns. Identifies whether URL matches known ProxyNotShell exploitation patterns (Autodiscover endpoint + PowerShell parameters).",
+  "app": "default",
+  "directive": "You are a vulnerability analyst providing technical context for CVE-2022-41082 (ProxyNotShell) investigations. Correlate CVE details with alert URL patterns to identify exploitation attempts and explain attack patterns and decision points.",
+  "script_file": "cve_2022_41082_context_analysis.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "ProxyNotShell",
+    "CVE",
+    "Vulnerability Context",
+    "NIST NVD"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 800
+  },
+  "authored_by": "system",
+  "tags": [
+    "proxynotshell",
+    "cve-2022-41082",
+    "cve-2022-41040",
+    "nvd",
+    "vulnerability"
+  ]
+}

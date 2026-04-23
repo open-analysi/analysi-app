@@ -1,0 +1,164 @@
+{
+  "_raw": "1673659208, search_name=\"ESCU - Detect New Local Admin account - Rule\", count=\"1\", dest=\"win-dc-7216619.attackrange.local\", firstTime=\"2023-01-14T00:18:09\", info_max_time=\"1673657400.000000000\", info_min_time=\"1673653800.000000000\", info_search_time=\"1673659207.559484000\", lastTime=\"2023-01-14T00:18:09\", user=\"ATTACKRANGE\\\\Administrator\nNONE_MAPPED\"",
+  "_time": "2023-01-14T01:20:08.000+0000",
+  "analytic_story": [
+    "DHS Report TA18-074A",
+    "HAFNIUM Group",
+    "CISA AA22-257A"
+  ],
+  "annotations": "{\"analytic_story\": [\"DHS Report TA18-074A\", \"HAFNIUM Group\", \"CISA AA22-257A\"], \"cis20\": [\"CIS 16\"], \"confidence\": 70, \"context\": [\"Source:Endpoint\", \"Stage:Persistence\"], \"impact\": 60, \"kill_chain_phases\": [\"Actions on Objectives\", \"Command & Control\"], \"mitre_attack\": [\"T1136.001\", \"T1136\"], \"nist\": [\"PR.AC\", \"DE.CM\"], \"observable\": []}",
+  "annotations._all": [
+    "T1136",
+    "CIS 16",
+    "HAFNIUM Group",
+    "Source:Endpoint",
+    "T1136.001",
+    "DE.CM",
+    "Command & Control",
+    "Stage:Persistence",
+    "CISA AA22-257A",
+    "Actions on Objectives",
+    "PR.AC",
+    "DHS Report TA18-074A"
+  ],
+  "annotations._frameworks": [
+    "analytic_story",
+    "cis20",
+    "context",
+    "kill_chain_phases",
+    "mitre_attack",
+    "nist"
+  ],
+  "annotations.analytic_story": [
+    "DHS Report TA18-074A",
+    "HAFNIUM Group",
+    "CISA AA22-257A"
+  ],
+  "annotations.cis20": "CIS 16",
+  "annotations.context": [
+    "Source:Endpoint",
+    "Stage:Persistence"
+  ],
+  "annotations.kill_chain_phases": [
+    "Actions on Objectives",
+    "Command & Control"
+  ],
+  "annotations.mitre_attack": [
+    "T1136.001",
+    "T1136"
+  ],
+  "annotations.mitre_attack.mitre_description": [
+    "Adversaries may create a local account to maintain access to victim systems. Local accounts are those configured by an organization for use by users, remote support, services, or for administration on a single system or service. \n\nFor example, with a sufficient level of access, the Windows <code>net user /add</code> command can be used to create a local account. On macOS systems the <code>dscl -create</code> command can be used to create a local account. Local accounts may also be added to network devices, often via common [Network Device CLI](https://attack.mitre.org/techniques/T1059/008) commands such as <code>username</code>, or to Kubernetes clusters using the `kubectl` utility.(Citation: cisco_username_cmd)(Citation: Kubernetes Service Accounts Security)\n\nSuch accounts may be used to establish secondary credentialed access that do not require persistent remote access tools to be deployed on the system.",
+    "Adversaries may create an account to maintain access to victim systems.(Citation: Symantec WastedLocker June 2020) With a sufficient level of access, creating such accounts may be used to establish secondary credentialed access that do not require persistent remote access tools to be deployed on the system.\n\nAccounts may be created on the local system or within a domain or cloud tenant. In cloud environments, adversaries may create accounts that only have access to specific services, which can reduce the chance of detection."
+  ],
+  "annotations.mitre_attack.mitre_detection": [
+    "Monitor for processes and command-line parameters associated with local account creation, such as <code>net user /add</code> , <code>useradd</code> , and <code>dscl -create</code> . Collect data on account creation within a network. Event ID 4720 is generated when a user account is created on a Windows system. (Citation: Microsoft User Creation Event) Perform regular audits of local system accounts to detect suspicious accounts that may have been created by an adversary. For network infrastructure devices, collect AAA logging to monitor for account creations.",
+    "Monitor for processes and command-line parameters associated with account creation, such as <code>net user</code> or <code>useradd</code>. Collect data on account creation within a network. Event ID 4720 is generated when a user account is created on a Windows system and domain controller. (Citation: Microsoft User Creation Event) Perform regular audits of domain and local system accounts to detect suspicious accounts that may have been created by an adversary.\n\nCollect usage logs from cloud administrator accounts to identify unusual activity in the creation of new accounts and assignment of roles to those accounts. Monitor for accounts assigned to admin roles that go over a certain threshold of known admins."
+  ],
+  "annotations.mitre_attack.mitre_platform": [
+    "Linux",
+    "macOS",
+    "Windows",
+    "Network",
+    "Containers",
+    "Windows",
+    "IaaS",
+    "Linux",
+    "macOS",
+    "Network",
+    "Containers",
+    "SaaS",
+    "Office Suite",
+    "Identity Provider"
+  ],
+  "annotations.mitre_attack.mitre_tactic": [
+    "persistence",
+    "persistence"
+  ],
+  "annotations.mitre_attack.mitre_tactic_id": "TA0003",
+  "annotations.mitre_attack.mitre_technique": [
+    "Local Account",
+    "Create Account"
+  ],
+  "annotations.mitre_attack.mitre_technique_id": "None",
+  "annotations.mitre_attack.mitre_url": [
+    "https://attack.mitre.org/techniques/T1136/001",
+    "https://attack.mitre.org/techniques/T1136"
+  ],
+  "annotations.nist": [
+    "PR.AC",
+    "DE.CM"
+  ],
+  "category": [
+    "Malware",
+    "Zero Trust"
+  ],
+  "count": "1",
+  "dest": "win-dc-7216619.attackrange.local",
+  "dest_risk_object_type": "system",
+  "dest_risk_score": "0",
+  "disposition": "disposition:6",
+  "disposition_default": "true",
+  "disposition_description": "A disposition is not configured for the finding.",
+  "disposition_label": "Undetermined",
+  "drilldown_dashboards": "[]",
+  "drilldown_earliest": "1673653800.000000000",
+  "drilldown_earliest_offset": "$info_min_time$",
+  "drilldown_latest": "1673657400.000000000",
+  "drilldown_latest_offset": "$info_max_time$",
+  "drilldown_searches": "[]",
+  "event_id": "8160AD0A-43A7-4B47-8A92-386008F7684F@@notable@@4a61575a552dd39383ca3cd43e2da59b",
+  "eventtype": [
+    "modnotable_results",
+    "notable"
+  ],
+  "extract_artifacts": "{\"asset\":[\"src\",\"dest\",\"dvc\",\"orig_host\"],\"identity\":[\"src_user\",\"user\",\"src_user_id\",\"src_user_role\",\"user_id\",\"user_role\",\"vendor_account\"]}",
+  "firstTime": "2023-01-14T00:18:09",
+  "host": "sh-i-0afc850bd12046702.strt-content.splunkcloud.com",
+  "index": "notable",
+  "info_max_time": "1673657400.000000000",
+  "info_min_time": "1673653800.000000000",
+  "info_search_time": "1673659207.559484000",
+  "investigation_profiles": "{}",
+  "killchain": [
+    "Actions On Objectives",
+    "Command and Control"
+  ],
+  "lastTime": "2023-01-14T00:18:09",
+  "linecount": "2",
+  "mitre_sub_technique": "T1136.001",
+  "notable_type": "notable",
+  "orig_action_name": "notable",
+  "orig_rid": "3",
+  "orig_sid": "scheduler__admin_REEtRVNTLUNvbnRlbnRVcGRhdGU__RMD5d48eb7a4c54f66fd_at_1673658000_13206",
+  "owner": "unassigned",
+  "owner_realname": "unassigned",
+  "priority": "unknown",
+  "risk_score": "0",
+  "rule_description": "The following analytic detects the creation of new accounts elevated to local administrators. It uses Windows event logs, specifically EventCode 4720 (user account creation) and EventCode 4732 (user added to Administrators group). This activity is significant as it indicates potential unauthorized privilege escalation, which is critical for SOC monitoring. If confirmed malicious, this could allow attackers to gain administrative access, leading to unauthorized data access, system modifications, and disruption of services. Immediate investigation is required to mitigate risks and prevent further unauthorized actions.",
+  "rule_id": "8160AD0A-43A7-4B47-8A92-386008F7684F@@notable@@4a61575a552dd39383ca3cd43e2da59b",
+  "rule_name": "ESCU - Detect New Local Admin account - Rule",
+  "rule_title": "Detect New Local Admin account",
+  "savedsearch_description": "The following analytic detects the creation of new accounts elevated to local administrators. It uses Windows event logs, specifically EventCode 4720 (user account creation) and EventCode 4732 (user added to Administrators group). This activity is significant as it indicates potential unauthorized privilege escalation, which is critical for SOC monitoring. If confirmed malicious, this could allow attackers to gain administrative access, leading to unauthorized data access, system modifications, and disruption of services. Immediate investigation is required to mitigate risks and prevent further unauthorized actions.",
+  "search_name": "ESCU - Detect New Local Admin account - Rule",
+  "search_title": "ESCU - Detect New Local Admin account - Rule",
+  "security_domain": "access",
+  "severities": "high",
+  "severity": "high",
+  "source": "ESCU - Detect New Local Admin account - Rule",
+  "sourcetype": "stash",
+  "splunk_server": "idx-i-0a95a45c5a373aecc.strt-content.splunkcloud.com",
+  "status": "1",
+  "status_default": "true",
+  "status_description": "Finding is recent and not reviewed.",
+  "status_end": "false",
+  "status_group": "New",
+  "status_label": "New",
+  "tag": "modaction_result",
+  "tag::eventtype": "modaction_result",
+  "timestamp": "none",
+  "urgency": "medium",
+  "user": "ATTACKRANGE\\Administrator\nNONE_MAPPED",
+  "user_risk_object_type": "user",
+  "user_risk_score": "0"
+}

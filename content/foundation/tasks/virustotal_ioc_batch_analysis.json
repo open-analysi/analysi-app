@@ -1,0 +1,300 @@
+{
+  "name": "VirusTotal: Batch IOC Analysis",
+  "cy_name": "virustotal_ioc_batch_analysis",
+  "description": "Enriches alerts with batch VirusTotal reputation analysis for all IOCs. Supports IP, domain, URL, and file hash lookups. Adds comprehensive batch analysis summary with executive assessment to alert enrichments. Requires alert to have 'iocs' array field.",
+  "app": "VirusTotal",
+  "directive": "You are a cybersecurity threat analyst specializing in indicator of compromise (IOC) analysis. Analyze batches of IOCs using VirusTotal data and provide executive-level security assessments. Focus on identifying the highest-risk indicators and providing clear, actionable recommendations for security teams.",
+  "script_file": "virustotal_ioc_batch_analysis.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Threat Intelligence",
+    "VirusTotal",
+    "IOC Analysis",
+    "Batch Processing",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 2000
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Multi-Vector Attack - Mixed IOC Types",
+      "description": "High severity alert with multiple IOC types (IPs, domains, URLs, file hashes) requiring batch analysis",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "severity": "high",
+        "source_product": "Cortex XDR",
+        "title": "Multi-Vector Phishing Campaign with C2 Communication",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Multi-Vector Phishing Campaign with C2 Communication",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Multi-Stage Attack Pattern Detected",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Advanced Persistent Threat"
+          ]
+        },
+        "rule_name": "Multi-Stage Attack Pattern Detected",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-phishing.com"
+          },
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "evil-malware.org"
+          },
+          {
+            "type_id": 6,
+            "type": "URL String",
+            "value": "https://bad-site.com/payload.exe"
+          },
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "8a883a69b4c7e8b9f1234567890abcde"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.2.145"
+            },
+            "dst_endpoint": {
+              "ip": "185.220.101.45",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          },
+          {
+            "url": {
+              "url_string": "https://bad-site.com/payload.exe"
+            },
+            "http_request": {
+              "http_method": "GET",
+              "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "john.doe@acmecorp.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"XDR-2025-10-23-14352\", \"severity\": \"high\", \"user\": \"john.doe\", \"ioc_count\": 5}"
+      }
+    },
+    {
+      "name": "Network Scanning - IP-Only IOCs",
+      "description": "Medium severity IDS alert with multiple suspicious IP addresses",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:12:08Z",
+        "severity": "medium",
+        "source_product": "IDS/IPS",
+        "title": "Suspicious Port Scanning from Multiple External IPs",
+        "source_vendor": "Suricata",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious Port Scanning from Multiple External IPs",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Port Scan Detection - Multiple Sources",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Reconnaissance"
+          ]
+        },
+        "rule_name": "Port Scan Detection - Multiple Sources",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:IDS/IPS"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "203.0.113.1"
+          },
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "198.51.100.42"
+          },
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "192.0.2.100"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.1"
+            },
+            "dst_endpoint": {
+              "ip": "10.0.1.1"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "firewall-01.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"IDS-2025-10-23-15120\", \"signature\": \"Port Scan\", \"scanner_count\": 3}"
+      }
+    },
+    {
+      "name": "Phishing Campaign - Domain-Focused",
+      "description": "Critical severity email alert with multiple phishing domains",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:45:30Z",
+        "severity": "critical",
+        "source_product": "Email Security",
+        "title": "Targeted Phishing Campaign Detected - Executive Targeted",
+        "source_vendor": "Proofpoint",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Targeted Phishing Campaign Detected - Executive Targeted",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Executive Targeted Spear Phishing",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Phishing"
+          ]
+        },
+        "rule_name": "Executive Targeted Spear Phishing",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:Email"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "phishing-site.net"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "lookalike-acmecorp.com"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "credential-stealer.org"
+          },
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.67"
+          }
+        ],
+        "evidences": [
+          {
+            "url": {
+              "url_string": "https://phishing-site.net/login"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "ceo@acmecorp.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"EMAIL-2025-10-23-16453\", \"recipient\": \"ceo@acmecorp.com\", \"threat_type\": \"phishing\"}"
+      }
+    },
+    {
+      "name": "Empty IOCs Array",
+      "description": "Alert with empty IOCs array should be returned unchanged",
+      "input": {
+        "triggering_event_time": "2025-10-23T18:10:00Z",
+        "severity": "low",
+        "source_product": "Enterprise Security",
+        "title": "Anomalous Behavior Detected",
+        "source_vendor": "Splunk",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Anomalous Behavior Detected",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "User Behavior Analytics - Anomaly",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Anomaly"
+          ]
+        },
+        "rule_name": "User Behavior Analytics - Anomaly",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:SIEM"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "jane.smith@acmecorp.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"SPLUNK-2025-10-23-18100\", \"anomaly_type\": \"unusual_login_time\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "virustotal",
+    "ioc-analysis",
+    "batch-processing",
+    "threat-intelligence",
+    "enrichment",
+    "automated-analysis"
+  ]
+}

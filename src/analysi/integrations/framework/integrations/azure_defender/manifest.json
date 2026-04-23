@@ -1,0 +1,238 @@
+{
+  "id": "azure_defender",
+  "app": "azure_defender",
+  "name": "Microsoft Defender for Cloud",
+  "version": "1.0.0",
+  "description": "Microsoft Defender for Cloud (formerly Azure Security Center) provides cloud security posture management (CSPM) and cloud workload protection (CWPP) across Azure, AWS, and GCP resources. Manage security alerts, secure scores, recommendations, and assessments.",
+  "archetypes": [
+    "CloudProvider"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "azure-defender-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "azure-defender-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+
+  "archetype_mappings": {
+    "CloudProvider": {
+      "get_security_findings": "list_alerts"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "Application (client) ID from the Azure AD app registration",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "Client secret from the Azure AD app registration",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "tenant_id": {
+        "type": "string",
+        "display_name": "Tenant ID",
+        "description": "Azure AD Tenant ID (Directory ID)",
+        "required": true
+      },
+      "subscription_id": {
+        "type": "string",
+        "display_name": "Subscription ID",
+        "description": "Azure subscription ID to query for security data",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 1
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity by listing accessible Azure subscriptions",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Security Alerts",
+      "description": "List security alerts from Microsoft Defender for Cloud for the configured subscription",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 100,
+            "minimum": 1
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Get details of a specific security alert by name and location",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_name": {
+            "type": "string",
+            "description": "Alert name (GUID identifier)"
+          },
+          "location": {
+            "type": "string",
+            "description": "Azure region where the alert was generated (e.g. 'centralus')"
+          }
+        },
+        "required": ["alert_name", "location"]
+      }
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of a security alert (dismiss, activate, resolve, inProgress)",
+      "categories": ["response", "cloud_security"],
+      "cy_name": "update_alert_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_name": {
+            "type": "string",
+            "description": "Alert name (GUID identifier)"
+          },
+          "location": {
+            "type": "string",
+            "description": "Azure region where the alert was generated"
+          },
+          "status": {
+            "type": "string",
+            "description": "New alert status",
+            "enum": ["dismiss", "activate", "resolve", "inProgress"]
+          }
+        },
+        "required": ["alert_name", "location", "status"]
+      }
+    },
+    {
+      "id": "list_secure_scores",
+      "name": "List Secure Scores",
+      "description": "List secure scores representing the overall security posture for the subscription",
+      "categories": ["investigation", "cloud_security", "compliance"],
+      "cy_name": "list_secure_scores",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_recommendations",
+      "name": "List Recommendations",
+      "description": "List security recommendations to improve the security posture of the subscription",
+      "categories": ["investigation", "cloud_security", "compliance"],
+      "cy_name": "list_recommendations",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of recommendations to return",
+            "default": 100,
+            "minimum": 1
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_recommendation",
+      "name": "Get Recommendation Details",
+      "description": "Get details of a specific security recommendation",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_recommendation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "recommendation_id": {
+            "type": "string",
+            "description": "Recommendation resource name (GUID)"
+          }
+        },
+        "required": ["recommendation_id"]
+      }
+    },
+    {
+      "id": "list_assessments",
+      "name": "List Security Assessments",
+      "description": "List security assessments for a specific Azure resource",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_assessments",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "description": "Full ARM resource ID to list assessments for"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of assessments to return",
+            "default": 100,
+            "minimum": 1
+          }
+        },
+        "required": ["resource_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

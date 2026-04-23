@@ -1,0 +1,73 @@
+{{- if .Values.vault.enabled -}}
+{{- $component := "vault" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      containers:
+        - name: vault
+          image: "{{ .Values.vault.image.repository }}:{{ .Values.vault.image.tag }}"
+          imagePullPolicy: {{ .Values.vault.image.pullPolicy }}
+          ports:
+            - containerPort: 8200
+          env:
+            - name: VAULT_DEV_ROOT_TOKEN_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "analysi.fullname" . }}-secrets
+                  key: vault-dev-token
+            - name: VAULT_DEV_LISTEN_ADDRESS
+              value: "0.0.0.0:8200"
+            - name: VAULT_ADDR
+              value: "http://127.0.0.1:8200"
+            - name: VAULT_LOG_LEVEL
+              value: {{ .Values.vault.logLevel | default "info" | quote }}
+          securityContext:
+            capabilities:
+              add: ["IPC_LOCK"]
+          readinessProbe:
+            exec:
+              command: ["vault", "status"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["vault", "status"]
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.vault.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8200
+      targetPort: 8200
+      protocol: TCP
+  selector:
+    {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 4 }}
+{{- end }}

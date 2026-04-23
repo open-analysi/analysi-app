@@ -1,0 +1,62 @@
+{
+  "name": "Elasticsearch: Security Event Search",
+  "cy_name": "elasticsearch_security_event_search",
+  "description": "Queries Elasticsearch for security events related to the alert's primary IOC (IP, domain, or hash). Searches across all indices using a match query and returns event summaries with LLM analysis. Enriches alert with elasticsearch_security_event_search containing event_count, events, and ai_analysis.",
+  "script_file": "elasticsearch_security_event_search.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "authored_by": "system",
+  "app": "elasticsearch",
+  "directive": "You are a security analyst reviewing Elasticsearch query results. Provide concise security assessments focused on IOC activity patterns, timeline analysis, and investigation recommendations.",
+  "data_samples": [
+    {
+      "name": "IP IOC Search",
+      "input": {
+        "severity": "high",
+        "source_product": "PAN-OS",
+        "title": "Suspicious Outbound Connection",
+        "source_vendor": "Firewall",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Suspicious Outbound Connection",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "192.168.1.100"
+          }
+        ]
+      },
+      "description": "Search Elasticsearch for events related to a suspicious IP"
+    },
+    {
+      "name": "No IOC Available",
+      "input": {
+        "title": "Generic Alert",
+        "alert_id": "test-es-002",
+        "severity": "low",
+        "finding_info": {
+          "title": "Generic Alert",
+          "uid": "sample-002",
+          "analytic": {"name": "Generic Rule", "type": "Rule", "type_id": 1}
+        },
+        "observables": []
+      },
+      "description": "Alert with no IOC - should skip search gracefully"
+    }
+  ],
+  "categories": [
+    "Foundation"
+  ]
+}

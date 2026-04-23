@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "task-naming",
+  "cy_name": "task_naming",
+  "description": "Naming conventions for Analysi Security Tasks. Use when creating or proposing new tasks to ensure consistent, descriptive names. Covers human-readable names and auto-generated cy_names."
+}

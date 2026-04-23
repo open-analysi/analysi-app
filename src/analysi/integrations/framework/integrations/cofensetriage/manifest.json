@@ -1,0 +1,411 @@
+{
+  "id": "cofensetriage",
+  "app": "cofensetriage",
+  "name": "Cofense Triage",
+  "version": "1.0.0",
+  "description": "Cofense Triage v2 API integration for phishing report triage, categorization, and threat indicator management",
+  "archetypes": [
+    "EmailSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cofensetriage-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cofensetriage-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cofense Triage integration instance"
+  },
+
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "get_email_reports": "get_reports",
+      "get_email_report": "get_report",
+      "categorize_email": "categorize_report",
+      "get_threat_indicators": "get_threat_indicators",
+      "create_threat_indicator": "create_threat_indicator"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "OAuth2 Client ID for Cofense Triage API",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "OAuth2 Client Secret for Cofense Triage API",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Server URL",
+        "description": "Base URL for the Cofense Triage instance (e.g., https://triage.example.com)",
+        "placeholder": "https://triage.example.com",
+        "required": true
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Whether to verify the server's SSL certificate",
+        "default": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Cofense Triage by obtaining an OAuth2 token and checking the system status endpoint",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_reports",
+      "name": "Get Reports",
+      "description": "Retrieve phishing reports from Cofense Triage filtered by location, sender, subject, priority, category, tags, and date range",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_reports",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Filter by report location (inbox, reconnaissance, processed, all)",
+            "enum": ["inbox", "reconnaissance", "processed", "all"]
+          },
+          "from_address": {
+            "type": "string",
+            "description": "Filter by sender email address"
+          },
+          "reporter_email": {
+            "type": "string",
+            "description": "Filter by reporter email address"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Filter by email subject (contains match)"
+          },
+          "match_priority": {
+            "type": "integer",
+            "description": "Filter by highest matching rule priority"
+          },
+          "category_id": {
+            "type": "integer",
+            "description": "Filter by category ID"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Filter reports updated on or after this date"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Filter reports updated before this date"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated list of tags to filter on"
+          },
+          "categorization_tags": {
+            "type": "string",
+            "description": "Comma-separated list of categorization tags to filter on"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order by updated_at date",
+            "enum": ["oldest_first", "latest_first"],
+            "default": "oldest_first"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve a single phishing report by its ID from Cofense Triage",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "description": "The ID of the report to retrieve"
+          }
+        },
+        "required": ["report_id"]
+      }
+    },
+    {
+      "id": "categorize_report",
+      "name": "Categorize Report",
+      "description": "Categorize a phishing report by assigning a category and optional tags",
+      "categories": ["response", "email_security"],
+      "cy_name": "categorize_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "integer",
+            "description": "The ID of the report to categorize"
+          },
+          "category_id": {
+            "type": "integer",
+            "description": "Category ID to assign (provide either category_id or category_name)"
+          },
+          "category_name": {
+            "type": "string",
+            "description": "Category name to assign (resolved to category_id)"
+          },
+          "categorization_tags": {
+            "type": "string",
+            "description": "Comma-separated categorization tags"
+          },
+          "response_id": {
+            "type": "integer",
+            "description": "Optional response ID to associate"
+          }
+        },
+        "required": ["report_id"]
+      }
+    },
+    {
+      "id": "get_threat_indicators",
+      "name": "Get Threat Indicators",
+      "description": "Retrieve threat indicators from Cofense Triage filtered by level, type, source, value, and date range",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "get_threat_indicators",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Threat level filter",
+            "enum": ["malicious", "suspicious", "benign", "all"]
+          },
+          "type": {
+            "type": "string",
+            "description": "Threat type filter",
+            "enum": ["hostname", "url", "md5", "sha256", "header", "all"]
+          },
+          "source": {
+            "type": "string",
+            "description": "Threat source filter"
+          },
+          "value": {
+            "type": "string",
+            "description": "Threat value filter"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Filter indicators updated on or after this date"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Filter indicators updated before this date"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order by updated_at date",
+            "enum": ["oldest_first", "latest_first"],
+            "default": "oldest_first"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "create_threat_indicator",
+      "name": "Create Threat Indicator",
+      "description": "Create a new threat indicator in Cofense Triage",
+      "categories": ["response", "threat_intel"],
+      "cy_name": "create_threat_indicator",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Threat level (malicious, suspicious, benign)",
+            "enum": ["malicious", "suspicious", "benign"]
+          },
+          "type": {
+            "type": "string",
+            "description": "Threat type (hostname, header, url, md5, sha256)",
+            "enum": ["hostname", "header", "url", "md5", "sha256"]
+          },
+          "value": {
+            "type": "string",
+            "description": "The threat indicator value (URL, hash, hostname, etc.)"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the threat indicator (defaults to Analysi-UI)",
+            "default": "Analysi-UI"
+          }
+        },
+        "required": ["level", "type", "value"]
+      }
+    },
+    {
+      "id": "get_reporters",
+      "name": "Get Reporters",
+      "description": "Retrieve reporters from Cofense Triage filtered by VIP status, email, and reputation score",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_reporters",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "vip": {
+            "type": "boolean",
+            "description": "Filter by VIP status"
+          },
+          "email": {
+            "type": "string",
+            "description": "Filter by reporter email"
+          },
+          "reputation_score": {
+            "type": "string",
+            "description": "Comma-separated reputation scores to filter on"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order",
+            "enum": ["oldest_first", "latest_first"],
+            "default": "oldest_first"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_urls",
+      "name": "Get URLs",
+      "description": "Retrieve URLs from Cofense Triage filtered by URL value, risk score, and date range",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_urls",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url_value": {
+            "type": "string",
+            "description": "Filter by URL value"
+          },
+          "risk_score": {
+            "type": "integer",
+            "description": "Filter by risk score"
+          },
+          "risk_score_operator": {
+            "type": "string",
+            "description": "Comparison operator for risk score filter",
+            "enum": ["eq", "not_eq", "lt", "lteq", "gt", "gteq"],
+            "default": "eq"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Filter URLs updated on or after this date"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Filter URLs updated before this date"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order by updated_at date",
+            "enum": ["oldest_first", "latest_first"],
+            "default": "oldest_first"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_categories",
+      "name": "Get Categories",
+      "description": "Retrieve report categories from Cofense Triage",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_categories",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filter by category name (contains match)"
+          },
+          "malicious": {
+            "type": "boolean",
+            "description": "Filter by malicious flag"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

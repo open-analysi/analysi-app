@@ -1,0 +1,447 @@
+{
+  "nodes": [
+    {
+      "id": "malicious_ip",
+      "label": "58.237.200.6\n(Flagged Malicious)",
+      "type": "BAD_EXTERNAL_IP",
+      "riskLevel": "LOW",
+      "data": {
+        "tooltip": "IP Flagged as Malicious by our Threat Intelligence Feeds"
+      }
+    },
+    {
+      "id": "target_exchange",
+      "label": "Exchange Server 2\n(172.16.20.8)",
+      "type": "SERVER",
+      "riskLevel": "NONE",
+      "data": {
+        "tooltip": "Internal Exchange Server that was targeted by the malicious IP"
+      }
+    },
+    {
+      "id": "powershell_url",
+      "label": "/autodiscover/autodiscover.json?\n@evil.com/owa/&FooProtocol=Powershell",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "HIGH",
+      "data": {
+        "url": "/autodiscover/autodiscover.json?\n@evil.com/owa/&FooProtocol=Powershell",
+        "tooltip": "URL used to exploit CVE-2022-41082",
+        "detected_at": "2022/09/30 7:19:00"
+      }
+    },
+    {
+      "id": "exchange_url",
+      "label": "/autodiscover/autodiscover.json?\n@evil.com/ews/exchange.asmx",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "HIGH",
+      "data": {
+        "url": "/autodiscover/autodiscover.json?\n@evil.com/ews/exchange.asmx",
+        "tooltip": "URL used to exploit CVE-2022-41082",
+        "detected_at": "2022/09/30 7:18:00"
+      }
+    },
+    {
+      "id": "autodiscover_url",
+      "label": "/autodiscover/autodiscover.json",
+      "type": "SUSPICIOUS_URL",
+      "riskLevel": "LOW",
+      "data": {
+        "url": "/autodiscover/autodiscover.json",
+        "detected_at": "2022/09/30 7:17:00",
+        "tooltip": "Malicious URL detected at 2022/09/30 7:17:00"
+      }
+    },
+    {
+      "id": "zgrab_user_agent",
+      "label": "Mozilla/5.0 zgrab/0.x",
+      "type": "USER_AGENT",
+      "riskLevel": "HIGH",
+      "data": {
+        "tooltip": "User Agent used in the malicious request. This is a common user agent used by attackers to exploit CVE-2022-41082."
+      }
+    },
+    {
+      "id": "firewall_block",
+      "label": "Firewall\n(Blocked Requests)",
+      "type": "OBSERVATION",
+      "riskLevel": "NONE",
+      "data": {
+        "tooltip": "Firewall that blocked the request"
+      }
+    },
+    {
+      "id": "virustotal_check",
+      "label": "VirusTotal\n(Flagged IP)",
+      "type": "INFORMATION_RETRIEVAL",
+      "riskLevel": "LOW",
+      "data": {
+        "tooltip": "VirusTotal flagged the IP as malicious"
+      }
+    },
+    {
+      "id": "abuseipdb_check",
+      "label": "AbuseIPDB\n(Flagged IP)",
+      "type": "INFORMATION_RETRIEVAL",
+      "riskLevel": "LOW",
+      "data": {
+        "tooltip": "AbuseIPDB flagged the IP as malicious"
+      }
+    },
+    {
+      "id": "edr_analysis",
+      "label": "EDR Analysis\n(No Signs of Compromise)",
+      "type": "DEDUCTION",
+      "riskLevel": "NONE",
+      "data": {
+        "tooltip": "EDR found no malicious activity"
+      }
+    },
+    {
+      "id": "exchange_cve",
+      "label": "CVE-2022-41082",
+      "type": "CVE",
+      "riskLevel": "HIGH",
+      "data": {
+        "tooltip": "Remote Code Execution Vulnerability in Microsoft Exchange Server"
+      }
+    },
+    {
+      "id": "cve_exploit_confirmation",
+      "label": "CVE-2022-41082\nConfirmed Exploit Attempt",
+      "type": "DEDUCTION",
+      "riskLevel": "CRITICAL",
+      "data": {
+        "tooltip": "Analysis confirms attempt to exploit CVE-2022-41082"
+      }
+    },
+    {
+      "id": "mailbox_check",
+      "label": "Mailbox Analysis\n(No Planned Red Team Exercise)",
+      "type": "OBSERVATION",
+      "riskLevel": "NONE",
+      "data": {
+        "tooltip": "No malicious activity found in mailbox"
+      }
+    },
+    {
+      "id": "final_verdict",
+      "label": "True Positive (Malicious)\nBlocked/Prevented",
+      "type": "CONCLUSION",
+      "riskLevel": "MEDIUM",
+      "data": {
+        "tooltip": "We know that this IP is malicious, and it indeed was used to exploit CVE-2022-41082. However, the malicious activity was blocked by the firewall."
+      }
+    },
+    {
+      "id": "ip_threat_intelligence",
+      "label": "IP Likely Malicious\n(Multiple Sources)",
+      "type": "DEDUCTION",
+      "riskLevel": "CRITICAL",
+      "data": {
+        "tooltip": "Multiple threat intelligence sources indicate malicious activity"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ip_to_exchange",
+      "source": "malicious_ip",
+      "target": "target_exchange",
+      "eventType": "TARGETS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Malicious IP targets the Exchange Server for exploitation"
+      }
+    },
+    {
+      "id": "ip_to_powershell",
+      "source": "malicious_ip",
+      "target": "powershell_url",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Request URL 1"
+      }
+    },
+    {
+      "id": "ip_to_exchange_url",
+      "source": "malicious_ip",
+      "target": "exchange_url",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Request URL 2"
+      }
+    },
+    {
+      "id": "powershell_blocked",
+      "source": "powershell_url",
+      "target": "firewall_block",
+      "eventType": "PROTECTED_BY_FIREWALL",
+      "status": "BLOCKED",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Firewall blocked Request URL 1"
+      }
+    },
+    {
+      "id": "exchange_url_blocked",
+      "source": "exchange_url",
+      "target": "firewall_block",
+      "eventType": "PROTECTED_BY_FIREWALL",
+      "status": "BLOCKED",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Firewall blocked Request URL 2"
+      }
+    },
+    {
+      "id": "ip_to_virustotal",
+      "source": "malicious_ip",
+      "target": "virustotal_check",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "VirusTotal Analysis of IP"
+      }
+    },
+    {
+      "id": "ip_to_abuseipdb",
+      "source": "malicious_ip",
+      "target": "abuseipdb_check",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "AbuseIPDB Analysis of IP"
+      }
+    },
+    {
+      "id": "exchange_to_edr",
+      "source": "target_exchange",
+      "target": "edr_analysis",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "EDR Check on Destination Server"
+      }
+    },
+    {
+      "id": "ip_uses_agent",
+      "source": "malicious_ip",
+      "target": "zgrab_user_agent",
+      "eventType": "USES",
+      "status": "NONE",
+      "riskLevel": "MEDIUM",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Malicious IP uses User Agent"
+      }
+    },
+    {
+      "id": "ip_exploits_cve",
+      "source": "malicious_ip",
+      "target": "exchange_cve",
+      "eventType": "USES",
+      "status": "NONE",
+      "riskLevel": "MEDIUM",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Malicious IP attempts to exploit CVE-2022-41082"
+      }
+    },
+    {
+      "id": "cve_confirms_exploit",
+      "source": "exchange_cve",
+      "target": "cve_exploit_confirmation",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "CVE being exploited"
+      }
+    },
+    {
+      "id": "powershell_confirms_exploit",
+      "source": "powershell_url",
+      "target": "cve_exploit_confirmation",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "URL pattern matches CVE-2022-41082 exploit"
+      }
+    },
+    {
+      "id": "exchange_url_confirms_exploit",
+      "source": "exchange_url",
+      "target": "cve_exploit_confirmation",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "URL pattern matches CVE-2022-41082 exploit"
+      }
+    },
+    {
+      "id": "autodiscover_confirms_exploit",
+      "source": "autodiscover_url",
+      "target": "cve_exploit_confirmation",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "URL pattern matches CVE-2022-41082 exploit"
+      }
+    },
+    {
+      "id": "user_agent_confirms_exploit",
+      "source": "zgrab_user_agent",
+      "target": "cve_exploit_confirmation",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "User Agent commonly associated with CVE-2022-41082 exploits"
+      }
+    },
+    {
+      "id": "exchange_to_mailbox",
+      "source": "target_exchange",
+      "target": "mailbox_check",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Mailbox Check on Destination Server"
+      }
+    },
+    {
+      "id": "firewall_to_verdict",
+      "source": "firewall_block",
+      "target": "final_verdict",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Firewall Influences Disposition"
+      }
+    },
+    {
+      "id": "edr_to_verdict",
+      "source": "edr_analysis",
+      "target": "final_verdict",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "EDR Influences Disposition"
+      }
+    },
+    {
+      "id": "exploit_to_verdict",
+      "source": "cve_exploit_confirmation",
+      "target": "final_verdict",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "CRITICAL",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "CVE Analysis Influences Disposition"
+      }
+    },
+    {
+      "id": "mailbox_to_verdict",
+      "source": "mailbox_check",
+      "target": "final_verdict",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "No Planned Red Team Exercise"
+      }
+    },
+    {
+      "id": "ip_to_autodiscover",
+      "source": "malicious_ip",
+      "target": "autodiscover_url",
+      "eventType": "BAD_URL_ACCESS",
+      "status": "NONE",
+      "riskLevel": "LOW",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Request URL 3"
+      }
+    },
+    {
+      "id": "autodiscover_blocked",
+      "source": "autodiscover_url",
+      "target": "firewall_block",
+      "eventType": "PROTECTED_BY_FIREWALL",
+      "status": "BLOCKED",
+      "riskLevel": "NONE",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Firewall blocked Request URL 3"
+      }
+    },
+    {
+      "id": "virustotal_to_analysis",
+      "source": "virustotal_check",
+      "target": "ip_threat_intelligence",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "VirusTotal Results Feed AI Analysis"
+      }
+    },
+    {
+      "id": "abuseipdb_to_analysis",
+      "source": "abuseipdb_check",
+      "target": "ip_threat_intelligence",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "HIGH",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "AbuseIPDB Results Feed AI Analysis"
+      }
+    },
+    {
+      "id": "threat_intel_to_verdict",
+      "source": "ip_threat_intelligence",
+      "target": "final_verdict",
+      "eventType": "INFORMS",
+      "status": "NONE",
+      "riskLevel": "CRITICAL",
+      "timestamp": 1664536740000,
+      "data": {
+        "tooltip": "Threat Intelligence Influences Disposition"
+      }
+    }
+  ]
+}

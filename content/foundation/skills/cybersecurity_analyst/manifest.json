@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "cybersecurity-analyst",
+  "cy_name": "cybersecurity_analyst",
+  "description": "Investigate security alerts, analyze IOCs, triage incidents, and perform threat analysis. Covers SIEM alerts, SOC workflows, malware, phishing, brute force, web attacks, network traffic, and log analysis. Use when building cybersecurity Tasks/Workflows or performing incident response."
+}

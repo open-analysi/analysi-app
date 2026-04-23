@@ -1,0 +1,140 @@
+# CI environment overrides — used by the smoke-test job in GitHub Actions
+# Usage: helm install analysi . -f values/ci.yaml --wait --timeout 8m
+#
+# Differences from local.yaml:
+#   - ui.enabled: false (not needed for API smoke tests)
+#   - logLevel INFO, logPayloads disabled (reduce noise in CI)
+
+global:
+  environment: ci
+  logLevel: INFO
+  logPayloads: "false"
+  image:
+    tag: latest
+    pullPolicy: Never
+
+  database:
+    host: analysi-analysi-postgresql
+    port: 5432
+    name: analysi
+    user: analysiuser
+    password: localdevpass
+
+  valkey:
+    host: analysi-analysi-valkey
+    password: localdevpass
+
+  minio:
+    endpoint: analysi-analysi-minio:9000
+    accessKey: minioadmin
+    secretKey: minioadmin
+
+  vault:
+    host: analysi-analysi-vault
+    token: dev-token
+
+  auth:
+    mode: dev
+    systemApiKey: dev-system-key
+    adminApiKey: dev-admin-api-key
+    ownerApiKey: dev-owner-api-key
+
+api:
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30080
+  # API loads 40 integrations at startup (~90s on CI runners).
+  # Default liveness probe (10s initial) kills it before it's ready.
+  livenessProbe:
+    initialDelaySeconds: 120
+    periodSeconds: 15
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 6
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+alertsWorker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+integrationsWorker:
+  replicaCount: 1
+
+ui:
+  enabled: false
+
+flyway:
+  sqlConfigMap: flyway-sql
+
+postgresql:
+  enabled: true
+  image:
+    repository: analysi-postgres
+    tag: "15-partman"
+    pullPolicy: Never
+  partitioning:
+    enabled: true
+    retention:
+      task_runs: "90 days"
+      artifacts: "90 days"
+      alerts: "90 days"
+      alert_analyses: "90 days"
+      workflow_runs: "90 days"
+      workflow_node_instances: "90 days"
+      workflow_edge_instances: "90 days"
+      activity_audit_trails: "365 days"
+      control_events: "180 days"
+  # Debian-based image with pg_partman+pg_cron is heavier than alpine.
+  # max_locks_per_transaction=256 (set in pg deployment args) increases shared
+  # memory usage. 1Gi prevents OOM during integration tests with 300+ partitions.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  auth:
+    username: analysiuser
+    password: localdevpass
+    database: analysi
+
+valkey:
+  enabled: true
+  image:
+    pullPolicy: Never
+  auth:
+    password: localdevpass
+
+minio:
+  enabled: true
+  image:
+    pullPolicy: Never
+  auth:
+    rootUser: minioadmin
+    rootPassword: minioadmin
+
+vault:
+  enabled: true
+  image:
+    pullPolicy: Never
+  devRootToken: dev-token
+
+keycloak:
+  enabled: false

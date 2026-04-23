@@ -1,0 +1,79 @@
+# AWS Hybrid: RDS PostgreSQL + S3, rest in-cluster
+# Usage: helm install analysi . -f values/aws-hybrid.yaml
+
+global:
+  environment: production
+
+  database:
+    # RDS endpoint — no in-cluster PostgreSQL
+    host: analysi-db.xxxx.us-east-1.rds.amazonaws.com
+    port: 5432
+    name: analysi
+    user: analysiuser
+    # Override via ExternalSecret/sealed-secret/--set at deploy time.
+    # Marker keeps `helm template` valid; deploys without override are obviously broken.
+    password: OVERRIDE_AT_DEPLOY_TIME
+
+  valkey:
+    # In-cluster Valkey is enabled below
+    host: analysi-analysi-valkey
+    port: 6379
+    password: OVERRIDE_AT_DEPLOY_TIME
+
+  minio:
+    # S3-compatible endpoint
+    endpoint: s3.us-east-1.amazonaws.com
+    bucket: analysi-production
+    artifactsBucket: analysi-artifacts-production
+    accessKey: OVERRIDE_AT_DEPLOY_TIME  # via IRSA / ExternalSecret
+    secretKey: OVERRIDE_AT_DEPLOY_TIME
+
+  vault:
+    host: analysi-analysi-vault
+    port: 8200
+    token: OVERRIDE_AT_DEPLOY_TIME  # via Vault Agent injector
+
+  auth:
+    mode: oidc
+    jwksUri: https://auth.example.com/realms/analysi/protocol/openid-connect/certs
+    issuer: https://auth.example.com/realms/analysi
+    audience: analysi-app
+    systemApiKey: OVERRIDE_AT_DEPLOY_TIME
+
+api:
+  replicaCount: 3
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+    hosts:
+      - host: api.analysi.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: analysi-tls
+        hosts:
+          - api.analysi.example.com
+
+alertsWorker:
+  replicaCount: 3
+
+# Disable in-cluster PostgreSQL — using Aurora
+postgresql:
+  enabled: false
+
+# Keep in-cluster services
+valkey:
+  enabled: true
+  auth:
+    password: OVERRIDE_AT_DEPLOY_TIME  # match global.valkey.password
+
+minio:
+  enabled: false  # using S3
+
+vault:
+  enabled: true
+  devRootToken: OVERRIDE_AT_DEPLOY_TIME  # match global.vault.token

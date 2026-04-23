@@ -1,0 +1,74 @@
+{
+  "id": "qrcode",
+  "app": "qrcode",
+  "name": "QR Code",
+  "version": "1.0.0",
+  "description": "Decode QR codes from images and extract embedded data (URLs, text, etc.). No authentication required — pure code integration using OpenCV.",
+  "archetypes": [],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "qrcode",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "qrcode",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+  "archetype_mappings": {},
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {}
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify that the OpenCV QR code decoder is operational",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "decode_qr_code",
+      "name": "Decode QR Code",
+      "description": "Decode a QR code from a base64-encoded image and return the embedded data",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "decode_qr_code",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "image_data": {
+            "type": "string",
+            "description": "Base64-encoded image (PNG, JPEG, etc.) containing the QR code"
+          }
+        },
+        "required": [
+          "image_data"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

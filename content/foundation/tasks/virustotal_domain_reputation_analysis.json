@@ -1,0 +1,179 @@
+{
+  "name": "VirusTotal: Domain Reputation Analysis",
+  "cy_name": "virustotal_domain_reputation_analysis",
+  "description": "Enriches alerts with VirusTotal domain reputation analysis. Validates primary IOC is a domain, performs reputation lookup, calculates risk scores, and adds structured enrichment data plus AI security assessment to the alert.",
+  "app": "VirusTotal",
+  "directive": "You are a cybersecurity analyst specializing in threat intelligence. Analyze domains using VirusTotal data and provide comprehensive security assessments with actionable recommendations. Focus on clear risk communication and specific next steps for security teams.",
+  "script_file": "virustotal_domain_reputation_analysis.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Threat Intelligence",
+    "VirusTotal",
+    "Domain Analysis",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1500
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Malicious Domain - DNS Alert",
+      "description": "High severity DNS alert for query to known malicious domain (12/89 engines flagged)",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:22:15Z",
+        "severity": "high",
+        "source_product": "DNS Security",
+        "title": "Suspicious DNS Query to Known Malicious Domain",
+        "source_vendor": "Cisco Umbrella",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious DNS Query to Known Malicious Domain",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "DNS Query to Threat Intelligence Feed Domain",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Command and Control"
+          ]
+        },
+        "rule_name": "DNS Query to Threat Intelligence Feed Domain",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-c2.example.com"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.3.78"
+            },
+            "connection_info": {
+              "protocol_name": "DNS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-078.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"DNS-2025-10-23-14221\", \"severity\": \"high\", \"action\": \"blocked\", \"domain\": \"malicious-c2.example.com\", \"src\": \"10.50.3.78\"}"
+      }
+    },
+    {
+      "name": "Clean Domain - Web Proxy Alert",
+      "description": "Low severity web proxy alert for access to benign domain (0 engines flagged)",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:38:42Z",
+        "severity": "low",
+        "source_product": "Web Security",
+        "title": "Web Access to Unusual Domain",
+        "source_vendor": "Zscaler",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Web Access to Unusual Domain",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Access to Uncategorized Domain",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Activity"
+          ]
+        },
+        "rule_name": "Access to Uncategorized Domain",
+        "disposition_id": 1,
+        "disposition": "Allowed",
+        "metadata": {
+          "labels": [
+            "source_category:Proxy"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "google.com"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.5.123"
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jsmith@corp.local"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"PROXY-2025-10-23-15384\", \"user\": \"jsmith\", \"domain\": \"google.com\", \"action\": \"allowed\"}"
+      }
+    },
+    {
+      "name": "Non-Domain IOC - IP Alert",
+      "description": "Alert with IP IOC should be returned unchanged (no domain enrichment)",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:15:30Z",
+        "severity": "critical",
+        "source_product": "Next-Generation Firewall",
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Suspicious Outbound Connection to Known Malicious IP",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"FW-2025-10-23-16153\", \"dst_ip\": \"185.220.101.45\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "threat-intel",
+    "automated-analysis",
+    "enrichment",
+    "domain-reputation"
+  ]
+}

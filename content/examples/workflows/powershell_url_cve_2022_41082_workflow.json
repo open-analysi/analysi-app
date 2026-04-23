@@ -1,0 +1,617 @@
+{
+  "name": "PowerShell in URL - CVE-2022-41082 Exploitation Analysis Workflow",
+  "description": "Automated investigation workflow for PowerShell in URL alerts targeting Exchange servers. Analyzes CVE-2022-41082 exploitation attempts, correlates SIEM/EDR/ThreatIntel evidence, and determines attack success and Exchange compromise scope. Features hypothesis-driven investigation with parallel EDR behavioral analysis (processes, terminal, network, browser).",
+  "is_dynamic": false,
+  "io_schema": {
+    "input": {
+      "$schema": "http://json-schema.org/schema#",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "raw_alert": {
+          "type": "string"
+        },
+        "rule_name": {
+          "type": "string"
+        },
+        "alert_type": {
+          "type": "string"
+        },
+        "web_info": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "request_url": {
+              "type": "string"
+            },
+            "uri_path": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            }
+          }
+        },
+        "cve_info": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cve_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "network_info": {
+          "type": "object",
+          "properties": {
+            "dst_ip": {
+              "type": "string"
+            },
+            "src_ip": {
+              "type": "string"
+            },
+            "dst_port": {
+              "type": "integer"
+            },
+            "protocol": {
+              "type": "string"
+            }
+          }
+        },
+        "device_action": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "source_vendor": {
+          "type": "string"
+        },
+        "source_product": {
+          "type": "string"
+        },
+        "source_category": {
+          "type": "string"
+        },
+        "primary_ioc_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_ioc_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "triggering_event_time": {
+          "type": "string"
+        },
+        "primary_risk_entity_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_risk_entity_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "triggering_event_time",
+        "severity",
+        "raw_alert"
+      ]
+    },
+    "output": {
+      "type": "object"
+    }
+  },
+  "data_samples": [
+    {
+      "name": "PowerShell in URL - CVE-2022-41082",
+      "description": "High severity ProxyNotShell exploitation attempt against Exchange Server 2. Attack was blocked at WAF. Source: alert_scenarios/01-powershell-exploit",
+      "input": {
+        "source_product": "IIS",
+        "enrichments": {},
+        "severity": "high",
+        "source_vendor": "IIS",
+        "title": "PowerShell in URL - CVE-2022-41082 Exploitation",
+        "triggering_event_time": "2022-09-30T07:19:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "PowerShell in URL - CVE-2022-41082 Exploitation",
+          "analytic": {
+            "name": "PowerShell in URL - CVE-2022-41082 Exploitation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack"
+          ]
+        },
+        "rule_name": "PowerShell in URL - CVE-2022-41082 Exploitation",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:WAF"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "58.237.200.6"
+          },
+          {
+            "type_id": 6,
+            "type": "URL String",
+            "value": "/autodiscover/autodiscover.json?@evil.com/owa/&Email=autodiscover/autodiscover.json%3f@evil.com&Protocol=XYZ&FooProtocol=Powershell"
+          },
+          {
+            "type_id": 99,
+            "type": "Other",
+            "value": "Mozilla/5.0 zgrab/0.x"
+          },
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "evil.com"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "58.237.200.6"
+            }
+          },
+          {
+            "http_request": {
+              "http_method": "GET",
+              "user_agent": "Mozilla/5.0 zgrab/0.x"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "Exchange Server 2"
+        },
+        "raw_data": "Rule : PowerShell in URL - CVE-2022-41082 Exploitation\nEvent Time : Sep, 30, 2022, 07:19 AM\nType : Web Attack\nSeverity : High\nHostname : Exchange Server 2\nDestination IP Address : 172.16.20.8\nLog Source : IIS\nSource IP Address : 58.237.200.6\nRequest URL : /autodiscover/autodiscover.json?@evil.com/owa/&Email=autodiscover/autodiscover.json%3f@evil.com&Protocol=XYZ&FooProtocol=Powershell\nHTTP Method : GET\nUser-Agent : Mozilla/5.0 zgrab/0.x\nAction : Blocked\nAlert Trigger Reason : Request URL Contains PowerShell"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "n1",
+      "kind": "task",
+      "name": "Alert Context Generation",
+      "is_start_node": true,
+      "task_cy_name": "alert_context_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n2",
+      "kind": "task",
+      "name": "ProxyNotShell Hypothesis Generation",
+      "task_cy_name": "proxynotshell_hypothesis_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n3",
+      "kind": "task",
+      "name": "CVE-2022-41082 Context Analysis",
+      "task_cy_name": "cve_2022_41082_context_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n4",
+      "kind": "task",
+      "name": "Splunk Triggering Event Retrieval",
+      "task_cy_name": "splunk_triggering_event_retrieval",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n5",
+      "kind": "task",
+      "name": "Splunk Supporting Evidence Search",
+      "task_cy_name": "splunk_supporting_evidence_search",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n6",
+      "kind": "task",
+      "name": "ProxyNotShell Payload Decoder and Analyzer",
+      "task_cy_name": "proxynotshell_payload_decoder_and_analyzer",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n7",
+      "kind": "task",
+      "name": "Echo EDR Browser History Reasoning",
+      "task_cy_name": "echo_edr_browser_history_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n8",
+      "kind": "task",
+      "name": "Echo EDR Network Actions Reasoning",
+      "task_cy_name": "echo_edr_network_actions_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n9",
+      "kind": "task",
+      "name": "Echo EDR Process Behavior Reasoning",
+      "task_cy_name": "echo_edr_processes_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n10",
+      "kind": "task",
+      "name": "Echo EDR Terminal History Reasoning",
+      "task_cy_name": "echo_edr_terminal_history_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n11",
+      "kind": "task",
+      "name": "VirusTotal IP Reputation Analysis",
+      "task_cy_name": "virustotal_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n12",
+      "kind": "task",
+      "name": "AbuseIPDB IP Reputation Analysis",
+      "task_cy_name": "abuseipdb_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge1",
+      "kind": "transformation",
+      "name": "Merge Parallel Enrichments",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n13",
+      "kind": "task",
+      "name": "ProxyNotShell Attack Success Determination",
+      "task_cy_name": "proxynotshell_attack_success_determination",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n14",
+      "kind": "task",
+      "name": "ProxyNotShell Exchange Server Compromise Assessment",
+      "task_cy_name": "proxynotshell_exchange_server_compromise_assessment",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n15",
+      "kind": "task",
+      "name": "Alert Detailed Analysis",
+      "task_cy_name": "alert_detailed_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n16",
+      "kind": "task",
+      "name": "Alert Disposition Determination",
+      "task_cy_name": "alert_disposition_determination",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n17",
+      "kind": "task",
+      "name": "Alert Summary Generation",
+      "task_cy_name": "alert_summary_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge2",
+      "kind": "transformation",
+      "name": "Final Merge",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1",
+      "from_node_id": "n1",
+      "to_node_id": "n2"
+    },
+    {
+      "edge_id": "e2",
+      "from_node_id": "n2",
+      "to_node_id": "n3"
+    },
+    {
+      "edge_id": "e3",
+      "from_node_id": "n2",
+      "to_node_id": "n4"
+    },
+    {
+      "edge_id": "e4",
+      "from_node_id": "n2",
+      "to_node_id": "n5"
+    },
+    {
+      "edge_id": "e5",
+      "from_node_id": "n2",
+      "to_node_id": "n6"
+    },
+    {
+      "edge_id": "e6",
+      "from_node_id": "n2",
+      "to_node_id": "n7"
+    },
+    {
+      "edge_id": "e7",
+      "from_node_id": "n2",
+      "to_node_id": "n8"
+    },
+    {
+      "edge_id": "e8",
+      "from_node_id": "n2",
+      "to_node_id": "n9"
+    },
+    {
+      "edge_id": "e9",
+      "from_node_id": "n2",
+      "to_node_id": "n10"
+    },
+    {
+      "edge_id": "e10",
+      "from_node_id": "n2",
+      "to_node_id": "n11"
+    },
+    {
+      "edge_id": "e11",
+      "from_node_id": "n2",
+      "to_node_id": "n12"
+    },
+    {
+      "edge_id": "e12",
+      "from_node_id": "n3",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e13",
+      "from_node_id": "n4",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e14",
+      "from_node_id": "n5",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e15",
+      "from_node_id": "n6",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e16",
+      "from_node_id": "n7",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e17",
+      "from_node_id": "n8",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e18",
+      "from_node_id": "n9",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e19",
+      "from_node_id": "n10",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e20",
+      "from_node_id": "n11",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e21",
+      "from_node_id": "n12",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e22",
+      "from_node_id": "merge1",
+      "to_node_id": "n13"
+    },
+    {
+      "edge_id": "e23",
+      "from_node_id": "n13",
+      "to_node_id": "n14"
+    },
+    {
+      "edge_id": "e24",
+      "from_node_id": "n14",
+      "to_node_id": "n15"
+    },
+    {
+      "edge_id": "e25",
+      "from_node_id": "n15",
+      "to_node_id": "n16"
+    },
+    {
+      "edge_id": "e26",
+      "from_node_id": "n15",
+      "to_node_id": "n17"
+    },
+    {
+      "edge_id": "e27",
+      "from_node_id": "n16",
+      "to_node_id": "merge2"
+    },
+    {
+      "edge_id": "e28",
+      "from_node_id": "n17",
+      "to_node_id": "merge2"
+    }
+  ],
+  "categories": [
+    "Examples"
+  ]
+}

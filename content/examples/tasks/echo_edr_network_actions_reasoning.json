@@ -1,0 +1,225 @@
+{
+  "name": "Echo EDR: Network Actions Analysis",
+  "cy_name": "echo_edr_network_actions_reasoning",
+  "description": "Enriches alerts with Echo EDR network connection analysis. Extracts IP from device/network info, retrieves network connections, performs AI-powered behavioral analysis to identify C2 activity, data exfiltration, or lateral movement patterns. Adds structured enrichment data to alert.",
+  "app": "Echo EDR",
+  "directive": "You are a security analyst specializing in network behavior analysis and threat hunting. Analyze endpoint network connections to identify suspicious communication patterns, command and control (C2) activity, data exfiltration attempts, and lateral movement. Focus on pattern detection and anomaly identification without providing remediation recommendations.",
+  "script_file": "echo_edr_network_actions_reasoning.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Alert Enrichment",
+    "Echo EDR",
+    "Network Analysis",
+    "Behavioral Analysis",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 256
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Exchange Server Suspicious Activity",
+      "description": "High severity alert for Exchange server with multiple outbound connections. Device-based alert with network_info containing src_ip.",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Echo EDR",
+        "source_product": "Echo EDR Platform",
+        "enrichments": null,
+        "title": "Suspicious Network Activity Detected on Exchange Server",
+        "triggering_event_time": "2025-10-23T14:22:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Network Activity Detected on Exchange Server",
+          "analytic": {
+            "name": "Unusual Outbound Connections from Exchange Server",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Network Anomaly"
+          ]
+        },
+        "rule_name": "Unusual Outbound Connections from Exchange Server",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.20.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "exchange-srv-01.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-2025-10-23-14220\", \"device\": \"exchange-srv-01\", \"severity\": \"high\"}"
+      }
+    },
+    {
+      "name": "Web Server SQL Injection Follow-up",
+      "description": "Critical alert for web server compromised via SQL injection. Uses primary_risk_entity_value as direct IP (no network_info).",
+      "input": {
+        "severity": "critical",
+        "source_vendor": "Echo EDR",
+        "source_product": "Echo EDR Platform",
+        "enrichments": null,
+        "title": "SQL Injection Detected - Investigating Network Activity",
+        "triggering_event_time": "2025-10-23T16:45:30Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "SQL Injection Detected - Investigating Network Activity",
+          "analytic": {
+            "name": "Post-Compromise Network Investigation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Intrusion Investigation"
+          ]
+        },
+        "rule_name": "Post-Compromise Network Investigation",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "172.16.17.18"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-2025-10-23-16453\", \"device\": \"172.16.17.18\", \"severity\": \"critical\"}"
+      }
+    },
+    {
+      "name": "IP-based IOC Alert",
+      "description": "Alert where primary IOC is an IP address (not device-based). Falls back to primary_ioc_value for IP extraction.",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Firewall",
+        "source_product": "Palo Alto Next-Gen Firewall",
+        "enrichments": null,
+        "title": "Outbound Connection to Suspicious IP",
+        "triggering_event_time": "2025-10-23T18:12:15Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Outbound Connection to Suspicious IP",
+          "analytic": {
+            "name": "Outbound Connection to Threat Intelligence IP",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Network Threat"
+          ]
+        },
+        "rule_name": "Outbound Connection to Threat Intelligence IP",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "172.16.20.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.3.75"
+            },
+            "dst_endpoint": {
+              "ip": "172.16.20.8",
+              "port": 8080
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-075.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"FW-2025-10-23-18121\", \"action\": \"blocked\", \"dst_ip\": \"172.16.20.8\"}"
+      }
+    },
+    {
+      "name": "Non-Device Alert - Should Skip",
+      "description": "Alert where primary_risk_entity is a user (not device) and no IP-based IOC. Should return unchanged.",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Active Directory",
+        "source_product": "Windows Active Directory",
+        "enrichments": null,
+        "title": "Suspicious User Login from New Location",
+        "triggering_event_time": "2025-10-23T20:05:00Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious User Login from New Location",
+          "analytic": {
+            "name": "Unusual Login Location",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Account Compromise"
+          ]
+        },
+        "rule_name": "Unusual Login Location",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Authentication"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "suspicious-domain.com"
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jsmith"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AD-2025-10-23-20050\", \"user\": \"jsmith\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "echo-edr",
+    "network-forensics",
+    "c2-detection",
+    "threat-detection",
+    "behavioral-analysis",
+    "enrichment"
+  ]
+}

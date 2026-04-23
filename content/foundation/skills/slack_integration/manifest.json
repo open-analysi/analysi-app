@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "slack-integration",
+  "cy_name": "slack_integration",
+  "description": "Slack integration for Analysi SOC investigations \u2014 alert notifications, user resolution, interactive triage questions, and incident-room coordination. Use when triaging alerts needing analyst communication, HITL decisions, or SOC notification workflows."
+}

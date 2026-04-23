@@ -1,0 +1,248 @@
+{
+  "name": "Alert Disposition Determination",
+  "cy_name": "alert_disposition_determination",
+  "description": "Determines final disposition category based on the comprehensive detailed security analysis. Classifies alerts into disposition categories (True Positive, False Positive, Benign, etc.) using the alert_detailed_analysis enrichment that already incorporates threat intelligence, context, and evidence.",
+  "app": "default",
+  "directive": "You are a senior security analyst specializing in alert triage and disposition determination. Based on the comprehensive detailed security analysis provided, make accurate disposition decisions. The analysis already incorporates all threat intelligence, contextual data, and evidence. Be precise and follow the disposition taxonomy exactly. When the analysis shows unclear evidence, classify as UNDETERMINED rather than guessing.",
+  "script_file": "alert_disposition_determination.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Alert Analysis",
+    "Disposition",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 100
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Malicious IP with VirusTotal Enrichment",
+      "description": "High severity alert with VirusTotal IP reputation showing critical threat level - should result in TRUE POSITIVE (Malicious)",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "severity": "high",
+        "source_product": "Next-Generation Firewall",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 16.84,
+            "threat_level": "Critical",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 16,
+              "suspicious": 2,
+              "harmless": 49,
+              "total_engines": 95
+            },
+            "recommended_action": "BLOCK_IMMEDIATELY",
+            "llm_analysis": "This IP address is flagged by 16 security vendors as malicious. Strong indicators of command and control infrastructure. Immediate blocking recommended."
+          }
+        },
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Suspicious Outbound Connection to Known Malicious IP",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.2.145"
+            },
+            "dst_endpoint": {
+              "ip": "185.220.101.45",
+              "port": 443
+            }
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"FW-001\", \"action\": \"blocked\"}"
+      }
+    },
+    {
+      "name": "Clean IP with No Threat Intelligence Match",
+      "description": "Medium severity IDS alert but VirusTotal shows clean IP - should result in FALSE POSITIVE or BENIGN",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:12:08Z",
+        "severity": "medium",
+        "source_product": "IDS/IPS",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 0,
+            "threat_level": "Low",
+            "confidence": "High",
+            "recommended_action": "ALLOW",
+            "llm_analysis": "This is Google's public DNS server (8.8.8.8). Completely benign and widely used. No threat indicators present."
+          }
+        },
+        "title": "Unusual Port Scan Activity Detected",
+        "source_vendor": "Suricata",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Unusual Port Scan Activity Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Unusual Port Scan Activity Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:IDS/IPS"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "8.8.8.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.50.100"
+            },
+            "dst_endpoint": {
+              "ip": "8.8.8.8"
+            }
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"IDS-002\"}"
+      }
+    },
+    {
+      "name": "Alert Without Enrichments",
+      "description": "Alert with no prior enrichment data - should result in UNDETERMINED with low confidence",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:20:00Z",
+        "severity": "high",
+        "source_product": "Windows Defender",
+        "enrichments": null,
+        "title": "Suspicious PowerShell Execution Detected",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious PowerShell Execution Detected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Suspicious PowerShell Execution Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "WORKSTATION-045"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-003\", \"command\": \"powershell.exe -enc [...]\"}"
+      }
+    },
+    {
+      "name": "Multi-Source Enriched Alert - Suspicious Activity",
+      "description": "Alert with multiple enrichments showing mixed signals - should be analyzed carefully",
+      "input": {
+        "triggering_event_time": "2025-10-23T17:45:30Z",
+        "severity": "critical",
+        "source_product": "Cloud Firewall",
+        "enrichments": {
+          "virustotal_domain_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 5.2,
+            "threat_level": "Medium",
+            "confidence": "Medium",
+            "recommended_action": "MONITOR",
+            "llm_analysis": "Legitimate cloud storage provider but some reports of abuse. Medium risk."
+          },
+          "ad_ldap_user_context": {
+            "user_found": true,
+            "username": "john.doe",
+            "email": "john.doe@company.com",
+            "department": "Engineering",
+            "is_privileged": false,
+            "account_status": "active"
+          }
+        },
+        "title": "Data Exfiltration to Cloud Storage Detected",
+        "source_vendor": "Zscaler",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Data Exfiltration to Cloud Storage Detected",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Data Exfiltration to Cloud Storage Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 1,
+        "disposition": "Allowed",
+        "metadata": {
+          "labels": [
+            "source_category:Cloud Security"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "storage.example-cloud.com"
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "john.doe@company.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"CLOUD-004\", \"data_transfer\": \"500MB\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "disposition",
+    "classification",
+    "enrichment",
+    "alert-analysis"
+  ]
+}

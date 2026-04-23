@@ -1,0 +1,38 @@
+digraph SecurityIncident {
+    rankdir=TB;
+    bgcolor="transparent";
+    node [fontcolor="white"];
+    edge [color="white", fontcolor="white"];
+    graph [label="Graphical Representation of AI Analysis" labelloc="t", fontsize="20.0", fontcolor="white", tooltip="Overall Security Incident Details"]
+
+    "Malicious_IP" [id="n2", label="58.237.200.6\n(Flagged Malicious)", shape=ellipse, style=filled, fillcolor="#ef4444", tooltip="IP Address known to be malicious"];
+    "Destination_Server" [id="n3", label="Exchange Server 2\n(172.16.20.8)", shape=ellipse, style=filled, fillcolor="#1e293b", tooltip="Internal Exchange Server"];
+    "Request_URL_1" [id="n4", label="/autodiscover/autodiscover.json?\n@evil.com/owa/&FooProtocol=Powershell", shape=box, style=filled, fillcolor="#eab308", tooltip="URL used to exploit CVE-2022-41082"];
+    "Request_URL_2" [id="n5", label="/autodiscover/autodiscover.json?\n@evil.com/ews/exchange.asmx", shape=box, style=filled, fillcolor="#eab308", tooltip="URL used to exploit CVE-2022-41082"];
+    "User_Agent" [id="n6", label="Mozilla/5.0 zgrab/0.x", shape=ellipse, style=filled, fillcolor="#f97316", tooltip="User Agent used in the malicious request"];
+    "Firewall" [id="n7", label="Firewall\n(Blocked Requests)", shape=ellipse, style=filled, fillcolor="#22c55e", tooltip="Firewall that blocked the request"];
+    "VirusTotal" [id="n8", label="VirusTotal\n(Flagged IP)", shape=ellipse, style=filled, fillcolor="#ec4899", tooltip="VirusTotal flagged the IP as malicious"];
+    "AbuseIPDB" [id="n9", label="AbuseIPDB\n(Flagged IP)", shape=ellipse, style=filled, fillcolor="#ec4899", tooltip="AbuseIPDB flagged the IP as malicious"];
+    "EDR_Check" [id="n10", label="EDR Analysis\n(No Signs of Compromise)", shape=ellipse, style=filled, fillcolor="#1e293b", tooltip="EDR found no malicious activity"];
+    "CVE_Analysis" [id="n11", label="CVE-2022-41082\nConfirmed Exploit Attempt", shape=box, style=filled, fillcolor="#eab308", tooltip="CVE-2022-41082 Exploit Attempt"];
+    "Mailbox_Check" [id="n12", label="Mailbox Analysis\n(No Planned Red Team Exercise)", shape=ellipse, style=filled, fillcolor="#1e293b", tooltip="No malicious activity found in mailbox"];
+    "Disposition" [id="n13", label="True Positive (Malicious)\nBlocked/Prevented", shape=ellipse, style=filled, fillcolor="#334155", tooltip="Security incident disposition"];
+
+    "Malicious_IP" -> "Destination_Server" [id="e4", label="Destination", tooltip="Traffic from Malicious IP to Destination Server"];
+    "Malicious_IP" -> "Request_URL_1" [id="e5", label="Request", tooltip="Request URL 1"];
+    "Malicious_IP" -> "Request_URL_2" [id="e6", label="Request", tooltip="Request URL 2"];
+    "Request_URL_1" -> "Firewall" [id="e7", label="Blocked", tooltip="Firewall blocked Request URL 1"];
+    "Request_URL_2" -> "Firewall" [id="e8", label="Blocked", tooltip="Firewall blocked Request URL 2"];
+    "VirusTotal" -> "Malicious_IP" [id="e9", label="Flagged", tooltip="VirusTotal Flagged IP"];
+    "AbuseIPDB" -> "Malicious_IP" [id="e10", label="Flagged", tooltip="AbuseIPDB Flagged IP"];
+    "Destination_Server" -> "EDR_Check" [id="e11", label="Check", tooltip="EDR Check on Destination Server"];
+    "Request_URL_1" -> "CVE_Analysis" [id="e12", label="Check", tooltip="CVE Analysis on Request URL 1"];
+    "Request_URL_2" -> "CVE_Analysis" [id="e13", label="Check", tooltip="CVE Analysis on Request URL 2"];
+    "Malicious_IP" -> "User_Agent" [id="e14", label="Uses", tooltip="Malicious IP uses User Agent"];
+    "User_Agent" -> "CVE_Analysis" [id="e15", label="Check", tooltip="User Agent Check on CVE"];
+    "Destination_Server" -> "Mailbox_Check" [id="e16", label="Check", tooltip="Mailbox Check on Destination Server"];
+    "Firewall" -> "Disposition" [id="e17", label="Influence", tooltip="Firewall Influences Disposition"];
+    "EDR_Check" -> "Disposition" [id="e18", label="Influence", tooltip="EDR Influences Disposition"];
+    "CVE_Analysis" -> "Disposition" [id="e19", label="Influence", tooltip="CVE Analysis Influences Disposition"];
+    "Mailbox_Check" -> "Disposition" [id="e20", label="Influence", tooltip="No Planned Red Team Exercise"];
+}

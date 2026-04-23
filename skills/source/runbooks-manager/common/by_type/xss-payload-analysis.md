@@ -1,0 +1,14 @@
+### XSS Payload Pattern & Technique Analysis ★
+- **Action:** Extract XSS injection attempts, URL decode payloads, and identify injection techniques
+- **Purpose:** Validates: "Reconnaissance fuzzing" vs "Targeted exploitation"
+- **Pattern:** integration_query
+- **Integration:** siem
+- **Focus:** XSS patterns in URLs (script tags, event handlers, javascript: protocol, SVG vectors), URL encoding (%3C = <, %3E = >), identify techniques (script injection, event handlers, SVG vectors, javascript: protocol), assess sophistication and attack progression
+- **Fields:** get_src_ip(alert)
+- **Output:** xss_payload_analysis
+- **Decision Points:**
+  - Single payload variation → Manual testing
+  - Multiple payload types in sequence → Automated scanner or fuzzing
+  - Increasing complexity → Progressive enumeration
+  - Classic patterns (alert(), prompt(), script tags) → Basic XSS testing
+  - Obfuscated/encoded patterns → Advanced evasion attempts

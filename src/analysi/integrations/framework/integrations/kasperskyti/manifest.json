@@ -1,0 +1,209 @@
+{
+  "id": "kasperskyti",
+  "app": "kasperskyti",
+  "name": "Kaspersky Threat Intelligence",
+  "version": "1.0.0",
+  "description": "Kaspersky Threat Intelligence Portal provides reliable, immediate intelligence about cyber-threats, legitimate objects, their interconnections and indicators, enriched with actionable context. Supports domain, IP, file hash, and URL reputation lookups plus APT campaign report retrieval.",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "kasperskyti-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "kasperskyti-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Kaspersky TI integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_reputation",
+      "lookup_domain": "domain_reputation",
+      "lookup_file_hash": "file_reputation",
+      "lookup_url": "url_reputation",
+      "get_threat_context": "get_indicator_details"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Kaspersky Threat Intelligence Portal username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Kaspersky Threat Intelligence Portal password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Kaspersky TIP API base URL",
+        "default": "https://tip.kaspersky.com"
+      },
+      "records_count": {
+        "type": "integer",
+        "display_name": "Max Records",
+        "description": "Maximum number of records to return in detailed queries",
+        "default": 10
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Kaspersky TIP API and verify license quota",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Look up domain reputation including threat zone, categories, and APT association",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "domain_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Look up IP address reputation including threat zone, score, categories, and APT association",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Look up file hash reputation including threat zone, detections, and APT association",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "file_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash to query (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Look up URL reputation including threat zone, categories, and APT association",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "url_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to query"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "get_indicator_details",
+      "name": "Get Indicator Details",
+      "description": "Query detailed information about any indicator (IP, domain, hash, or URL) with configurable API sections",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "get_indicator_details",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "indicator": {
+            "type": "string",
+            "description": "Indicator to query (IP, domain, hash, or URL)"
+          },
+          "sections": {
+            "type": "string",
+            "description": "Comma-separated API sections to include (e.g., 'Zone,IpGeneralInfo,IpWhoIs')"
+          }
+        },
+        "required": ["indicator"]
+      }
+    },
+    {
+      "id": "get_apt_reports",
+      "name": "Get APT Reports",
+      "description": "Retrieve APT campaign report details by publication ID",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "get_apt_reports",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "apt_id": {
+            "type": "string",
+            "description": "APT publication ID to retrieve"
+          }
+        },
+        "required": ["apt_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "id": "duo",
+  "app": "duo",
+  "name": "Duo Security",
+  "version": "1.0.0",
+  "description": "Duo Security Auth API integration for MFA and user authentication. Provides Duo Push notifications for action authorization.",
+  "publisher": "Duo Security, Inc.",
+  "archetypes": [
+    "IdentityProvider"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "ikey": {
+        "type": "string",
+        "description": "Duo Auth API integration key",
+        "required": true
+      },
+      "skey": {
+        "type": "string",
+        "description": "Duo Auth API secret key",
+        "required": true,
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "ikey",
+      "skey"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "api_host": {
+        "type": "string",
+        "display_name": "API Host",
+        "description": "Duo Auth API endpoint (e.g., api-xxxxxxxx.duosecurity.com)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "description": "Verify server certificate",
+        "default": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Duo API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "authorize",
+      "name": "Authorize Action",
+      "description": "Send Duo Push notification to user for authorization",
+      "categories": [
+        "identity",
+        "authentication"
+      ],
+      "cy_name": "authorize",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "description": "Username or email who can authorize the action"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of request shown in Duo Mobile app notification",
+            "default": "Analysi request"
+          },
+          "info": {
+            "type": "string",
+            "description": "Additional information to display in the notification"
+          }
+        },
+        "required": [
+          "user"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "IdentityProvider": {
+      "get_authentication_logs": "authorize"
+    }
+  }
+}

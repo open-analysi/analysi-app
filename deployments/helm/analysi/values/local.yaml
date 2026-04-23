@@ -1,0 +1,136 @@
+# Local / development environment overrides
+# Usage: helm install analysi . -f values/local.yaml
+
+global:
+  environment: development
+  logLevel: DEBUG
+  logPayloads: "true"
+  image:
+    tag: latest
+    pullPolicy: Never
+
+  database:
+    host: analysi-analysi-postgresql
+    port: 5432
+    name: analysi
+    user: analysiuser
+    password: localdevpass
+
+  valkey:
+    host: analysi-analysi-valkey
+    password: localdevpass
+
+  minio:
+    endpoint: analysi-analysi-minio:9000
+    accessKey: minioadmin
+    secretKey: minioadmin
+
+  vault:
+    host: analysi-analysi-vault
+    token: dev-token
+
+  auth:
+    mode: dev
+    systemApiKey: dev-system-key
+    adminApiKey: dev-admin-api-key
+    ownerApiKey: dev-owner-api-key
+
+api:
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+alertsWorker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+integrationsWorker:
+  replicaCount: 1
+
+ui:
+  enabled: true
+  image:
+    tag: latest
+    pullPolicy: Never
+  service:
+    type: NodePort
+    port: 80
+    nodePort: 30173
+
+flyway:
+  sqlConfigMap: flyway-sql
+
+# Dependency service overrides for local kind.
+# Images are pre-loaded into kind (see scripts/k8s/local.sh).
+postgresql:
+  enabled: true
+  image:
+    repository: analysi-postgres
+    tag: "15-partman"
+    pullPolicy: Never
+  # Debian-based image with pg_partman+pg_cron is heavier than alpine;
+  # bump memory to prevent OOM.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+  auth:
+    username: analysiuser
+    password: localdevpass
+    database: analysi
+  partitioning:
+    enabled: true
+    retention:
+      # Override retention per environment. Defaults set in V094 migration.
+      # Shorter retention for local dev to save disk space.
+      task_runs: "30 days"
+      artifacts: "30 days"
+      alerts: "30 days"
+      alert_analyses: "30 days"
+      workflow_runs: "30 days"
+      workflow_node_instances: "30 days"
+      workflow_edge_instances: "30 days"
+      activity_audit_trails: "90 days"
+      control_events: "30 days"
+
+valkey:
+  enabled: true
+  image:
+    pullPolicy: Never
+  auth:
+    password: localdevpass
+
+minio:
+  enabled: true
+  image:
+    pullPolicy: Never
+  auth:
+    rootUser: minioadmin
+    rootPassword: minioadmin
+
+vault:
+  enabled: true
+  image:
+    pullPolicy: Never
+  devRootToken: dev-token
+
+keycloak:
+  enabled: false

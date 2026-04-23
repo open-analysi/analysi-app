@@ -1,0 +1,250 @@
+{
+  "id": "flashpoint",
+  "app": "flashpoint",
+  "name": "Flashpoint",
+  "version": "1.0.0",
+  "description": "Flashpoint deep and dark web threat intelligence for reports, indicators, compromised credentials, and universal search",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "flashpoint-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "flashpoint-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Flashpoint integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "get_threat_context": "run_query",
+      "lookup_ip": "search_indicators",
+      "lookup_domain": "search_indicators",
+      "lookup_file_hash": "search_indicators"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Flashpoint API bearer token",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Flashpoint API base URL",
+        "default": "https://api.flashpoint.io"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "session_timeout": {
+        "type": "integer",
+        "display_name": "Session Timeout",
+        "description": "Scroll session timeout in minutes (1-60)",
+        "default": 2
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate connectivity to the Flashpoint API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_intelligence_reports",
+      "name": "List Intelligence Reports",
+      "description": "Fetch a list of all intelligence reports from Flashpoint",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "list_intelligence_reports",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of reports to fetch (default: 500)",
+            "default": 500
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_intelligence_report",
+      "name": "Get Intelligence Report",
+      "description": "Fetch a specific intelligence report by ID",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "get_intelligence_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "description": "Flashpoint intelligence report ID"
+          }
+        },
+        "required": ["report_id"]
+      }
+    },
+    {
+      "id": "list_related_reports",
+      "name": "List Related Reports",
+      "description": "Fetch related intelligence reports for a given report ID",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "list_related_reports",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "description": "Flashpoint intelligence report ID"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of related reports (default: 500)",
+            "default": 500
+          }
+        },
+        "required": ["report_id"]
+      }
+    },
+    {
+      "id": "get_compromised_credentials",
+      "name": "Get Compromised Credentials",
+      "description": "Fetch compromised credential sightings from Flashpoint",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "get_compromised_credentials",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Query filter for credential sightings (e.g. +is_fresh:true)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 500)",
+            "default": 500
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Universal search across all Flashpoint data sources",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "run_query",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query (free text or basetype filter)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 500)",
+            "default": 500
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "list_indicators",
+      "name": "List Indicators",
+      "description": "Fetch IoC indicators from Flashpoint technical intelligence",
+      "categories": ["investigation", "threat_intel", "enrichment"],
+      "cy_name": "list_indicators",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "attributes_types": {
+            "type": "string",
+            "description": "Comma-separated IoC types to filter (e.g. url,domain,ip-src)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Free-text filter for indicators"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of indicators (default: 500)",
+            "default": 500
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search for a specific IoC value by attribute type",
+      "categories": ["investigation", "threat_intel", "enrichment"],
+      "cy_name": "search_indicators",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "attribute_type": {
+            "type": "string",
+            "description": "IoC attribute type (e.g. ip-src, domain, md5, sha256, url)"
+          },
+          "attribute_value": {
+            "type": "string",
+            "description": "The value to search for"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 500)",
+            "default": 500
+          }
+        },
+        "required": ["attribute_type", "attribute_value"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

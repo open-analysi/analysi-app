@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "whois-rdap-integration",
+  "cy_name": "whois_rdap_integration",
+  "description": "WHOIS RDAP lookups for IP ownership, ASN, and netblock attribution during SOC investigations. Use when triaging alerts involving external IPs to identify registrant organizations, autonomous systems, hosting context, or abuse contacts via RDAP query."
+}

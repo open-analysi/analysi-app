@@ -1,0 +1,14 @@
+{
+  "name": "IP Enrichment Example",
+  "cy_name": "ip_enrichment_example",
+  "description": "Example task showing how to extract and process IP addresses from alert data",
+  "script_file": "ip_enrichment_example.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": ["Examples", "Enrichment"],
+  "tags": ["example", "enrichment", "ip-address"]
+}

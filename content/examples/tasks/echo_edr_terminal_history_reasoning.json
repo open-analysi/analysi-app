@@ -1,0 +1,221 @@
+{
+  "name": "Echo EDR: Terminal History Analysis",
+  "cy_name": "echo_edr_terminal_history_reasoning",
+  "description": "Analyzes terminal/command history from Echo EDR to identify malicious commands, privilege escalation, persistence mechanisms, and post-exploitation activity. Enriches alerts with LLM-based security analysis of command execution patterns.",
+  "app": "Echo EDR",
+  "directive": "You are a security analyst specializing in endpoint detection and response. Analyze terminal command history to identify malicious activity, focusing on privilege escalation, persistence mechanisms, data exfiltration, and reconnaissance. Provide concise security assessments without making recommendations.",
+  "script_file": "echo_edr_terminal_history_reasoning.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Alert Enrichment",
+    "Echo EDR",
+    "Terminal Analysis",
+    "Command Analysis",
+    "AI Analysis"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 256
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "PowerShell Exploitation - High Severity",
+      "description": "EDR alert for PowerShell exploitation with device as primary risk entity",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Echo Security",
+        "source_product": "Echo EDR",
+        "enrichments": null,
+        "title": "PowerShell Exploitation Detected on Finance Workstation",
+        "triggering_event_time": "2025-10-23T14:30:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "PowerShell Exploitation Detected on Finance Workstation",
+          "analytic": {
+            "name": "PowerShell Exploitation Detected on Finance Workstation",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.20.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          },
+          {
+            "process": {
+              "name": "powershell.exe",
+              "cmd_line": "powershell.exe -encodedCommand SGVsbG8gV29ybGQ=",
+              "parent_process": {
+                "name": "explorer.exe"
+              }
+            }
+          }
+        ],
+        "device": {
+          "hostname": "172.16.20.8"
+        },
+        "raw_data": "{\"signature\": \"PowerShell Encoded Command Execution\", \"action\": \"detect\"}"
+      }
+    },
+    {
+      "name": "SQL Injection - IP as Primary IOC",
+      "description": "Web attack with IP address as primary IOC instead of device",
+      "input": {
+        "severity": "critical",
+        "source_vendor": "Web Application Firewall",
+        "source_product": "ModSecurity",
+        "enrichments": null,
+        "title": "SQL Injection Attack Detected",
+        "triggering_event_time": "2025-10-23T15:45:00Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "SQL Injection Attack Detected",
+          "analytic": {
+            "name": "SQL Injection Attack Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:WAF"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "172.16.17.18"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.17.18"
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          },
+          {
+            "url": {
+              "url_string": "https://app.company.com/api/users"
+            },
+            "http_request": {
+              "user_agent": "sqlmap/1.5"
+            }
+          }
+        ],
+        "raw_data": "{\"signature\": \"SQL Injection Attempt\", \"action\": \"block\", \"payload\": \"' OR 1=1--\"}"
+      }
+    },
+    {
+      "name": "Medium Severity - Network Connection Alert",
+      "description": "Network alert with IP in network_info field, medium severity",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Palo Alto",
+        "source_product": "Firewall",
+        "enrichments": null,
+        "title": "Suspicious Outbound Connection",
+        "triggering_event_time": "2025-10-23T16:20:00Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection",
+          "analytic": {
+            "name": "Suspicious Outbound Connection",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 1,
+        "disposition": "Allowed",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "172.16.20.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "raw_data": "{\"signature\": \"Outbound Connection to Uncommon Port\", \"action\": \"allow\"}"
+      }
+    },
+    {
+      "name": "Edge Case - No IP Available",
+      "description": "Alert without device or IP information - should return unchanged",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Proofpoint",
+        "source_product": "Email Security",
+        "enrichments": null,
+        "title": "Email Phishing Attempt Detected",
+        "triggering_event_time": "2025-10-23T17:00:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Email Phishing Attempt Detected",
+          "analytic": {
+            "name": "Email Phishing Attempt Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:Email"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "user@company.com"
+          }
+        },
+        "raw_data": "{\"signature\": \"Phishing URL Detected\", \"action\": \"quarantine\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "echo-edr",
+    "terminal-forensics",
+    "command-analysis",
+    "threat-detection",
+    "endpoint-security",
+    "alert-enrichment",
+    "nas-alert"
+  ]
+}

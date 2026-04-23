@@ -1,0 +1,338 @@
+{
+  "id": "misp",
+  "app": "misp",
+  "name": "MISP",
+  "version": "1.0.0",
+  "description": "Malware Information Sharing Platform - threat intelligence sharing and IOC management",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "misp-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "misp-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this MISP integration instance"
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "MISP API key (found under Event Actions > Automation)",
+        "format": "password",
+        "required": true
+      }
+    },
+    "required": ["api_key"]
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "MISP instance URL (e.g., https://misp.example.com)",
+        "placeholder": "https://misp.example.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify the SSL certificate of the MISP server",
+        "default": true
+      }
+    },
+    "required": ["base_url"]
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify MISP API connectivity by checking server version",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "method": "HealthCheckAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_event",
+      "name": "Get Event",
+      "description": "Get event/incident details by ID",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "get_event",
+      "method": "GetEventAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "description": "MISP event ID"
+          }
+        },
+        "required": ["event_id"]
+      }
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search events by keyword, type, tags, or date range",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "search_events",
+      "method": "SearchEventsAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Search value (IOC, keyword)"
+          },
+          "type": {
+            "type": "string",
+            "description": "Attribute type filter (e.g., ip-src, domain, md5)"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to filter by"
+          },
+          "date_from": {
+            "type": "string",
+            "description": "Start date (YYYY-MM-DD)"
+          },
+          "date_to": {
+            "type": "string",
+            "description": "End date (YYYY-MM-DD)"
+          },
+          "event_id": {
+            "type": "string",
+            "description": "Comma-separated event IDs to filter"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 50)",
+            "default": 50
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "create_event",
+      "name": "Create Event",
+      "description": "Create a new threat event in MISP",
+      "categories": ["threat_intel", "response"],
+      "cy_name": "create_event",
+      "method": "CreateEventAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "info": {
+            "type": "string",
+            "description": "Event description/title"
+          },
+          "distribution": {
+            "type": "string",
+            "description": "Distribution level: Your Org Only, This Community Only, Connected Communities, All Communities",
+            "default": "This Community Only"
+          },
+          "threat_level_id": {
+            "type": "string",
+            "description": "Threat level: High, Medium, Low, Undefined",
+            "default": "Undefined"
+          },
+          "analysis": {
+            "type": "string",
+            "description": "Analysis status: Initial, Ongoing, Completed",
+            "default": "Initial"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to add to the event"
+          },
+          "published": {
+            "type": "boolean",
+            "description": "Publish event immediately",
+            "default": false
+          }
+        },
+        "required": ["info"]
+      }
+    },
+    {
+      "id": "add_attribute",
+      "name": "Add Attribute",
+      "description": "Add an attribute (IOC) to an existing event",
+      "categories": ["threat_intel", "response"],
+      "cy_name": "add_attribute",
+      "method": "AddAttributeAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "description": "Target MISP event ID"
+          },
+          "type": {
+            "type": "string",
+            "description": "MISP attribute type (e.g., ip-src, ip-dst, domain, url, md5, sha256)"
+          },
+          "value": {
+            "type": "string",
+            "description": "Attribute value (the IOC)"
+          },
+          "category": {
+            "type": "string",
+            "description": "Attribute category (e.g., Network activity, Payload delivery)"
+          },
+          "to_ids": {
+            "type": "boolean",
+            "description": "Set IDS flag for this attribute",
+            "default": true
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional comment for the attribute"
+          }
+        },
+        "required": ["event_id", "type", "value"]
+      }
+    },
+    {
+      "id": "search_attributes",
+      "name": "Search Attributes",
+      "description": "Search attributes/IOCs across all events",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "search_attributes",
+      "method": "SearchAttributesAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Search for specific IOC value"
+          },
+          "type": {
+            "type": "string",
+            "description": "Attribute type filter (e.g., ip-src, domain, md5)"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to filter by"
+          },
+          "event_id": {
+            "type": "string",
+            "description": "Comma-separated event IDs to filter"
+          },
+          "category": {
+            "type": "string",
+            "description": "Attribute category filter"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 50)",
+            "default": 50
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_attribute",
+      "name": "Get Attribute",
+      "description": "Get attribute details by ID",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "get_attribute",
+      "method": "GetAttributeAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "attribute_id": {
+            "type": "integer",
+            "description": "MISP attribute ID"
+          }
+        },
+        "required": ["attribute_id"]
+      }
+    },
+    {
+      "id": "add_tag",
+      "name": "Add Tag",
+      "description": "Add a tag to an event or attribute",
+      "categories": ["threat_intel", "response"],
+      "cy_name": "add_tag",
+      "method": "AddTagAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "description": "Tag name to add"
+          },
+          "event_id": {
+            "type": "integer",
+            "description": "Event ID to tag (provide event_id or attribute_id)"
+          },
+          "attribute_id": {
+            "type": "integer",
+            "description": "Attribute ID to tag (provide event_id or attribute_id)"
+          }
+        },
+        "required": ["tag"]
+      }
+    },
+    {
+      "id": "list_tags",
+      "name": "List Tags",
+      "description": "List all available tags in the MISP instance",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "list_tags",
+      "method": "ListTagsAction",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ],
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "get_threat_context": "get_event",
+      "submit_ioc": "add_attribute"
+    }
+  },
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/6m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "workflow-builder",
+  "cy_name": "workflow_builder",
+  "description": "Build and manage Analysi Security Workflows using DAG-based composition. Use when creating workflow pipelines, chaining tasks together, orchestrating security operations, or building alert processing workflows. Requires familiarity with the task-builder skill for task creation."
+}

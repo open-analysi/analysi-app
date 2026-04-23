@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #ff1493;
+
+  --color-dark-600: #3d3d3d;
+  --color-dark-700: #2d2d2d;
+  --color-dark-800: #1e1e1e;
+  --color-dark-900: #121212;
+
+  --text-2xs: 0.625rem;
+
+  --animate-fadeIn: fadeIn 0.2s ease-in-out;
+  --animate-shimmer: shimmer 2s linear infinite;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* bg-dark-600 (#3D3D3D) — defined here because Tailwind config only had 900/800/700.
+   The tailwind.config.js has been updated with this value; this ensures it takes effect
+   without requiring a dev server restart. */
+.bg-dark-600 { background-color: #3D3D3D; }
+
+/* Ace Editor Error Highlighting */
+.ace-error-line {
+  position: absolute;
+  background-color: rgba(255, 50, 50, 0.15);
+  border-left: 3px solid #ff3232;
+}
+
+/* Ace Editor Autocomplete - Wider dropdown for longer tool names */
+.ace_autocomplete {
+  width: 500px !important;
+  max-width: 500px !important;
+}
+
+.ace_autocomplete .ace_line {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}

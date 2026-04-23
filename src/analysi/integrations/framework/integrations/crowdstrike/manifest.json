@@ -1,0 +1,1038 @@
+{
+  "id": "crowdstrike",
+  "app": "crowdstrike",
+  "name": "CrowdStrike Falcon",
+  "version": "1.0.0",
+  "description": "CrowdStrike Falcon EDR/XDR platform integration for endpoint security, threat hunting, and incident response",
+  "archetypes": [
+    "EDR",
+    "Sandbox",
+    "ThreatIntel",
+    "AlertSource"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "OAuth2 Client ID",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "OAuth2 Client Secret",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "CrowdStrike API base URL",
+        "default": "https://api.crowdstrike.com",
+        "placeholder": "https://api.crowdstrike.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Lookback (minutes)",
+        "description": "How far back to search when no checkpoint exists",
+        "default": 5,
+        "minimum": 1
+      }
+    }
+  },
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "quarantine_device",
+      "release_host": "unquarantine_device",
+      "scan_host": "query_device",
+      "get_host_details": "get_device_details",
+      "kill_process": "run_command",
+      "collect_forensics": "get_session_file",
+      "run_script": "run_command"
+    },
+    "Sandbox": {
+      "submit_file": "detonate_file",
+      "submit_url": "detonate_url",
+      "get_analysis_status": "check_detonation_status",
+      "get_analysis_report": "check_detonation_status"
+    },
+    "ThreatIntel": {
+      "lookup_file_hash": "file_reputation",
+      "lookup_url": "url_reputation",
+      "submit_ioc": "upload_indicator"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity and authentication with CrowdStrike API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "query_device",
+      "name": "Query Devices",
+      "description": "Query devices using FQL (Falcon Query Language) filter",
+      "categories": [
+        "investigation",
+        "discovery"
+      ],
+      "cy_name": "query_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string (e.g., hostname:'DESKTOP-*')"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Starting offset",
+            "default": 0
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_device_details",
+      "name": "Get Device Details",
+      "description": "Retrieve detailed information about specific devices",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_device_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Device ID or list of device IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "device_ids"
+        ]
+      }
+    },
+    {
+      "id": "list_groups",
+      "name": "List Host Groups",
+      "description": "List host groups (device groups)",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_groups",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Network isolate (contain) a device to prevent lateral movement",
+      "categories": [
+        "response",
+        "containment"
+      ],
+      "cy_name": "quarantine_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID to quarantine"
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Hostname to quarantine (alternative to device_id)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Release device from network isolation (lift containment)",
+      "categories": [
+        "response",
+        "containment"
+      ],
+      "cy_name": "unquarantine_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID to unquarantine"
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Hostname to unquarantine (alternative to device_id)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "assign_hosts",
+      "name": "Assign Hosts to Group",
+      "description": "Assign hosts to a host group",
+      "categories": [
+        "configuration"
+      ],
+      "cy_name": "assign_hosts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "host_group_id": {
+            "type": "string",
+            "description": "Host group ID"
+          },
+          "device_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Device ID or list of device IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "host_group_id",
+          "device_ids"
+        ]
+      }
+    },
+    {
+      "id": "remove_hosts",
+      "name": "Remove Hosts from Group",
+      "description": "Remove hosts from a host group",
+      "categories": [
+        "configuration"
+      ],
+      "cy_name": "remove_hosts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "host_group_id": {
+            "type": "string",
+            "description": "Host group ID"
+          },
+          "device_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Device ID or list of device IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "host_group_id",
+          "device_ids"
+        ]
+      }
+    },
+    {
+      "id": "create_session",
+      "name": "Create RTR Session",
+      "description": "Create Real-Time Response session with a device",
+      "categories": [
+        "investigation",
+        "response"
+      ],
+      "cy_name": "create_session",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID to create session with"
+          }
+        },
+        "required": [
+          "device_id"
+        ]
+      }
+    },
+    {
+      "id": "delete_session",
+      "name": "Delete RTR Session",
+      "description": "Delete Real-Time Response session",
+      "categories": [
+        "cleanup"
+      ],
+      "cy_name": "delete_session",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID to delete"
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      }
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "List security detections (alerts/threats)",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "list_detections",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order (e.g., 'first_behavior|asc')"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_detection_details",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about specific detections",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_detection_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detection_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Detection ID or list of detection IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "detection_ids"
+        ]
+      }
+    },
+    {
+      "id": "update_detections",
+      "name": "Update Detection Status",
+      "description": "Update detection status and assignment",
+      "categories": [
+        "response",
+        "case_management"
+      ],
+      "cy_name": "update_detections",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detection_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Detection ID or list of detection IDs",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "New status",
+            "enum": [
+              "new",
+              "in_progress",
+              "true_positive",
+              "false_positive",
+              "ignored",
+              "closed",
+              "reopened"
+            ]
+          },
+          "assigned_to_uuid": {
+            "type": "string",
+            "description": "User UUID to assign to"
+          },
+          "show_in_ui": {
+            "type": "boolean",
+            "description": "Whether to show in UI"
+          }
+        },
+        "required": [
+          "detection_ids"
+        ]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "list_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_sessions",
+      "name": "List RTR Sessions",
+      "description": "List Real-Time Response sessions",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_sessions",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "run_command",
+      "name": "Run RTR Command",
+      "description": "Execute Real-Time Response command on a host",
+      "categories": [
+        "investigation",
+        "response"
+      ],
+      "cy_name": "run_command",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "RTR session ID"
+          },
+          "base_command": {
+            "type": "string",
+            "description": "Base command to run (e.g., 'ps', 'netstat', 'ls')"
+          },
+          "command_string": {
+            "type": "string",
+            "description": "Full command string with arguments"
+          }
+        },
+        "required": [
+          "session_id",
+          "base_command"
+        ]
+      }
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Retrieve detailed information about security incidents",
+      "categories": [
+        "investigation",
+        "case_management"
+      ],
+      "cy_name": "get_incident_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Incident ID or list of incident IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "incident_ids"
+        ]
+      }
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List security incidents",
+      "categories": [
+        "investigation",
+        "case_management"
+      ],
+      "cy_name": "list_incidents",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "FQL filter string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort order"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update incident status and properties",
+      "categories": [
+        "response",
+        "case_management"
+      ],
+      "cy_name": "update_incident",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Incident ID or list of incident IDs",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action_parameters": {
+            "type": "object",
+            "description": "Update parameters (status, assigned_to, etc.)"
+          }
+        },
+        "required": [
+          "incident_ids"
+        ]
+      }
+    },
+    {
+      "id": "get_session_file",
+      "name": "Get RTR Session File",
+      "description": "Retrieve file collected during RTR session",
+      "categories": [
+        "investigation",
+        "forensics"
+      ],
+      "cy_name": "get_session_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "RTR session ID"
+          },
+          "sha256": {
+            "type": "string",
+            "description": "File SHA256 hash"
+          }
+        },
+        "required": [
+          "session_id",
+          "sha256"
+        ]
+      }
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Information",
+      "description": "Get system information for a device",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_system_info",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID"
+          }
+        },
+        "required": [
+          "device_id"
+        ]
+      }
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File Hash",
+      "description": "Search for file hash across all hosts",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "hunt_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Search for domain across all hosts",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "hunt_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt IP Address",
+      "description": "Search for IP address across all hosts",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "hunt_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes with IOC",
+      "description": "List processes that executed with a specific IOC",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "list_processes",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "IOC type (sha256, md5, domain, ipv4, ipv6)"
+          },
+          "value": {
+            "type": "string",
+            "description": "IOC value"
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ]
+      }
+    },
+    {
+      "id": "upload_indicator",
+      "name": "Upload Custom Indicator",
+      "description": "Upload custom IOC indicator to CrowdStrike",
+      "categories": [
+        "threat_intel",
+        "configuration"
+      ],
+      "cy_name": "upload_indicator",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "IOC type",
+            "enum": [
+              "sha256",
+              "md5",
+              "domain",
+              "ipv4",
+              "ipv6"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "IOC value"
+          },
+          "policy": {
+            "type": "string",
+            "description": "Policy action",
+            "enum": [
+              "detect",
+              "prevent"
+            ],
+            "default": "detect"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Severity level",
+            "enum": [
+              "informational",
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "IOC description"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ]
+      }
+    },
+    {
+      "id": "delete_indicator",
+      "name": "Delete Custom Indicator",
+      "description": "Delete custom IOC indicator from CrowdStrike",
+      "categories": [
+        "threat_intel",
+        "configuration"
+      ],
+      "cy_name": "delete_indicator",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Indicator ID or list of indicator IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation Lookup",
+      "description": "Check file reputation in CrowdStrike threat intelligence",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "file_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation Lookup",
+      "description": "Check URL reputation in CrowdStrike threat intelligence",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "url_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to check"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File in Sandbox",
+      "description": "Submit file for analysis in Falcon Sandbox",
+      "categories": [
+        "investigation",
+        "malware_analysis"
+      ],
+      "cy_name": "detonate_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "description": "File SHA256 hash"
+          },
+          "environment_id": {
+            "type": "integer",
+            "description": "Sandbox environment ID (160=Windows 10, 110=Windows 7 64-bit)",
+            "default": 160
+          }
+        },
+        "required": [
+          "sha256"
+        ]
+      }
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate URL in Sandbox",
+      "description": "Submit URL for analysis in Falcon Sandbox",
+      "categories": [
+        "investigation",
+        "malware_analysis"
+      ],
+      "cy_name": "detonate_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to analyze"
+          },
+          "environment_id": {
+            "type": "integer",
+            "description": "Sandbox environment ID (160=Windows 10, 110=Windows 7 64-bit)",
+            "default": 160
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "check_detonation_status",
+      "name": "Check Sandbox Analysis Status",
+      "description": "Check status and results of sandbox analysis",
+      "categories": [
+        "investigation",
+        "malware_analysis"
+      ],
+      "cy_name": "check_detonation_status",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "submission_ids": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "description": "Submission ID or list of submission IDs",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "submission_ids"
+        ]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull security alerts from CrowdStrike Falcon detection engine",
+      "categories": [
+        "alert_source",
+        "investigation"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time (ISO 8601)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time (ISO 8601)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum alerts to return",
+            "default": 1000
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF",
+      "description": "Normalize raw CrowdStrike alerts to OCSF Detection Finding v1.8.0",
+      "categories": [
+        "alert_source",
+        "normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw CrowdStrike alert documents"
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

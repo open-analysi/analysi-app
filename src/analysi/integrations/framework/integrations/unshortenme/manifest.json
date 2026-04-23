@@ -1,0 +1,83 @@
+{
+  "id": "unshortenme",
+  "app": "unshortenme",
+  "name": "unshorten.me",
+  "version": "1.0.0",
+  "description": "Expands shortened URLs to their final destination using the unshorten.me public API. No authentication required.",
+  "archetypes": [],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "unshortenme",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "unshortenme",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+  "archetype_mappings": {},
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 120
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the unshorten.me API by expanding a known short URL",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "unshorten_url",
+      "name": "Unshorten URL",
+      "description": "Expand a shortened URL to its final destination",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "unshorten_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Shortened URL to expand (e.g., https://bit.ly/abc123)"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/6m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "id": "axonius",
+  "app": "axonius",
+  "name": "Axonius",
+  "version": "1.0.0",
+  "description": "Axonius cyber asset management integration for querying devices, users, and asset inventory via the REST API v2",
+  "archetypes": [
+    "DatabaseEnrichment"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+  "integration_id_config": {
+    "default": "axonius-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "axonius-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Axonius integration instance"
+  },
+  "archetype_mappings": {
+    "DatabaseEnrichment": {
+      "get_host_details": "get_device",
+      "search_hosts": "search_devices"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Axonius API key for authentication",
+        "format": "password",
+        "required": true
+      },
+      "api_secret": {
+        "type": "string",
+        "display_name": "API Secret",
+        "description": "Axonius API secret for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Axonius instance URL (e.g., https://mycompany.axonius.com)",
+        "placeholder": "https://mycompany.axonius.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify Axonius API connectivity and credentials",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device",
+      "description": "Get device details by internal Axonius ID",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "get_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "internal_axon_id": {
+            "type": "string",
+            "description": "Internal Axonius device ID"
+          }
+        },
+        "required": [
+          "internal_axon_id"
+        ]
+      }
+    },
+    {
+      "id": "search_devices",
+      "name": "Search Devices",
+      "description": "Search devices using Axonius Query Language (AQL)",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "search_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "AQL query string to filter devices"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          },
+          "fields": {
+            "type": "array",
+            "description": "List of field names to include in results",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get user details by internal Axonius ID",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "get_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "internal_axon_id": {
+            "type": "string",
+            "description": "Internal Axonius user ID"
+          }
+        },
+        "required": [
+          "internal_axon_id"
+        ]
+      }
+    },
+    {
+      "id": "search_users",
+      "name": "Search Users",
+      "description": "Search users using Axonius Query Language (AQL)",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "search_users",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "AQL query string to filter users"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          },
+          "fields": {
+            "type": "array",
+            "description": "List of field names to include in results",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "id": "get_device_by_hostname",
+      "name": "Get Device by Hostname",
+      "description": "Search for devices by hostname (convenience wrapper around search_devices)",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "get_device_by_hostname",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "Hostname to search for (case-insensitive regex match)"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          }
+        },
+        "required": [
+          "hostname"
+        ]
+      }
+    },
+    {
+      "id": "get_device_by_ip",
+      "name": "Get Device by IP",
+      "description": "Search for devices by IP address (convenience wrapper around search_devices)",
+      "categories": [
+        "enrichment",
+        "asset_management"
+      ],
+      "cy_name": "get_device_by_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to search for (exact match)"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 50
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

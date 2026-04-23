@@ -1,0 +1,312 @@
+/*
+ * Analysi Keycloak Login Theme
+ *
+ * Overrides the default Keycloak/PatternFly login page to match
+ * the Analysi dark UI (dark-900 background, dark-800 card, #ff1493 primary).
+ *
+ * Design tokens are defined as CSS custom properties below and match
+ * ui/src/index.css. Update them here if the design system changes.
+ */
+
+:root {
+  --analysi-primary: #ff1493;
+  --analysi-primary-hover: rgba(255, 20, 147, 0.9);
+  --analysi-primary-light: #ff69b4;
+  --analysi-primary-ring: rgba(255, 20, 147, 0.25);
+  --analysi-dark-600: #3d3d3d;
+  --analysi-dark-700: #2d2d2d;
+  --analysi-dark-800: #1e1e1e;
+  --analysi-dark-900: #121212;
+  --analysi-text-100: #f5f5f5;
+  --analysi-text-200: #e5e5e5;
+  --analysi-text-300: #d4d4d4;
+  --analysi-text-400: #a3a3a3;
+  --analysi-text-500: #737373;
+  --analysi-error: rgba(239, 68, 68, 0.3);
+  --analysi-error-bg: rgba(239, 68, 68, 0.1);
+  --analysi-error-text: #fca5a5;
+  --analysi-success-bg: rgba(34, 197, 94, 0.1);
+  --analysi-success-border: rgba(34, 197, 94, 0.3);
+  --analysi-success-text: #86efac;
+}
+
+/* ── Page background ─────────────────────────────────────────────── */
+
+body,
+html {
+  background: var(--analysi-dark-900) !important;
+}
+
+.login-pf body,
+body.login-pf {
+  background: var(--analysi-dark-900) !important;
+  background-image: none !important;
+}
+
+/* PatternFly login page background */
+#kc-login-background,
+.login-pf .container-fluid,
+.pf-v5-c-login,
+.pf-c-login {
+  background: var(--analysi-dark-900) !important;
+  background-image: none !important;
+}
+
+/* ── Header / branding ───────────────────────────────────────────── */
+
+#kc-header {
+  margin-bottom: 2rem;
+}
+
+#kc-header-wrapper {
+  color: var(--analysi-primary) !important;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Logo mark above the brand name */
+#kc-header-wrapper::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  background: url("../img/logo-transparent.png") center / contain no-repeat;
+}
+
+/* ── Login card ──────────────────────────────────────────────────── */
+
+#kc-form-wrapper,
+.login-pf .card-pf,
+#kc-form-login,
+.pf-v5-c-login__main,
+.pf-c-login__main {
+  color: var(--analysi-text-200);
+}
+
+.card-pf,
+.pf-v5-c-login__main,
+.pf-c-login__main {
+  background: var(--analysi-dark-800) !important;
+  border: 1px solid var(--analysi-dark-600) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  padding: 2rem !important;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+/* ── Page title ("Sign in to your account") ──────────────────────── */
+
+#kc-page-title,
+.pf-v5-c-login__main-header h1,
+.pf-c-login__main-header h1,
+#kc-form-wrapper h1 {
+  color: var(--analysi-text-100) !important;
+  font-weight: 600;
+}
+
+/* ── Labels ──────────────────────────────────────────────────────── */
+
+.login-pf label,
+.pf-v5-c-form__label-text,
+.pf-c-form__label-text,
+#kc-form label {
+  color: var(--analysi-text-300) !important;
+  font-weight: 500;
+}
+
+/* ── Input fields ────────────────────────────────────────────────── */
+
+.login-pf input[type="text"],
+.login-pf input[type="password"],
+.login-pf input[type="email"],
+.pf-v5-c-form-control,
+.pf-c-form-control,
+#kc-form input[type="text"],
+#kc-form input[type="password"],
+#kc-form input[type="email"] {
+  background-color: var(--analysi-dark-700) !important;
+  border: 1px solid var(--analysi-dark-600) !important;
+  border-radius: 0.5rem !important;
+  color: var(--analysi-text-100) !important;
+  padding: 0.625rem 0.75rem !important;
+  transition: border-color 0.15s ease;
+}
+
+.login-pf input[type="text"]:focus,
+.login-pf input[type="password"]:focus,
+.login-pf input[type="email"]:focus,
+.pf-v5-c-form-control:focus,
+.pf-c-form-control:focus,
+#kc-form input:focus {
+  border-color: var(--analysi-primary) !important;
+  box-shadow: 0 0 0 2px var(--analysi-primary-ring) !important;
+  outline: none !important;
+}
+
+/* ── Password input group wrapper ────────────────────────────────── */
+/* The .pf-c-input-group has a white background that bleeds around the fields */
+
+.pf-c-input-group,
+.pf-v5-c-input-group {
+  background-color: transparent !important;
+}
+
+/* Password field: flatten right side so it joins the eye button seamlessly */
+.pf-c-input-group > input.pf-c-form-control,
+.pf-v5-c-input-group > input.pf-v5-c-form-control,
+#kc-form .pf-c-input-group .pf-c-form-control {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right-width: 0 !important;
+}
+
+/* ── Eye / password toggle button ────────────────────────────────── */
+
+.pf-c-button.pf-m-control,
+.pf-v5-c-input-group .pf-v5-c-button,
+.pf-c-input-group .pf-c-button,
+.kc-form-password-visibility-toggle {
+  background-color: var(--analysi-dark-700) !important;
+  border: 1px solid var(--analysi-dark-600) !important;
+  border-left: none !important;
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+  color: var(--analysi-text-400) !important;
+}
+
+.pf-c-button.pf-m-control:hover,
+.pf-v5-c-input-group .pf-v5-c-button:hover,
+.pf-c-input-group .pf-c-button:hover {
+  background-color: var(--analysi-dark-600) !important;
+  color: var(--analysi-text-200) !important;
+}
+
+/* When password input has focus, extend the pink ring to the eye button */
+.pf-c-input-group:focus-within .pf-c-button.pf-m-control,
+.pf-v5-c-input-group:focus-within .pf-v5-c-button {
+  border-color: var(--analysi-primary) !important;
+  box-shadow: 2px 0 0 0 var(--analysi-primary-ring),
+              0 2px 0 0 var(--analysi-primary-ring),
+              0 -2px 0 0 var(--analysi-primary-ring) !important;
+}
+
+/* ── Primary button ("Sign In") ──────────────────────────────────── */
+
+.login-pf .btn-primary,
+.login-pf input[type="submit"],
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary,
+#kc-login {
+  background-color: var(--analysi-primary) !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  color: #ffffff !important;
+  font-weight: 500;
+  padding: 0.625rem 1.5rem !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  width: 100%;
+}
+
+.login-pf .btn-primary:hover,
+.login-pf input[type="submit"]:hover,
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-c-button.pf-m-primary:hover,
+#kc-login:hover {
+  background-color: var(--analysi-primary-hover) !important;
+}
+
+.login-pf .btn-primary:active,
+.login-pf input[type="submit"]:active,
+.pf-v5-c-button.pf-m-primary:active,
+.pf-c-button.pf-m-primary:active,
+#kc-login:active {
+  transform: scale(0.98);
+}
+
+/* ── Links ───────────────────────────────────────────────────────── */
+
+.login-pf a,
+.pf-v5-c-login a,
+.pf-c-login a,
+#kc-registration a,
+#kc-form-options a {
+  color: var(--analysi-primary) !important;
+  text-decoration: none;
+}
+
+.login-pf a:hover,
+.pf-v5-c-login a:hover,
+.pf-c-login a:hover {
+  color: var(--analysi-primary-light) !important;
+  text-decoration: underline;
+}
+
+/* ── Checkbox & remember-me ──────────────────────────────────────── */
+
+.login-pf .checkbox label,
+#kc-form-options label {
+  color: var(--analysi-text-400) !important;
+}
+
+/* ── Error / alert messages ──────────────────────────────────────── */
+
+.login-pf .alert,
+.pf-v5-c-alert,
+.pf-c-alert,
+.kc-feedback-text {
+  background-color: var(--analysi-error-bg) !important;
+  border: 1px solid var(--analysi-error) !important;
+  border-radius: 0.5rem !important;
+  color: var(--analysi-error-text) !important;
+}
+
+.alert-error,
+.pf-m-danger {
+  border-color: var(--analysi-error) !important;
+}
+
+.alert-success,
+.pf-m-success {
+  background-color: var(--analysi-success-bg) !important;
+  border-color: var(--analysi-success-border) !important;
+  color: var(--analysi-success-text) !important;
+}
+
+/* ── Footer / info ───────────────────────────────────────────────── */
+
+#kc-info,
+#kc-info-wrapper,
+.login-pf .info,
+.pf-v5-c-login__main-footer,
+.pf-c-login__main-footer {
+  color: var(--analysi-text-500);
+}
+
+/* ── Misc cleanup ────────────────────────────────────────────────── */
+
+/* Remove PatternFly default background images/gradients */
+.login-pf .container,
+.login-pf .container-fluid {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Social / identity provider buttons */
+#kc-social-providers .zocial,
+.login-pf .social-links a {
+  background-color: var(--analysi-dark-700) !important;
+  border: 1px solid var(--analysi-dark-600) !important;
+  border-radius: 0.5rem !important;
+  color: var(--analysi-text-200) !important;
+}
+
+#kc-social-providers .zocial:hover,
+.login-pf .social-links a:hover {
+  background-color: var(--analysi-dark-600) !important;
+}

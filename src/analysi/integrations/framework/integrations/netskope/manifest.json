@@ -1,0 +1,235 @@
+{
+  "id": "netskope",
+  "app": "netskope",
+  "name": "Netskope",
+  "version": "1.0.0",
+  "description": "Netskope CASB/SSE integration for cloud security policy enforcement, URL/hash blocklist management, and event querying",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "netskope-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "netskope-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Netskope integration instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_url": "add_url_to_list",
+      "unblock_url": "remove_url_from_list",
+      "update_policy": "update_url_list"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "v2_api_key": {
+        "type": "string",
+        "display_name": "V2 API Key (recommended)",
+        "description": "Netskope REST API v2 token for URL list and event operations",
+        "format": "password",
+        "required": false
+      },
+      "api_key": {
+        "type": "string",
+        "display_name": "V1 API Key",
+        "description": "Netskope REST API v1 token for file hash and quarantine operations",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "server_url": {
+        "type": "string",
+        "display_name": "Server URL",
+        "description": "Netskope tenant URL (e.g., https://tenant.goskope.com)",
+        "placeholder": "https://tenant.goskope.com",
+        "required": true
+      },
+      "list_name": {
+        "type": "string",
+        "display_name": "Netskope List Name",
+        "description": "Name of the URL and file hash list on Netskope",
+        "default": "phantom_list"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Netskope tenant for v1 and/or v2 API keys",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "add_url_to_list",
+      "name": "Add URL to List",
+      "description": "Add a URL to the Netskope URL blocklist",
+      "categories": ["containment", "remediation"],
+      "cy_name": "add_url_to_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to add to the blocklist"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "remove_url_from_list",
+      "name": "Remove URL from List",
+      "description": "Remove a URL from the Netskope URL blocklist",
+      "categories": ["remediation"],
+      "cy_name": "remove_url_from_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to remove from the blocklist"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "update_url_list",
+      "name": "Update URL List",
+      "description": "Replace the entire URL list on Netskope and deploy changes",
+      "categories": ["containment", "remediation"],
+      "cy_name": "update_url_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "string",
+            "description": "Comma-separated list of URLs or JSON array of URLs"
+          }
+        },
+        "required": ["urls"]
+      }
+    },
+    {
+      "id": "add_hash_to_list",
+      "name": "Add Hash to List",
+      "description": "Add a file hash to the Netskope file hash blocklist",
+      "categories": ["containment", "remediation"],
+      "cy_name": "add_hash_to_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5/SHA256) to add to the blocklist"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "remove_hash_from_list",
+      "name": "Remove Hash from List",
+      "description": "Remove a file hash from the Netskope file hash blocklist",
+      "categories": ["remediation"],
+      "cy_name": "remove_hash_from_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash to remove from the blocklist"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Retrieve quarantined file metadata from Netskope",
+      "categories": ["investigation"],
+      "cy_name": "get_file",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "File ID or quarantined file name to retrieve"
+          },
+          "profile": {
+            "type": "string",
+            "description": "Quarantine profile ID or profile name"
+          }
+        },
+        "required": ["file", "profile"]
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Query Netskope events (page and application) by IP address",
+      "categories": ["investigation"],
+      "cy_name": "run_query",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query events for"
+          },
+          "start_time": {
+            "type": "number",
+            "description": "Start time as epoch timestamp (defaults to 24 hours ago)"
+          },
+          "end_time": {
+            "type": "number",
+            "description": "End time as epoch timestamp (defaults to now)"
+          }
+        },
+        "required": ["ip"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

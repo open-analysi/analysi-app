@@ -1,0 +1,287 @@
+{
+  "id": "darktrace",
+  "app": "darktrace",
+  "name": "Darktrace",
+  "version": "1.0.0",
+  "description": "AI-driven network detection and response (NDR). Get device info, model breaches, tags, acknowledge breaches, and investigate network anomalies.",
+  "archetypes": [
+    "SIEM"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "darktrace-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "darktrace-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Darktrace integration instance"
+  },
+
+  "archetype_mappings": {
+    "SIEM": {
+      "get_alert_details": "get_breach_connections",
+      "update_alert_status": "acknowledge_breach"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "public_token": {
+        "type": "string",
+        "display_name": "Public API Token",
+        "description": "Darktrace API public token used for authentication",
+        "format": "password",
+        "required": true
+      },
+      "private_token": {
+        "type": "string",
+        "display_name": "Private API Token",
+        "description": "Darktrace API private token used for HMAC signature generation",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Darktrace appliance URL (e.g., https://darktrace.example.com)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify TLS certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the Darktrace appliance by querying summary statistics",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_device_description",
+      "name": "Get Device Description",
+      "description": "Retrieve a device summary and description by device ID",
+      "categories": ["investigation"],
+      "cy_name": "get_device_description",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "integer",
+            "description": "Darktrace device ID"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "get_device_model_breaches",
+      "name": "Get Device Model Breaches",
+      "description": "Retrieve recent model breaches for a specified device",
+      "categories": ["investigation"],
+      "cy_name": "get_device_model_breaches",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "integer",
+            "description": "Darktrace device ID"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "get_device_tags",
+      "name": "Get Device Tags",
+      "description": "Retrieve all tags currently applied to a device",
+      "categories": ["investigation"],
+      "cy_name": "get_device_tags",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "integer",
+            "description": "Darktrace device ID"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "get_tagged_devices",
+      "name": "Get Tagged Devices",
+      "description": "Retrieve all devices that currently have a given tag",
+      "categories": ["investigation"],
+      "cy_name": "get_tagged_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "description": "Name of the tag to search for"
+          }
+        },
+        "required": ["tag"]
+      }
+    },
+    {
+      "id": "post_tag",
+      "name": "Post Tag",
+      "description": "Apply a tag to a device, optionally with a duration in seconds",
+      "categories": ["containment"],
+      "cy_name": "post_tag",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "integer",
+            "description": "Darktrace device ID"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Tag name to apply"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "How long to apply the tag (seconds). Leave empty for indefinite."
+          }
+        },
+        "required": ["device_id", "tag"]
+      }
+    },
+    {
+      "id": "post_comment",
+      "name": "Post Comment",
+      "description": "Post a comment to a model breach",
+      "categories": ["investigation"],
+      "cy_name": "post_comment",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "model_breach_id": {
+            "type": "integer",
+            "description": "Darktrace model breach ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Comment text to post"
+          }
+        },
+        "required": ["model_breach_id", "message"]
+      }
+    },
+    {
+      "id": "acknowledge_breach",
+      "name": "Acknowledge Breach",
+      "description": "Acknowledge a model breach to mark it as reviewed",
+      "categories": ["containment"],
+      "cy_name": "acknowledge_breach",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "model_breach_id": {
+            "type": "integer",
+            "description": "Darktrace model breach ID"
+          }
+        },
+        "required": ["model_breach_id"]
+      }
+    },
+    {
+      "id": "unacknowledge_breach",
+      "name": "Unacknowledge Breach",
+      "description": "Unacknowledge a model breach to reopen it for review",
+      "categories": ["containment"],
+      "cy_name": "unacknowledge_breach",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "model_breach_id": {
+            "type": "integer",
+            "description": "Darktrace model breach ID"
+          }
+        },
+        "required": ["model_breach_id"]
+      }
+    },
+    {
+      "id": "get_breach_comments",
+      "name": "Get Breach Comments",
+      "description": "Retrieve all comments on a model breach",
+      "categories": ["investigation"],
+      "cy_name": "get_breach_comments",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "model_breach_id": {
+            "type": "integer",
+            "description": "Darktrace model breach ID"
+          }
+        },
+        "required": ["model_breach_id"]
+      }
+    },
+    {
+      "id": "get_breach_connections",
+      "name": "Get Breach Connections",
+      "description": "Retrieve network connections involved in a model breach",
+      "categories": ["investigation"],
+      "cy_name": "get_breach_connections",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "model_breach_id": {
+            "type": "integer",
+            "description": "Darktrace model breach ID"
+          }
+        },
+        "required": ["model_breach_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

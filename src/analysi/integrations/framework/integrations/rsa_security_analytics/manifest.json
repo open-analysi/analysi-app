@@ -1,0 +1,178 @@
+{
+  "id": "rsa_security_analytics",
+  "app": "rsa_security_analytics",
+  "name": "RSA Security Analytics",
+  "version": "1.0.0",
+  "description": "Integration with RSA Security Analytics SIEM platform for incident, alert, and event management",
+  "archetypes": [
+    "SIEM"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "Username for authentication",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for authentication",
+        "required": true,
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "username",
+      "password"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "RSA Security Analytics URL (e.g., https://rsa-sa.company.com)",
+        "required": true
+      },
+      "incident_manager": {
+        "type": "string",
+        "description": "Name of the Incident Manager device",
+        "required": true
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "description": "Verify SSL certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      }
+    },
+    "required": [
+      "incident_manager"
+    ]
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to RSA Security Analytics",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List security incidents within a time frame",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_incidents",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time in format YYYY-MM-DD HH:MM:SS (UTC)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time in format YYYY-MM-DD HH:MM:SS (UTC)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of incidents to list",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts for an incident",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Incident ID (optional - lists all alerts if not provided)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to list",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List security events for an alert",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_events",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Alert ID (required)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of events to list",
+            "default": 100
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List devices connected to RSA Security Analytics",
+      "categories": [
+        "investigation",
+        "asset_discovery"
+      ],
+      "cy_name": "list_devices",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "list_events",
+      "get_alerts": "list_alerts"
+    }
+  }
+}

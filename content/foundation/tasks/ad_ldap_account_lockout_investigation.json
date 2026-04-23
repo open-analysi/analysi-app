@@ -1,0 +1,199 @@
+{
+  "name": "AD LDAP: Account Lockout Investigation",
+  "cy_name": "ad_ldap_account_lockout_investigation",
+  "description": "Enriches user-related alerts with Active Directory account lockout analysis. Validates primary risk entity is a user, queries LDAP for lockout details, and adds structured enrichment data plus AI security assessment to determine if brute force attack or legitimate issue.",
+  "app": "IdentityProvider",
+  "directive": "You are a senior security analyst specializing in Active Directory security and account lockout investigations. Analyze lockout data to distinguish between brute force attacks, user errors, and system issues. Provide clear risk assessments (CRITICAL/HIGH/MEDIUM/LOW) based on failed attempt counts and patterns. Deliver specific, actionable remediation steps including immediate actions, investigation procedures, and preventive measures. Be thorough but concise in your analysis.",
+  "script_file": "ad_ldap_account_lockout_investigation.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Identity Management",
+    "Active Directory",
+    "Security Investigation",
+    "LDAP",
+    "Account Security",
+    "Incident Response",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4",
+    "temperature": 0.3,
+    "max_tokens": 2000
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Critical - Brute Force Attack (25 Failed Attempts)",
+      "description": "High severity alert for account lockout with 25 failed password attempts indicating brute force attack",
+      "input": {
+        "triggering_event_time": "2025-10-23T02:45:15Z",
+        "severity": "high",
+        "source_product": "Active Directory",
+        "title": "Multiple Failed Login Attempts - Account Locked",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Multiple Failed Login Attempts - Account Locked",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Account Lockout Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Brute Force"
+          ]
+        },
+        "rule_name": "Account Lockout Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.45"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "testuser"
+          }
+        },
+        "raw_data": "{\"event_id\": 4740, \"username\": \"testuser\", \"source_ip\": \"203.0.113.45\", \"failed_attempts\": 25}"
+      }
+    },
+    {
+      "name": "High - Suspicious Pattern (15 Failed Attempts)",
+      "description": "Medium severity alert with 15 failed attempts indicating possible attack",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:20:30Z",
+        "severity": "medium",
+        "source_product": "Active Directory",
+        "title": "Suspicious Login Activity - Account Locked",
+        "source_vendor": "Microsoft",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious Login Activity - Account Locked",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Failed Authentication Threshold",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Authentication Failure"
+          ]
+        },
+        "rule_name": "Failed Authentication Threshold",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "testuser"
+          }
+        },
+        "raw_data": "{\"event_id\": 4625, \"username\": \"testuser\", \"failed_attempts\": 15}"
+      }
+    },
+    {
+      "name": "Low - User Error (3 Failed Attempts)",
+      "description": "Low severity alert with 3 failed attempts likely indicating user error",
+      "input": {
+        "triggering_event_time": "2025-10-23T09:15:45Z",
+        "severity": "low",
+        "source_product": "Active Directory",
+        "title": "Account Lockout - User Error Suspected",
+        "source_vendor": "Microsoft",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Account Lockout - User Error Suspected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Account Lockout",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Authentication Failure"
+          ]
+        },
+        "rule_name": "Account Lockout",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "testuser"
+          }
+        },
+        "raw_data": "{\"event_id\": 4740, \"username\": \"testuser\", \"failed_attempts\": 3}"
+      }
+    },
+    {
+      "name": "Non-User Entity - Device Alert",
+      "description": "Alert with device as primary risk entity should be returned unchanged (no user enrichment)",
+      "input": {
+        "triggering_event_time": "2025-10-23T11:30:00Z",
+        "severity": "critical",
+        "source_product": "Falcon",
+        "title": "Malware Detected on Endpoint",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Malware Detected on Endpoint",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Malware Detected on Endpoint",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "workstation-042.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-2025-10-23-11300\", \"hostname\": \"workstation-042.corp.local\"}"
+      }
+    }
+  ],
+  "tags": [
+    "identity",
+    "active-directory",
+    "ldap",
+    "account-lockout",
+    "security-investigation",
+    "incident-response",
+    "brute-force-detection",
+    "risk-assessment",
+    "enrichment"
+  ]
+}

@@ -1,0 +1,74 @@
+{{- if .Values.keycloak.enabled -}}
+{{- $component := "keycloak" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      containers:
+        - name: keycloak
+          image: "{{ .Values.keycloak.image.repository }}:{{ .Values.keycloak.image.tag }}"
+          imagePullPolicy: {{ .Values.keycloak.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: {{ required "keycloak.adminUser is required when keycloak.enabled" .Values.keycloak.adminUser | quote }}
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: {{ required "keycloak.adminPassword is required when keycloak.enabled" .Values.keycloak.adminPassword | quote }}
+            - name: KC_DB
+              value: "dev-mem"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+          command: ["/opt/keycloak/bin/kc.sh", "start-dev"]
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.keycloak.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 4 }}
+{{- end }}

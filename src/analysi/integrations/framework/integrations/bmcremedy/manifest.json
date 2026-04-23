@@ -1,0 +1,294 @@
+{
+  "id": "bmcremedy",
+  "app": "bmcremedy",
+  "name": "BMC Remedy ITSM",
+  "version": "1.0.0",
+  "description": "BMC Remedy ITSM integration for incident ticket management via the AR REST API",
+  "archetypes": [
+    "TicketingSystem"
+  ],
+  "priority": 60,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "bmcremedy-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "bmcremedy-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this BMC Remedy integration instance"
+  },
+
+  "archetype_mappings": {
+    "TicketingSystem": {
+      "create_ticket": "create_ticket",
+      "get_ticket_status": "get_ticket",
+      "update_ticket": "update_ticket",
+      "add_comment": "add_comment",
+      "close_ticket": "set_status"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "BMC Remedy API username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "BMC Remedy API password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "BMC Remedy server URL (e.g., https://mybmc.contoso.com:8008)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify server SSL certificate",
+        "default": false
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to BMC Remedy by obtaining a JWT token",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new incident ticket in BMC Remedy",
+      "categories": ["ticketing", "incident_response"],
+      "cy_name": "create_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "object",
+            "description": "JSON object of incident fields (e.g., First_Name, Last_Name, Description, Service_Type, Reported Source, Status, Urgency, Impact)"
+          },
+          "first_name": {
+            "type": "string",
+            "description": "Customer first name"
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Customer last name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Incident summary/description"
+          },
+          "service_type": {
+            "type": "string",
+            "description": "Service type (e.g., User Service Restoration)"
+          },
+          "reported_source": {
+            "type": "string",
+            "description": "Reported source (e.g., Direct Input, Email)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Incident status (e.g., New, Assigned)"
+          },
+          "urgency": {
+            "type": "string",
+            "description": "Urgency level (e.g., 1-Critical, 2-High, 3-Medium, 4-Low)"
+          },
+          "impact": {
+            "type": "string",
+            "description": "Impact level (e.g., 1-Extensive/Widespread, 2-Significant/Large)"
+          },
+          "status_reason": {
+            "type": "string",
+            "description": "Status reason"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get incident ticket details by ID",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "get_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Incident Number (e.g., INC000000000001)"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update an existing incident ticket",
+      "categories": ["ticketing", "incident_response"],
+      "cy_name": "update_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Incident Number to update"
+          },
+          "fields": {
+            "type": "object",
+            "description": "JSON object of fields to update"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Search and list incident tickets with optional filters",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "list_tickets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "AR System query string (e.g., 'Status'=\"Assigned\")"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of tickets to return"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Starting index for pagination (default: 0)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "set_status",
+      "name": "Set Status",
+      "description": "Set the status of an incident ticket",
+      "categories": ["ticketing", "incident_response"],
+      "cy_name": "set_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Incident Number"
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status (e.g., New, Assigned, In Progress, Pending, Resolved, Closed, Cancelled)"
+          },
+          "status_reason": {
+            "type": "string",
+            "description": "Status reason (optional)"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Assignee name (optional)"
+          },
+          "assignee_login_id": {
+            "type": "string",
+            "description": "Assignee login ID (optional)"
+          },
+          "assigned_group": {
+            "type": "string",
+            "description": "Assigned group (optional)"
+          },
+          "assigned_support_company": {
+            "type": "string",
+            "description": "Assigned support company (optional)"
+          },
+          "assigned_support_organization": {
+            "type": "string",
+            "description": "Assigned support organization (optional)"
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Resolution text (optional)"
+          }
+        },
+        "required": ["id", "status"]
+      }
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a work note/comment to an incident ticket",
+      "categories": ["ticketing", "communication"],
+      "cy_name": "add_comment",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Incident Number"
+          },
+          "work_info_type": {
+            "type": "string",
+            "description": "Work log type (e.g., General Information, Customer Communication)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Detailed description / comment text"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description for the work log entry"
+          }
+        },
+        "required": ["id", "work_info_type"]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

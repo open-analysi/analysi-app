@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Silent Refresh</title>
+  </head>
+  <body>
+    <script>
+      // This page handles silent token refresh for @axa-fr/react-oidc.
+      // The OidcProvider opens this page in a hidden iframe to renew tokens
+      // without interrupting the user session.
+      parent.postMessage(location.href, location.origin);
+    </script>
+  </body>
+</html>

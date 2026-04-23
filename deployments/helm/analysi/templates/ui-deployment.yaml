@@ -1,0 +1,86 @@
+{{- if .Values.ui.enabled -}}
+{{- $component := "ui" -}}
+{{- $port := .Values.ui.containerPort | default 8080 -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: {{ .Values.ui.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Pod-level hardening — applies to every container here.
+      # The UI image (nginxinc/nginx-unprivileged) already runs as UID 101
+      # and listens on a non-privileged port, so we can enforce all three:
+      # runAsNonRoot, a read-only root filesystem, and zero added capabilities.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{ $component }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              # nginx-unprivileged listens on 8080 and writes temp/pid files
+              # under /tmp, so NO capabilities are needed at runtime.
+              drop: ["ALL"]
+          ports:
+            - containerPort: {{ $port }}
+          env:
+            - name: BACKEND_API_URL
+              value: "http://{{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" "api") }}:{{ .Values.api.service.port }}"
+          # Read-only root fs means nginx can't write its generated config or
+          # runtime temps to the image layer. Mount emptyDirs for the paths
+          # the entrypoint and workers actually write to.
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+            - name: nginx-tmp
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+      volumes:
+        - name: nginx-conf
+          emptyDir: {}
+        - name: nginx-tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  type: {{ .Values.ui.service.type }}
+  ports:
+    - port: {{ .Values.ui.service.port }}
+      targetPort: {{ $port }}
+      protocol: TCP
+      {{- if .Values.ui.service.nodePort }}
+      nodePort: {{ .Values.ui.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 4 }}
+{{- end }}

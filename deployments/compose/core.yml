@@ -1,0 +1,255 @@
+# Layer 1: Core Services
+# Application services: API, workers, database migrations.
+# Same codebase across all deployments — single unified image.
+#
+# Requires deps.yml (Layer 2) — never run standalone:
+#   docker compose -f core.yml -f deps.yml up
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "100m"
+    max-file: "3"
+
+# Shared build config — all services use the same unified Dockerfile
+x-analysi-build: &analysi-build
+  build:
+    context: ../..
+    dockerfile: deployments/docker/Dockerfile
+    target: dev
+
+services:
+  flyway:
+    logging: *default-logging
+    image: flyway/flyway:11
+    env_file: ../../.env
+    command: -url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
+    volumes:
+      - ../../migrations/flyway/sql:/flyway/sql
+      - ../../migrations/flyway/conf:/flyway/conf
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+
+  flyway-test:
+    logging: *default-logging
+    image: flyway/flyway:11
+    env_file: ../../.env
+    command: -url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/analysi_test -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
+    volumes:
+      - ../../migrations/flyway/sql:/flyway/sql
+      - ../../migrations/flyway/conf:/flyway/conf
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+
+  api:
+    logging: *default-logging
+    <<: *analysi-build
+    env_file: ../../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      ENVIRONMENT: ${ENVIRONMENT}
+      PORT: ${PORT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      ANALYSI_LOG_PAYLOADS: ${ANALYSI_LOG_PAYLOADS:-false}
+      # Task Execution Configuration
+      TASK_EXECUTOR_WORKERS: ${TASK_EXECUTOR_WORKERS}
+      TASK_EXECUTOR_TIMEOUT: ${TASK_EXECUTOR_TIMEOUT}
+      ENABLED_EXECUTORS: ${ENABLED_EXECUTORS}
+      # MinIO Configuration
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      # Vault Configuration
+      VAULT_HOST: ${VAULT_HOST}
+      VAULT_PORT: ${VAULT_PORT}
+      VAULT_TOKEN: ${VAULT_TOKEN}
+      # Artifacts API Configuration
+      BACKEND_API_HOST: ${BACKEND_API_HOST}
+      BACKEND_API_PORT: ${BACKEND_API_PORT}
+      # Auth Configuration
+      ANALYSI_AUTH_MODE: ${ANALYSI_AUTH_MODE:-dev}
+      ANALYSI_AUTH_JWKS_URI: ${ANALYSI_AUTH_JWKS_URI:-http://keycloak:8080/realms/analysi/protocol/openid-connect/certs}
+      ANALYSI_AUTH_ISSUER: ${ANALYSI_AUTH_ISSUER:-http://localhost:8080/realms/analysi}
+      ANALYSI_AUTH_AUDIENCE: ${ANALYSI_AUTH_AUDIENCE:-analysi-app}
+      ANALYSI_SYSTEM_API_KEY: ${ANALYSI_SYSTEM_API_KEY}
+      # Valkey connection (used by routers that enqueue ARQ jobs)
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+    ports:
+      - "${API_EXTERNAL_PORT}:8000"
+    volumes:
+      - ../../src:/app/src:z
+      - ../../tests:/app/tests:z
+      - ../../pyproject.toml:/app/pyproject.toml:z
+      - ../../poetry.lock:/app/poetry.lock:z
+      - ../../dist:/app/dist:z
+      - /tmp/analysi/npm-cache:/root/.npm:z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+      flyway-test:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+    command: sh -c "cd /app && PYTHONPATH=/app/src poetry run uvicorn analysi.main:app --host 0.0.0.0 --port 8000"
+
+  alerts-worker:
+    logging: *default-logging
+    <<: *analysi-build
+    env_file: ../../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
+      ALERT_WORKER_PROCESSES: ${ALERT_WORKER_PROCESSES}
+      ALERT_WORKER_MAX_JOBS: ${ALERT_WORKER_MAX_JOBS}
+      ALERT_WORKER_TIMEOUT: ${ALERT_WORKER_TIMEOUT}
+      ANALYSI_SYSTEM_API_KEY: ${ANALYSI_SYSTEM_API_KEY}
+      BACKEND_API_HOST: api
+      BACKEND_API_PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL}
+      ANALYSI_LOG_PAYLOADS: ${ANALYSI_LOG_PAYLOADS:-false}
+      # Object Storage (MinIO) Configuration
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      ARTIFACTS_BUCKET: ${ARTIFACTS_BUCKET}
+    volumes:
+      - ../../src:/app/src:z
+      - ../../tests:/app/tests:z
+      - ../../pyproject.toml:/app/pyproject.toml:z
+      - ../../poetry.lock:/app/poetry.lock:z
+      - ../../agents/dist:/app/agents:z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["poetry", "run", "arq", "analysi.alert_analysis.worker.WorkerSettings", "--verbose"]
+
+  ui:
+    logging: *default-logging
+    build:
+      context: ../../ui
+      dockerfile: ../deployments/docker/ui/Dockerfile
+      target: dev
+    ports:
+      - "${UI_EXTERNAL_PORT:-5173}:5173"
+    environment:
+      - VITE_BACKEND_API_URL=http://api:8000
+      - VITE_OIDC_AUTHORITY=http://localhost:5173/realms/analysi
+      - VITE_OIDC_PROXY_TARGET=http://keycloak:8080
+      - VITE_OIDC_CLIENT_ID=analysi-app
+      - VITE_BACKEND_API_TENANT=default
+    volumes:
+      - ../../ui/src:/app/src:z
+      - ../../ui/public:/app/public:z
+      - ../../ui/index.html:/app/index.html:z
+      - ../../ui/vite.config.ts:/app/vite.config.ts:z
+      - ../../ui/tsconfig.json:/app/tsconfig.json:z
+      - ../../ui/tsconfig.app.json:/app/tsconfig.app.json:z
+      - ../../ui/tailwind.config.js:/app/tailwind.config.js:z
+      - ../../ui/postcss.config.js:/app/postcss.config.js:z
+      - ../../ui/tsconfig.node.json:/app/tsconfig.node.json:z
+    depends_on:
+      api:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+
+  integrations-worker:
+    logging: *default-logging
+    <<: *analysi-build
+    env_file: ../../.env
+    environment:
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      INTEGRATION_REDIS_DB: 1
+      BACKEND_API_HOST: api
+      BACKEND_API_PORT: 8000
+      ANALYSI_SYSTEM_API_KEY: ${ANALYSI_SYSTEM_API_KEY}
+      INTEGRATION_DEFAULT_TENANT: default
+      INTEGRATION_POLL_INTERVAL: 60
+      INTEGRATION_PULL_LOOKBACK: 120
+      INTEGRATION_MAX_JOBS: 10
+      INTEGRATION_JOB_TIMEOUT: 300
+      INTEGRATION_RECONCILE_INTERVAL: 300
+      INTEGRATION_RECONCILE_LOCK_TTL: 30
+      SPLUNK_HOST: splunk
+      SPLUNK_PORT: 8089
+      SPLUNK_USERNAME: admin
+      SPLUNK_PASSWORD: ${ANALYSI_SPLUNK_PASSWORD:-}
+      SPLUNK_SEARCH_QUERY: "search index=notable | head 50"
+      LOG_LEVEL: ${LOG_LEVEL}
+      ANALYSI_LOG_PAYLOADS: ${ANALYSI_LOG_PAYLOADS:-false}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      ARTIFACTS_BUCKET: ${ARTIFACTS_BUCKET}
+    volumes:
+      - ../../src:/app/src:z
+      - ../../pyproject.toml:/app/pyproject.toml:z
+      - ../../poetry.lock:/app/poetry.lock:z
+    depends_on:
+      valkey:
+        condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["arq", "analysi.integrations.worker.WorkerSettings"]
+
+  notifications-worker:
+    logging: *default-logging
+    <<: *analysi-build
+    env_file: ../../.env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      ANALYSI_LOG_PAYLOADS: ${ANALYSI_LOG_PAYLOADS:-false}
+      # Vault Configuration (credential decryption)
+      VAULT_HOST: ${VAULT_HOST}
+      VAULT_PORT: ${VAULT_PORT}
+      VAULT_TOKEN: ${VAULT_TOKEN}
+    volumes:
+      - ../../src:/app/src:z
+      - ../../pyproject.toml:/app/pyproject.toml:z
+      - ../../poetry.lock:/app/poetry.lock:z
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["python", "-m", "analysi.slack_listener"]

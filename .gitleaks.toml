@@ -1,0 +1,16 @@
+# Gitleaks configuration — extends the built-in ruleset.
+# See: https://github.com/gitleaks/gitleaks#configuration
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and legacy planning docs contain obvious fake secrets"
+paths = [
+    # Unit and integration test fixtures use values like "test-api-key-12345"
+    # and hand-crafted fake RSA keys. Real credentials never live here.
+    '''tests/''',
+    # Legacy phase planning docs (docs/planning/legacy/) reference placeholder
+    # values like "YOUR_API_KEY" and "dev-root-token" in curl examples.
+    '''docs/planning/legacy/''',
+]

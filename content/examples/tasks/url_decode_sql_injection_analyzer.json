@@ -1,0 +1,94 @@
+{
+  "name": "URL Decoder and SQL Injection Analyzer",
+  "cy_name": "url_decode_sql_injection_analyzer",
+  "description": "Decodes URL-encoded payloads from web alerts and uses LLM to analyze them for SQL injection attack patterns, techniques, and risk levels. Adds structured enrichment to alert.enrichments.url_analysis.",
+  "app": "WebSecurity",
+  "directive": "You are a cybersecurity analyst specializing in SQL injection attacks. Analyze URLs and decoded payloads to identify SQL injection patterns, attack techniques, and risk levels. Provide concise, actionable assessments focusing on attack type, payload purpose, and risk level.",
+  "script_file": "url_decode_sql_injection_analyzer.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Web Security",
+    "SQL Injection",
+    "URL Analysis",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 500
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Classic SQL Injection with OR 1=1",
+      "description": "URL-encoded SQL injection using classic OR 1=1 bypass technique",
+      "input": {
+        "severity": "high",
+        "enrichments": {},
+        "title": "SQL Injection Payload Detected",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "SQL Injection Payload Detected",
+          "analytic": {
+            "name": "Web Application SQL Injection Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Web Application SQL Injection Detected",
+        "observables": [],
+        "evidences": [
+          {
+            "url": {
+              "url_string": "https://172.16.17.18/search/?q=%22%20OR%201%20%3D%201%20--%20-"
+            }
+          }
+        ],
+        "raw_data": "{\"alert\": \"SQL injection detected\"}"
+      }
+    },
+    {
+      "name": "Quote Manipulation SQL Injection",
+      "description": "SQL injection using quote manipulation with OR 'x'='x' pattern",
+      "input": {
+        "severity": "high",
+        "enrichments": {},
+        "title": "SQL Injection Attempt with Quote Manipulation",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "SQL Injection Attempt with Quote Manipulation",
+          "analytic": {
+            "name": "Web Application SQL Injection Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Web Application SQL Injection Detected",
+        "observables": [],
+        "evidences": [
+          {
+            "url": {
+              "url_string": "https://172.16.17.18/search/?q=%27%20OR%20%27x%27%3D%27x"
+            }
+          }
+        ],
+        "raw_data": "{\"alert\": \"SQL injection detected\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "web-security",
+    "sql-injection",
+    "url-decoding",
+    "enrichment",
+    "automated-analysis"
+  ]
+}

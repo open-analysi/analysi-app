@@ -1,0 +1,287 @@
+{
+  "id": "domaintools",
+  "app": "domaintools",
+  "name": "DomainTools",
+  "version": "1.0.0",
+  "description": "DomainTools integration for domain intelligence, WHOIS lookups, and threat research",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "integration_id_config": {
+    "default": "domaintools-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "domaintools-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_domain": "whois_domain",
+      "lookup_ip": "whois_ip"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "DomainTools API username",
+        "required": true
+      },
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "DomainTools API key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to DomainTools API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Evaluate the risk and reputation of a domain",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "domain_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check"
+          },
+          "use_risk_api": {
+            "type": "boolean",
+            "description": "Use Risk/Evidence API instead of standard reputation",
+            "default": false
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "whois_domain",
+      "name": "WHOIS Domain",
+      "description": "Get WHOIS information for a domain",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "whois_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "whois_ip",
+      "name": "WHOIS IP",
+      "description": "Get WHOIS information for an IP address",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "whois_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "whois_history",
+      "name": "WHOIS History",
+      "description": "Get historical WHOIS records for a domain",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "whois_history",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "hosting_history",
+      "name": "Hosting History",
+      "description": "Get hosting history for a domain including registrar, IP, and nameserver changes",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "hosting_history",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "reverse_lookup_domain",
+      "name": "Reverse Lookup Domain",
+      "description": "Get IP addresses associated with a domain",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "reverse_lookup_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "reverse_lookup_ip",
+      "name": "Reverse Lookup IP",
+      "description": "Get domains hosted on an IP address",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "reverse_lookup_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "reverse_whois_email",
+      "name": "Reverse WHOIS Email",
+      "description": "Find domains registered to an email address",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "reverse_whois_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to search"
+          },
+          "count_only": {
+            "type": "boolean",
+            "description": "Only return count without purchasing results",
+            "default": false
+          },
+          "include_history": {
+            "type": "boolean",
+            "description": "Include historical registrations",
+            "default": false
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "brand_monitor",
+      "name": "Brand Monitor",
+      "description": "Monitor for newly registered domains matching brand terms",
+      "categories": [
+        "threat_intel",
+        "monitoring"
+      ],
+      "cy_name": "brand_monitor",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Filter by domain status"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

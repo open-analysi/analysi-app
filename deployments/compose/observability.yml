@@ -1,0 +1,108 @@
+# Layer 4: Observability
+# Monitoring, metrics, and database admin tools.
+#
+# Additive layer — use with core.yml + deps.yml:
+#   docker compose -f core.yml -f deps.yml -f observability.yml up
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "100m"
+    max-file: "3"
+
+services:
+  pgadmin:
+    logging: *default-logging
+    image: dpage/pgadmin4:latest
+    env_file: ../../.env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED}
+    ports:
+      - "${PGADMIN_EXTERNAL_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ../docker/configs/pgadmin/servers.json:/pgadmin4/servers.json
+      - ../docker/configs/pgadmin/pgpass:/pgpass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+
+  postgres-exporter:
+    logging: *default-logging
+    image: prometheuscommunity/postgres-exporter:latest
+    env_file: ../../.env
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+    ports:
+      - "${POSTGRES_EXPORTER_EXTERNAL_PORT:-9188}:9187"
+    restart: unless-stopped
+    networks:
+      - app
+
+  valkey-exporter:
+    logging: *default-logging
+    image: oliver006/redis_exporter:latest
+    env_file: ../../.env
+    environment:
+      REDIS_ADDR: valkey:6379
+      REDIS_PASSWORD: ${VALKEY_PASSWORD}
+    ports:
+      - "${VALKEY_EXPORTER_EXTERNAL_PORT:-9121}:9121"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app
+
+  prometheus:
+    logging: *default-logging
+    image: prom/prometheus:latest
+    env_file: ../../.env
+    ports:
+      - "${PROMETHEUS_EXTERNAL_PORT:-9090}:9090"
+    volumes:
+      - ../docker/configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - postgres-exporter
+      - valkey-exporter
+    restart: unless-stopped
+    networks:
+      - app
+
+  grafana:
+    logging: *default-logging
+    image: grafana/grafana:latest
+    env_file: ../../.env
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    ports:
+      - "${GRAFANA_EXTERNAL_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../docker/configs/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - app
+
+volumes:
+  pgadmin_data:
+  prometheus_data:
+  grafana_data:

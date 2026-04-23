@@ -1,0 +1,107 @@
+{
+  "name": "Slack: Disposition Approval Request",
+  "cy_name": "slack_disposition_approval_request",
+  "description": "Asks a human analyst in Slack to approve, reject, or escalate a proposed alert disposition. Uses HITL (Human-in-the-Loop) — execution pauses at the Slack question and resumes when the analyst clicks a button. Returns the decision as an enrichment for downstream workflow logic.",
+  "app": "Slack",
+  "script_file": "slack_disposition_approval_request.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "authored_by": "system",
+  "categories": [
+    "Foundation",
+    "HITL",
+    "Slack",
+    "Disposition",
+    "Approval"
+  ],
+  "tags": [
+    "hitl",
+    "slack",
+    "disposition",
+    "approval",
+    "human-in-the-loop"
+  ],
+  "data_samples": [
+    {
+      "name": "High severity alert with disposition",
+      "input": {
+        "severity": "high",
+        "enrichments": {
+          "alert_disposition_determination": {
+            "ai_analysis": "True Positive - Active brute force attack from known malicious IP targeting multiple accounts. Immediate containment recommended."
+          }
+        },
+        "title": "Brute Force Login Attempts Detected",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Brute Force Login Attempts Detected",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Authentication - Brute Force Login",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Authentication - Brute Force Login",
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Medium severity alert with custom channel",
+      "input": {
+        "severity": "medium",
+        "enrichments": {
+          "alert_disposition_determination": {
+            "ai_analysis": "Suspicious - Elevated DNS queries to uncommon domain. Could be DNS tunneling or benign software update. Further investigation recommended."
+          }
+        },
+        "title": "Unusual DNS Query Volume",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Unusual DNS Query Volume",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Network - DNS Anomaly Detection",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Network - DNS Anomaly Detection",
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "suspicious-c2.example.com"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Alert with minimal enrichments (fallback defaults)",
+      "input": {
+        "enrichments": {},
+        "finding_info": {
+          "title": "Suspicious Process Execution Detected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Endpoint - Suspicious Process Execution",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Endpoint - Suspicious Process Execution",
+        "observables": []
+      }
+    }
+  ]
+}

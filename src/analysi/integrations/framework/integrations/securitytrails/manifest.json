@@ -1,0 +1,234 @@
+{
+  "id": "securitytrails",
+  "app": "securitytrails",
+  "name": "SecurityTrails",
+  "version": "1.0.0",
+  "description": "Passive DNS, historical WHOIS, subdomain enumeration, domain tags, and DNS history via the SecurityTrails API",
+  "archetypes": [
+    "DatabaseEnrichment"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "securitytrails-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "securitytrails-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this SecurityTrails integration instance"
+  },
+
+  "archetype_mappings": {
+    "DatabaseEnrichment": {
+      "lookup_domain": "lookup_domain"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "SecurityTrails API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "SecurityTrails API base URL",
+        "default": "https://api.securitytrails.com/v1"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to SecurityTrails API and validate API key",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Get current DNS records (A, AAAA), Alexa rank, and domain information",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to look up"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "whois_domain",
+      "name": "WHOIS Domain",
+      "description": "Get current WHOIS registration data for a domain including contacts, dates, and nameservers",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "whois_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query WHOIS for"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "whois_history",
+      "name": "WHOIS History",
+      "description": "Get historical WHOIS records for a domain showing ownership changes over time",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "whois_history",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query historical WHOIS for"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "domain_searcher",
+      "name": "Domain Searcher",
+      "description": "Search domains by filter criteria such as IP, MX, NS, WHOIS fields, or keyword",
+      "categories": ["investigation"],
+      "cy_name": "domain_searcher",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Type of record to search against (e.g. ipv4, mx, ns, apex_domain, whois_email)",
+            "enum": [
+              "ipv4", "ipv6", "mx", "ns", "cname", "subdomain",
+              "apex_domain", "soa_email", "tld", "whois_email",
+              "whois_street1", "whois_street2", "whois_street3", "whois_street4",
+              "whois_telephone", "whois_postalCode", "whois_organization",
+              "whois_name", "whois_fax", "whois_city"
+            ]
+          },
+          "filterstring": {
+            "type": "string",
+            "description": "Value to search for within the chosen filter type"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "Optional keyword to further refine search results"
+          }
+        },
+        "required": ["filter", "filterstring"]
+      }
+    },
+    {
+      "id": "domain_category",
+      "name": "Domain Category",
+      "description": "Get category tags for a domain (e.g. gambling, sports, news, technology)",
+      "categories": ["enrichment"],
+      "cy_name": "domain_category",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to get category tags for"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "domain_subdomain",
+      "name": "Domain Subdomain",
+      "description": "Enumerate known subdomains for a given domain",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "domain_subdomain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to enumerate subdomains for"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "domain_history",
+      "name": "Domain History",
+      "description": "Get historical DNS records for a domain by record type (A, AAAA, MX, NS, TXT, SOA)",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "domain_history",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to get DNS history for"
+          },
+          "record_type": {
+            "type": "string",
+            "description": "DNS record type to query history for",
+            "enum": ["a", "aaaa", "mx", "ns", "txt", "soa"],
+            "default": "a"
+          }
+        },
+        "required": ["domain"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

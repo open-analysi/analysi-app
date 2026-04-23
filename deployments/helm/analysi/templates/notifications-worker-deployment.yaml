@@ -1,0 +1,51 @@
+{{- $component := "notifications-worker" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: {{ .Values.notificationsWorker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.notificationsWorker.initContainers.waitForDb }}
+      initContainers:
+        - name: wait-for-db
+          image: "{{ .Values.global.utilityImage.repository }}:{{ .Values.global.utilityImage.tag }}"
+          command: ['sh', '-c', 'until nc -z {{ .Values.global.database.host }} {{ .Values.global.database.port }}; do sleep 2; done']
+      {{- end }}
+      containers:
+        - name: notifications-worker
+          image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          command: ["poetry", "run", "python", "-m", "analysi.slack_listener"]
+          env:
+            {{- include "analysi.commonEnv" . | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.notificationsWorker.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}

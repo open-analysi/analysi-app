@@ -1,0 +1,36 @@
+{
+  "cveId": "CVE-2022-41082",
+  "title": "Microsoft Exchange Server Remote Code Execution Vulnerability",
+  "severity": "HIGH",
+  "baseScore": 8,
+  "affectedProducts": [
+    {
+      "product": "Microsoft Exchange Server 2013 Cumulative Update 23",
+      "versionStart": "15.00.0",
+      "versionEnd": "15.00.1497.044"
+    },
+    {
+      "product": "Microsoft Exchange Server 2016 Cumulative Update 22",
+      "versionStart": "15.0.0",
+      "versionEnd": "15.01.2375.037"
+    },
+    {
+      "product": "Microsoft Exchange Server 2019 Cumulative Update 11",
+      "versionStart": "15.02.0",
+      "versionEnd": "15.02.0986.036"
+    },
+    {
+      "product": "Microsoft Exchange Server 2019 Cumulative Update 12",
+      "versionStart": "15.02.0",
+      "versionEnd": "15.02.1118.020"
+    },
+    {
+      "product": "Microsoft Exchange Server 2016 Cumulative Update 23",
+      "versionStart": "15.01.0",
+      "versionEnd": "15.01.2507.016"
+    }
+  ],
+  "impact": "Remote Code Execution",
+  "exploitStatus": "Active Exploitation Detected",
+  "reference": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2022-41082"
+}

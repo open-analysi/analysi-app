@@ -1,0 +1,34 @@
+{
+  "name": "ProxyNotShell Exchange Server Compromise Assessment",
+  "cy_name": "proxynotshell_exchange_server_compromise_assessment",
+  "description": "Assesses the scope of Exchange server compromise from a ProxyNotShell attack by analyzing attack success, EDR evidence, and payload analysis. Determines compromise level (none/reconnaissance/mailbox_access/full_compromise), privileges obtained, persistence mechanisms, lateral movement, data exposure risk, and recommended containment actions. This LLM-only reasoning task synthesizes findings from payload_analysis, echo_edr_comprehensive_behavioral_analysis, and attack_verdict enrichments to provide actionable security recommendations.",
+  "app": "default",
+  "directive": "You are a security analyst specializing in Exchange server compromise assessment. Synthesize evidence from payload analysis, EDR data, and attack verdicts to determine compromise scope, privileges obtained, persistence, lateral movement, and data exposure. Provide actionable containment recommendations.",
+  "script_file": "proxynotshell_exchange_server_compromise_assessment.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "ProxyNotShell",
+    "Exchange",
+    "Compromise Assessment",
+    "Reasoning"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 1000
+  },
+  "authored_by": "system",
+  "tags": [
+    "proxynotshell",
+    "cve-2022-41082",
+    "exchange",
+    "compromise-assessment",
+    "edr"
+  ]
+}

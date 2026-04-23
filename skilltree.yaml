@@ -1,0 +1,143 @@
+# Analysi Backend — Skill & Agent Dependencies
+#
+# dependencies:     = Foundation (packaged into product + used locally)
+# dev-dependencies: = Dev-only (local Claude Code, never shipped)
+#
+# Folder layout mirrors agents/:
+#   skills/source/  = prod skill sources (packaged into content/foundation/skills/)
+#   skills/dev/     = dev-only skill sources (never shipped)
+#
+# Packaging flow:
+#   skilltree install                         → populates .claude/skills/ and .claude/agents/
+#   make package-skills                       → syncs prod skills to content/foundation/skills/
+#   make package-agents                       → syncs prod agents to agents/dist/
+#   skilltree install --prod --frozen         → CI validation (lockfile must be in sync)
+
+name: analysi-backend
+install_targets:
+  - claude
+
+sources:
+  vibes: github.com/imarios/open-vibes
+  cy: github.com/open-analysi/cy-language
+  anthropic-skills: github.com/anthropics/skills
+
+dependencies:
+  # === Foundation Skills (packaged into product) ===
+
+  # Local — source in this repo under skills/source/
+  task-builder:
+    local: ./skills/source/task-builder
+  task-naming:
+    local: ./skills/source/task-naming
+  workflow-builder:
+    local: ./skills/source/workflow-builder
+  hypothesis-building-task:
+    local: ./skills/source/hypothesis-building-task
+  runbook-to-workflow:
+    local: ./skills/source/runbook-to-workflow
+  runbooks-manager:
+    local: ./skills/source/runbooks-manager
+
+  # Integration-accompanying skills ({name}-integration)
+  tor-integration:
+    local: ./skills/source/tor-integration
+  unshortenme-integration:
+    local: ./skills/source/unshortenme-integration
+  mac-vendors-integration:
+    local: ./skills/source/mac-vendors-integration
+  whois-rdap-integration:
+    local: ./skills/source/whois-rdap-integration
+  qrcode-integration:
+    local: ./skills/source/qrcode-integration
+  ad-ldap-integration:
+    local: ./skills/source/ad-ldap-integration
+  slack-integration:
+    local: ./skills/source/slack-integration
+  global-dns-integration:
+    local: ./skills/source/global-dns-integration
+  nistnvd-integration:
+    local: ./skills/source/nistnvd-integration
+  virustotal-integration:
+    local: ./skills/source/virustotal-integration
+  abuseipdb-integration:
+    local: ./skills/source/abuseipdb-integration
+  echo-edr-integration:
+    local: ./skills/source/echo-edr-integration
+
+  # Remote — from other repos
+  cy-language-programming:
+    source: cy
+    version: "*"
+  cybersecurity-analyst:
+    source: vibes
+    version: "*"
+  splunk-skill:
+    source: vibes
+    version: "*"
+  ocsf-detection-finding:
+    source: vibes
+    version: "*"
+
+
+  # === Production Agents (packaged into product) ===
+
+  # Local — source in agents/source/
+  cybersec-task-builder:
+    local: ./agents/source/cybersec-task-builder.md
+    type: agent
+  cy-script-segment-tester:
+    local: ./agents/source/cy-script-segment-tester.md
+    type: agent
+  splunk-spl-writer-basic:
+    local: ./agents/source/splunk-spl-writer-basic.md
+    type: agent
+  runbook-to-task-proposals:
+    local: ./agents/source/runbook-to-task-proposals.md
+    type: agent
+  workflow-builder-agent:
+    local: ./agents/source/workflow-builder.md
+    type: agent
+    name: workflow-builder
+  runbook-match-agent:
+    local: ./agents/source/runbook-match-agent.md
+    type: agent
+
+dev-dependencies:
+  # === Development Skills (local Claude Code only, never shipped) ===
+  integrations-developer:
+    local: ./skills/dev/integrations-developer
+  test-writer-fixer:
+    local: ./skills/dev/test-writer-fixer
+  python-coding:
+    source: vibes
+    version: "*"
+  typescript-coding:
+    source: vibes
+    version: "*"
+  general-coding:
+    source: vibes
+    version: "*"
+  fastapi-coding:
+    source: vibes
+    version: "*"
+  docker-dev:
+    source: vibes
+    version: "*"
+  kubernetes:
+    source: vibes
+    version: "*"
+  terraform-security-review:
+    source: vibes
+    version: "*"
+  frontend-coding:
+    source: vibes
+    version: "*"
+  frontend-design:
+    source: anthropic-skills
+    version: "*"
+
+  # === Development Agents (local Claude Code only, never shipped) ===
+  agent-to-langgraph:
+    local: ./agents/dev/agent-to-langgraph.md
+    type: agent

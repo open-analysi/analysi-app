@@ -1,0 +1,235 @@
+{
+  "id": "greynoise",
+  "app": "greynoise",
+  "name": "GreyNoise",
+  "version": "1.0.0",
+  "description": "GreyNoise IP noise and threat intelligence -- identifies mass-scanning IPs (noise) versus targeted attacks for SOC alert triage",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "greynoise-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "greynoise-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this GreyNoise integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "lookup_ip"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "GreyNoise API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "GreyNoise API base URL",
+        "default": "https://api.greynoise.io"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to GreyNoise API and validate API key",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Quick check a single IP address via GreyNoise multi quick-check endpoint",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "lookup_ips",
+      "name": "Lookup IPs",
+      "description": "Quick check multiple IPs (comma-separated, limit 500 per request)",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_ips",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ips": {
+            "type": "string",
+            "description": "Comma-separated IP addresses to query (limit 500)"
+          }
+        },
+        "required": ["ips"]
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Get full GreyNoise reputation and context for an IP including metadata, tags, scan data, and classification",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "gnql_query",
+      "name": "GNQL Query",
+      "description": "Run a GreyNoise Query Language (GNQL) query with pagination support",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "gnql_query",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "GNQL query string"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Number of results to return (default 100)",
+            "default": 100
+          },
+          "exclude_raw": {
+            "type": "boolean",
+            "description": "Exclude raw scan data from response",
+            "default": false
+          },
+          "quick": {
+            "type": "boolean",
+            "description": "Return only IP and classification/trust level",
+            "default": false
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "lookup_ip_timeline",
+      "name": "IP Timeline",
+      "description": "Get historical timeline data for an IP filtered by a specific field (classification, ports, tags, etc.)",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "lookup_ip_timeline",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to get timeline for"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field to show activity breakdown for",
+            "enum": [
+              "classification",
+              "source_org",
+              "source_asn",
+              "source_rdns",
+              "http_path",
+              "http_user_agent",
+              "destination_port",
+              "tag_ids"
+            ],
+            "default": "classification"
+          },
+          "days": {
+            "type": "integer",
+            "description": "Number of days to show data for (default 30)",
+            "default": 30
+          },
+          "granularity": {
+            "type": "string",
+            "description": "Granularity of date ranges: 1h (hourly) or 1d (daily)",
+            "default": "1d"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "get_cve_details",
+      "name": "Get CVE Details",
+      "description": "Retrieve GreyNoise exploitation intelligence for a specific CVE",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "get_cve_details",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "cve_id": {
+            "type": "string",
+            "description": "CVE ID to query (e.g. CVE-2024-12345)"
+          }
+        },
+        "required": ["cve_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}
