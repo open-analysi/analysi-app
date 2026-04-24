@@ -4,7 +4,7 @@
   "name": "unshorten.me",
   "version": "1.0.0",
   "description": "Expands shortened URLs to their final destination using the unshorten.me public API. No authentication required.",
-  "archetypes": [],
+  "archetypes": ["UrlShorteningTools"],
   "priority": 50,
   "integration_id_config": {
     "default": "unshortenme",
@@ -13,7 +13,7 @@
     "display_name": "Integration ID",
     "description": "Unique identifier for this integration instance"
   },
-  "archetype_mappings": {},
+  "archetype_mappings": {"UrlShorteningTools": {}},
   "requires_credentials": false,
   "credential_schema": {
     "type": "object",

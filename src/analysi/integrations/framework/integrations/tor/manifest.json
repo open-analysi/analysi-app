@@ -4,7 +4,7 @@
   "name": "Tor",
   "version": "1.0.0",
   "description": "Check if IP addresses are Tor exit nodes using the Tor Project's public exit node lists. No authentication required.",
-  "archetypes": [],
+  "archetypes": ["TorExitList"],
   "priority": 50,
   "integration_id_config": {
     "default": "tor",
@@ -13,7 +13,7 @@
     "display_name": "Integration ID",
     "description": "Unique identifier for this integration instance"
   },
-  "archetype_mappings": {},
+  "archetype_mappings": {"TorExitList": {}},
   "requires_credentials": false,
   "credential_schema": {
     "type": "object",

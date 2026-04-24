@@ -4,7 +4,7 @@
   "name": "MAC Vendors",
   "version": "1.0.0",
   "description": "MAC address OUI lookup via macvendors.com. Works without credentials (free tier: 1000 req/day). Optional API key unlocks higher rate limits.",
-  "archetypes": [],
+  "archetypes": ["MacOuiRegistry"],
   "priority": 50,
   "integration_id_config": {
     "default": "mac-vendors",
@@ -13,7 +13,7 @@
     "display_name": "Integration ID",
     "description": "Unique identifier for this integration instance"
   },
-  "archetype_mappings": {},
+  "archetype_mappings": {"MacOuiRegistry": {}},
   "requires_credentials": false,
   "credential_schema": {
     "type": "object",

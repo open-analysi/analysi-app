@@ -54,13 +54,13 @@ For background on the problem Analysi solves, see [docs/context/ai-soc-problem.m
 
 ## Quick Start
 
-Prerequisites: Docker, Make, Poetry (Python 3.13)
+Prerequisites: Docker, Make, Poetry (Python 3.12+; Docker images use Python 3.13). See [Developer Tools](#developer-tools) for the full toolchain.
 
 ```bash
 # Start all services (PostgreSQL, Valkey, MinIO, Vault, Keycloak, API, workers, UI)
 make up
 
-# Run database migrations
+# Run database migrations (Flyway)
 make db-migrate
 
 # Verify everything is healthy
@@ -71,6 +71,8 @@ make logs
 ```
 
 The API is available at `http://localhost:8001`. Health check: `GET /health`.
+
+> **Git worktrees:** `make up` and the other Compose targets are blocked inside git worktrees to avoid port and database conflicts. Use the Kind workflow instead (`make k8s-up`, `make k8s-status`, `make k8s-down`).
 
 ## Development
 
@@ -83,17 +85,28 @@ make test-db-up
 make test-integration-db
 
 # Start full stack with example integrations (SIEM, LDAP, echo EDR)
+# Lab services (Splunk, OpenLDAP, Echo EDR) are provisioned via the
+# separate analysi-demo-loader repo — see docs for setup.
 make up-full
 
-# Rebuild after code changes
+# Rebuild after code changes (add SERVICE=api to target a single service)
 make rebuild
 
-# Lint and format
+# Lint, format, typecheck
 poetry run ruff check --fix
 poetry run ruff format
+poetry run typecheck
 
 # Code quality audit
 make code-quality-check
+```
+
+The TypeScript CLI under `cli/` wraps the API for terminal use:
+
+```bash
+make cli-install && make cli-build
+make cli CMD="auth login"
+make cli CMD="status"
 ```
 
 ### Testing
@@ -109,6 +122,39 @@ make smoke-test             # Post-deploy health checks
 make benchmark-api          # API response time benchmarks
 make audit-test-hygiene     # Detect flaky test patterns
 ```
+
+### Developer Tools
+
+Core toolchain you need locally:
+
+| Tool | What it's for |
+|------|---------------|
+| [Docker](https://docs.docker.com/get-docker/) | Runs Compose stack, builds service images, feeds Kind |
+| [Make](https://www.gnu.org/software/make/) | Primary task runner — every workflow in this README is a `make` target |
+| [Poetry](https://python-poetry.org/) | Python dependency + virtualenv management (`poetry add <pkg>`, `poetry run <cmd>`) |
+| [Ruff](https://docs.astral.sh/ruff/) | Python lint + format (`poetry run ruff check --fix`, `ruff format`) |
+| [mypy](https://mypy.readthedocs.io/) | Static type checking (`poetry run typecheck`) |
+| [pytest](https://docs.pytest.org/) | Test runner (`poetry run test` or `make test-unit`) |
+| [Flyway](https://flywaydb.org/) | SQL migrations in `migrations/flyway/sql/` (`make db-migrate`, `make flyway-repair`) |
+
+Deployment + infra:
+
+| Tool | What it's for |
+|------|---------------|
+| [Kind](https://kind.sigs.k8s.io/) | Local Kubernetes cluster (required in git worktrees) — `make k8s-up`, `make k8s-status` |
+| [Helm](https://helm.sh/) | Kubernetes packaging — charts under `deployments/helm/analysi/` |
+| [Terraform](https://www.terraform.io/) | EKS infrastructure (VPC, EKS, ALB, IRSA) under `deployments/terraform/` |
+| [kubectl](https://kubernetes.io/docs/reference/kubectl/) | Cluster inspection (`make k8s-logs SERVICE=api`) |
+
+Analysi-specific:
+
+| Tool | What it's for |
+|------|---------------|
+| [Skilltree](https://github.com/imarios/skilltree) | Manages Claude Code skills/agents per [`skilltree.yaml`](skilltree.yaml). `skilltree install` populates `.claude/`; `make package-skills` / `make package-agents` sync prod artifacts into `content/foundation/skills/` and `agents/dist/`. |
+| Analysi CLI (`cli/`) | TypeScript CLI over the REST API — `make cli-install && make cli-build`, then `make cli CMD="..."` |
+| `poetry run validate-manifest <path>` | Validate a single integration `manifest.json` |
+| `poetry run validate-integration <path>` | Validate a full integration directory (manifest + action classes + archetypes) |
+| `make code-quality-check` | Test hygiene + flakiness detection + line counts |
 
 ## Deployment
 
@@ -146,23 +192,36 @@ Container images are **private** — never pushed to public registries.
 
 ## Integrations
 
-Analysi ships with a pluggable integration framework (Naxos) and 40+ built-in integrations. Each integration declares **actions** — capabilities callable from Cy scripts or via scheduled execution. Examples:
+Analysi ships with a pluggable integration framework (**Naxos**) and **101 built-in integrations**. Each integration declares an **archetype** (what kind of tool it is) and **actions** (capabilities callable from Cy scripts or scheduled jobs).
 
-| Integration | Archetypes | Capabilities |
-|-------------|------------|-------------|
-| Splunk | SIEM | SPL queries, notable updates, data model discovery |
-| Echo EDR | EDR | Process/network/browser history, isolation, quarantine |
-| VirusTotal | Threat Intel | IP/domain/file/URL reputation and scanning |
-| AbuseIPDB | Threat Intel | IP reputation lookup and reporting |
-| OpenAI | AI | LLM functions (`llm_run`, `llm_summarize`, `llm_extract`) |
-| Anthropic | AI | LLM functions via Claude models |
-| OpenLDAP | Identity Provider | User/group lookups, authentication context |
+Integrations, grouped by archetype:
+
+| Archetype | # | Examples |
+|-----------|---|----------|
+| ThreatIntel | 17 | VirusTotal, AbuseIPDB, Recorded Future, MISP, Shodan, GreyNoise, DomainTools |
+| EDR | 13 | CrowdStrike, SentinelOne, Defender for Endpoint, Carbon Black, Cortex XDR, Echo EDR |
+| NetworkSecurity | 11 | Palo Alto, FortiGate, Check Point, Zscaler, Cloudflare, Cisco Umbrella, Netskope |
+| SIEM | 10 | Splunk, Microsoft Sentinel, Elasticsearch, QRadar, Chronicle, Sumo Logic, Exabeam |
+| EmailSecurity | 6 | Proofpoint, Mimecast, Abnormal, Google Gmail, Exchange On-Prem, Cofense Triage |
+| DatabaseEnrichment | 5 | Censys, SecurityTrails, Have I Been Pwned, NIST NVD, Axonius |
+| IdentityProvider | 5 | Okta, Microsoft Entra ID, AD LDAP, Duo, CyberArk |
+| TicketingSystem | 5 | JIRA, ServiceNow, TheHive, Freshservice, BMC Remedy |
+| CloudProvider | 4 | AWS Security, Google Cloud SCC, Defender for Cloud, Wiz |
+| Sandbox | 4 | ANY.RUN, Joe Sandbox, WildFire, urlscan.io |
+| VulnerabilityManagement | 4 | Tenable, Qualys, Rapid7 InsightVM, Nessus |
+| AI | 3 | Anthropic (Claude), OpenAI, Google Gemini |
+| Communication | 3 | Microsoft Teams, Cisco Webex, Google Chat |
+| Lakehouse | 2 | Databricks, Google BigQuery |
+| Notification | 2 | Slack, PagerDuty |
+| DNS · Geolocation · MacOuiRegistry · QRDecoder · TorExitList · UrlShorteningTools · Whois | 1 each | Global DNS, MaxMind, MAC Vendors, QR Code, Tor, unshorten.me, WHOIS RDAP |
+
+Full list of integration IDs lives in [`src/analysi/integrations/framework/integrations/`](src/analysi/integrations/framework/integrations/). Add new integrations by dropping a directory with a `manifest.json` and an action class — validated via `poetry run validate-integration <path>`.
 
 ## Tech Stack
 
-- **Language:** Python 3.13, [Cy](https://github.com/imarios/cy-language) (compiled automation scripts), TypeScript (CLI)
-- **Framework:** FastAPI, SQLAlchemy 2.0 (async), ARQ, Pydantic AI, LangGraph
-- **Database:** PostgreSQL 15 (pg_partman, pg_cron), Valkey (Redis-compatible)
+- **Language:** Python 3.12+ (Docker images on 3.13), [Cy](https://github.com/imarios/cy-language) (compiled automation scripts), TypeScript (CLI)
+- **Framework:** FastAPI, SQLAlchemy 2.0 (async), ARQ, `pydantic-ai-slim`, LangGraph
+- **Database:** PostgreSQL 15 (pg_partman, pg_cron), Flyway migrations, Valkey (Redis-compatible)
 - **Infrastructure:** Docker Compose, Helm, Terraform, Kind, EKS
 - **Observability:** structlog, OpenTelemetry, Prometheus, Grafana
 - **Auth:** Keycloak (OIDC), API keys, RBAC

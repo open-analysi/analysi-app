@@ -4,7 +4,7 @@
   "name": "QR Code",
   "version": "1.0.0",
   "description": "Decode QR codes from images and extract embedded data (URLs, text, etc.). No authentication required — pure code integration using OpenCV.",
-  "archetypes": [],
+  "archetypes": ["QRDecoder"],
   "priority": 50,
   "integration_id_config": {
     "default": "qrcode",
@@ -13,7 +13,7 @@
     "display_name": "Integration ID",
     "description": "Unique identifier for this integration instance"
   },
-  "archetype_mappings": {},
+  "archetype_mappings": {"QRDecoder": {}},
   "requires_credentials": false,
   "credential_schema": {
     "type": "object",

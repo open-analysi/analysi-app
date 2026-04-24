@@ -136,6 +136,31 @@ ARCHETYPE_DEFINITIONS = {
             "alerts_to_ocsf",  # Normalize raw alerts to OCSF format
         ]
     },
+    Archetype.MAC_OUI_REGISTRY: {
+        "required_methods": [
+            # MAC address OUI vendor lookups
+        ]
+    },
+    Archetype.QR_DECODER: {
+        "required_methods": [
+            # QR / barcode decoding from image artifacts
+        ]
+    },
+    Archetype.TOR_EXIT_LIST: {
+        "required_methods": [
+            # Tor exit node / anonymizer detection
+        ]
+    },
+    Archetype.URL_SHORTENING_TOOLS: {
+        "required_methods": [
+            # URL shortening and expansion services
+        ]
+    },
+    Archetype.WHOIS: {
+        "required_methods": [
+            # WHOIS / RDAP registration data lookups
+        ]
+    },
 }
 
 

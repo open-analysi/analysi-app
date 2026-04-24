@@ -4,7 +4,7 @@
   "name": "WHOIS RDAP",
   "version": "1.0.0",
   "description": "IP address WHOIS lookups via the RDAP protocol. Free public service — no authentication required.",
-  "archetypes": [],
+  "archetypes": ["Whois"],
   "priority": 50,
   "integration_id_config": {
     "default": "whois-rdap",
@@ -13,7 +13,7 @@
     "display_name": "Integration ID",
     "description": "Unique identifier for this integration instance"
   },
-  "archetype_mappings": {},
+  "archetype_mappings": {"Whois": {}},
   "requires_credentials": false,
   "credential_schema": {
     "type": "object",

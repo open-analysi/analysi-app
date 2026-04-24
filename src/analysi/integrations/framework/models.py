@@ -36,6 +36,11 @@ class Archetype(StrEnum):
     DNS = "DNS"
     AGENTIC_FRAMEWORK = "AgenticFramework"
     ALERT_SOURCE = "AlertSource"
+    MAC_OUI_REGISTRY = "MacOuiRegistry"
+    QR_DECODER = "QRDecoder"
+    TOR_EXIT_LIST = "TorExitList"
+    URL_SHORTENING_TOOLS = "UrlShorteningTools"
+    WHOIS = "Whois"
 
 
 class ActionDefinition(BaseModel):
