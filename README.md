@@ -8,26 +8,31 @@ For background on the problem Analysi solves, see [docs/context/ai-soc-problem.m
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    classDef ext fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef svc fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+    User(["Analyst"]):::ext
+    Slack["Slack"]:::ext
+    SIEM["SIEM"]:::ext
+    Tools["Threat intel · EDR<br/>IdP · Sandbox · etc."]:::ext
+
+    UI["UI"]:::svc
+    API["API<br/>FastAPI · MCP"]:::svc
+    IW["⏰ Integrations Worker<br/>cron · polls schedules"]:::svc
+    AW["Alerts Worker<br/>Cy scripts + LLM"]:::svc
+    NW["Notifications Worker<br/>Slack Socket Mode"]:::svc
+
+    User --> UI --> API
+    IW -- enqueue jobs --> AW
+    AW -->|pull_alerts| SIEM
+    AW <-->|enrich| Tools
+    API -.->|ad-hoc exec| Tools
+    AW <-. HITL pause/resume .-> NW
+    NW <--> Slack
 ```
-                    ┌─────────────┐
-                    │    SIEM     │  (alert source)
-                    └──────┬──────┘
-                           │ pull_alerts
-                    ┌──────▼──────┐
-                    │     API     │  FastAPI + {data, meta} envelope
-                    └──┬──┬───┬──┘
-                       │  │   │
-          ┌────────────▼┐ │ ┌─▼────────────────┐
-          │   Alerts     │ │ │  Integrations     │
-          │   Worker     │ │ │  Worker           │
-          └──────┬───────┘ │ └──────────────────┘
-                 │         │    ARQ async jobs
-          ┌──────▼──────┐  │
-          │  Cy Scripts  │  │  ┌──────────────────┐
-          │  + LLM calls │  └──▶  Notifications   │
-          └──────────────┘     │  Worker (Slack)   │
-                               └──────────────────┘
-```
+
+> The `IW → AW` arrow is mediated by **Valkey** (ARQ queue). All services share **Postgres** for state, **Vault** for credentials, and **MinIO** for artifacts; the API uses **Keycloak** for OIDC. See the service table below.
 
 **Services:**
 
@@ -35,7 +40,7 @@ For background on the problem Analysi solves, see [docs/context/ai-soc-problem.m
 |---------|---------|
 | **API** | REST API (FastAPI), MCP server, serves UI and external clients |
 | **Alerts Worker** | Alert analysis pipeline — triage, workflow generation, enrichment, disposition |
-| **Integrations Worker** | Scheduled actions (pull alerts, health checks) and on-demand tool execution |
+| **Integrations Worker** | Schedule dispatcher — polls the `schedules` table and enqueues jobs (pull alerts, health checks) onto the alerts worker; ad-hoc tool execution runs in-process in the API |
 | **Notifications Worker** | Slack Socket Mode listener for human-in-the-loop interactions |
 | **UI** | Frontend application |
 | **PostgreSQL** | Primary data store (pg_partman for partitioned tables, pg_cron for maintenance) |
@@ -84,9 +89,8 @@ make test-unit
 make test-db-up
 make test-integration-db
 
-# Start full stack with example integrations (SIEM, LDAP, echo EDR)
-# Lab services (Splunk, OpenLDAP, Echo EDR) are provisioned via the
-# separate analysi-demo-loader repo — see docs for setup.
+# Start the full stack with observability (Prometheus + Grafana)
+# on top of the core services started by `make up`.
 make up-full
 
 # Rebuild after code changes (add SERVICE=api to target a single service)
@@ -136,6 +140,7 @@ Core toolchain you need locally:
 | [mypy](https://mypy.readthedocs.io/) | Static type checking (`poetry run typecheck`) |
 | [pytest](https://docs.pytest.org/) | Test runner (`poetry run test` or `make test-unit`) |
 | [Flyway](https://flywaydb.org/) | SQL migrations in `migrations/flyway/sql/` (`make db-migrate`, `make flyway-repair`) |
+| [Skilltree](https://github.com/imarios/skilltree) | Generic skill/agent dependency manager that works with any AI coding assistant (Claude Code, Cursor, etc.). `skilltree install` resolves [`skilltree.yaml`](skilltree.yaml) and populates the agent's local config dir. Only skip it if you're coding without an AI assistant. |
 
 Deployment + infra:
 
@@ -150,7 +155,6 @@ Analysi-specific:
 
 | Tool | What it's for |
 |------|---------------|
-| [Skilltree](https://github.com/imarios/skilltree) | Manages Claude Code skills/agents per [`skilltree.yaml`](skilltree.yaml). `skilltree install` populates `.claude/`; `make package-skills` / `make package-agents` sync prod artifacts into `content/foundation/skills/` and `agents/dist/`. |
 | Analysi CLI (`cli/`) | TypeScript CLI over the REST API — `make cli-install && make cli-build`, then `make cli CMD="..."` |
 | `poetry run validate-manifest <path>` | Validate a single integration `manifest.json` |
 | `poetry run validate-integration <path>` | Validate a full integration directory (manifest + action classes + archetypes) |
@@ -198,16 +202,16 @@ Integrations, grouped by archetype:
 
 | Archetype | # | Examples |
 |-----------|---|----------|
-| ThreatIntel | 17 | VirusTotal, AbuseIPDB, Recorded Future, MISP, Shodan, GreyNoise, DomainTools |
+| ThreatIntel | 19 | VirusTotal, AbuseIPDB, Recorded Future, MISP, Shodan, GreyNoise, DomainTools |
 | EDR | 13 | CrowdStrike, SentinelOne, Defender for Endpoint, Carbon Black, Cortex XDR, Echo EDR |
 | NetworkSecurity | 11 | Palo Alto, FortiGate, Check Point, Zscaler, Cloudflare, Cisco Umbrella, Netskope |
 | SIEM | 10 | Splunk, Microsoft Sentinel, Elasticsearch, QRadar, Chronicle, Sumo Logic, Exabeam |
 | EmailSecurity | 6 | Proofpoint, Mimecast, Abnormal, Google Gmail, Exchange On-Prem, Cofense Triage |
-| DatabaseEnrichment | 5 | Censys, SecurityTrails, Have I Been Pwned, NIST NVD, Axonius |
+| DatabaseEnrichment | 6 | Censys, SecurityTrails, Have I Been Pwned, NIST NVD, Axonius, PassiveTotal |
 | IdentityProvider | 5 | Okta, Microsoft Entra ID, AD LDAP, Duo, CyberArk |
 | TicketingSystem | 5 | JIRA, ServiceNow, TheHive, Freshservice, BMC Remedy |
 | CloudProvider | 4 | AWS Security, Google Cloud SCC, Defender for Cloud, Wiz |
-| Sandbox | 4 | ANY.RUN, Joe Sandbox, WildFire, urlscan.io |
+| Sandbox | 5 | ANY.RUN, Joe Sandbox, WildFire, urlscan.io, CrowdStrike |
 | VulnerabilityManagement | 4 | Tenable, Qualys, Rapid7 InsightVM, Nessus |
 | AI | 3 | Anthropic (Claude), OpenAI, Google Gemini |
 | Communication | 3 | Microsoft Teams, Cisco Webex, Google Chat |
