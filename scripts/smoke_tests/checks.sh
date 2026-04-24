@@ -217,7 +217,7 @@ check_compose_logs() {
 
     local errors
     errors=$(docker ps --filter "name=analysi" --format "{{.Names}}" 2>/dev/null | while read -r name; do
-        docker logs --since 2m "$name" 2>&1 | grep -iE "^.*\b(ERROR|CRITICAL|FATAL)\b" | grep -viE "$LOG_ERROR_EXCLUDES" | head -3
+        docker logs --since 2m "$name" 2>&1 | grep -E "\b(ERROR|CRITICAL|FATAL)\b" | grep -viE "$LOG_ERROR_EXCLUDES" | head -3
     done)
 
     if [[ -z "$errors" ]]; then
@@ -242,7 +242,7 @@ check_k8s_logs() {
         if [[ -n "$pod" ]]; then
             local pod_errors
             pod_errors=$(kubectl logs "$pod" -n "$namespace" --since=2m 2>/dev/null \
-                | grep -iE "^.*\b(ERROR|CRITICAL|FATAL)\b" \
+                | grep -E "\b(ERROR|CRITICAL|FATAL)\b" \
                 | grep -viE "$LOG_ERROR_EXCLUDES" \
                 | head -3)
             if [[ -n "$pod_errors" ]]; then
