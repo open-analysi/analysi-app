@@ -92,37 +92,29 @@ make audit-test-hygiene     # Detect flaky test patterns
 
 ### Developer Tools
 
-Core toolchain you need locally:
+You only need to install four things manually. Everything else is brought in by `poetry install`, runs in a container, or is optional for specific deployment targets.
+
+**Required local installs:**
 
 | Tool | What it's for |
 |------|---------------|
-| [Docker](https://docs.docker.com/get-docker/) | Runs Compose stack, builds service images, feeds Kind |
+| [Docker](https://docs.docker.com/get-docker/) | Runs the Compose stack, builds service images, feeds Kind |
 | [Make](https://www.gnu.org/software/make/) | Primary task runner — every workflow in this README is a `make` target |
 | [Poetry](https://python-poetry.org/) | Python dependency + virtualenv management (`poetry add <pkg>`, `poetry run <cmd>`) |
-| [Ruff](https://docs.astral.sh/ruff/) | Python lint + format (`poetry run ruff check --fix`, `ruff format`) |
-| [mypy](https://mypy.readthedocs.io/) | Static type checking (`poetry run typecheck`) |
-| [pytest](https://docs.pytest.org/) | Test runner (`poetry run test` or `make test-unit`) |
-| [Flyway](https://flywaydb.org/) | SQL migrations in `migrations/flyway/sql/` (`make db-migrate`, `make flyway-repair`) |
-| [Skilltree](https://github.com/imarios/skilltree) | Generic skill/agent dependency manager that works with any AI coding assistant (Claude Code, Cursor, etc.). `skilltree install` resolves [`skilltree.yaml`](skilltree.yaml) and populates the agent's local config dir. Only skip it if you're coding without an AI assistant. |
+| [Skilltree](https://github.com/imarios/skilltree) | Skill/agent dependency manager that works with any AI coding assistant (Claude Code, Cursor, etc.). `skilltree install` resolves [`skilltree.yaml`](skilltree.yaml) and populates the agent's local config dir. Skip if you're coding without an AI assistant. |
 
-Deployment + infra:
+**Comes with `poetry install`** (no manual install): Ruff (lint/format), mypy (typecheck), pytest (tests), MkDocs Material + Mermaid plugin (docs site preview), `validate-manifest` / `validate-integration` (integration validators).
 
-| Tool | What it's for |
-|------|---------------|
-| [Kind](https://kind.sigs.k8s.io/) | Local Kubernetes cluster (required in git worktrees) — `make k8s-up`, `make k8s-status` |
-| [Helm](https://helm.sh/) | Kubernetes packaging — charts under `deployments/helm/analysi/` |
-| [Terraform](https://www.terraform.io/) | EKS infrastructure (VPC, EKS, ALB, IRSA) under `deployments/terraform/` |
-| [kubectl](https://kubernetes.io/docs/reference/kubectl/) | Cluster inspection (`make k8s-logs SERVICE=api`) |
+**Runs in containers** (no local install needed): Flyway (SQL migrations via `make db-migrate`).
 
-Analysi-specific:
+**Optional, install only for the targets you'll use:**
 
-| Tool | What it's for |
-|------|---------------|
-| Analysi CLI (`cli/`) | TypeScript CLI over the REST API — `make cli-install && make cli-build`, then `make cli CMD="..."` |
-| `poetry run validate-manifest <path>` | Validate a single integration `manifest.json` |
-| `poetry run validate-integration <path>` | Validate a full integration directory (manifest + action classes + archetypes) |
-| `make code-quality-check` | Test hygiene + flakiness detection + line counts |
-| `mkdocs serve` | Preview the docs site locally at `http://127.0.0.1:8000/` (after `poetry install --with docs`) |
+| Tool | When to install |
+|------|-----------------|
+| [Kind](https://kind.sigs.k8s.io/) | Required for local Kubernetes runs and inside git worktrees — `make k8s-up`, `make k8s-status` |
+| [Helm](https://helm.sh/) | Needed if you'll touch the Kubernetes charts under `deployments/helm/analysi/` |
+| [kubectl](https://kubernetes.io/docs/reference/kubectl/) | Needed if you'll inspect a running cluster (`make k8s-logs SERVICE=api`) |
+| [Terraform](https://www.terraform.io/) | Only needed for AWS EKS deployment — modules under `deployments/terraform/` |
 
 ## Deployment
 
