@@ -6,7 +6,101 @@ Security automation platform that processes alerts through AI-powered investigat
 
 For background on the problem Analysi solves, see [docs/context/ai-soc-problem.md](docs/context/ai-soc-problem.md).
 
+## Contents
+
+- [Architecture](#architecture)
+  - [Concept](#concept) — one workflow per detection rule
+  - [Alert lifecycle](#alert-lifecycle) — rule-driven path from ingest to reaction
+  - [Services](#services) — runtime processes and shared infra
+- [Quick Start](#quick-start) — bring the stack up locally
+- [Development](#development)
+  - [Testing](#testing)
+  - [Developer Tools](#developer-tools)
+- [Deployment](#deployment)
+  - [Local Kubernetes (kind)](#local-kubernetes-kind)
+  - [AWS EKS](#aws-eks)
+  - [CI/CD](#cicd)
+- [Integrations](#integrations) — 101 built-in connectors by archetype
+- [Tech Stack](#tech-stack)
+- [License](#license)
+- [Contributing](#contributing)
+
 ## Architecture
+
+### Concept
+
+Every alert in a SIEM/EDR is produced by a **detection rule** (e.g. Splunk's "Suspicious PowerShell Execution"). Analysi keys its investigation knowledge to the rule, not the individual alert — at most one agentic workflow per rule.
+
+The first time a rule fires, Analysi has no workflow for it and synthesizes one autonomously: slow, token-heavy, multi-tool reasoning. The result is saved against the rule. Every subsequent alert from that same rule reuses the saved workflow — cheap and fast. (The generated workflow itself may pause for an analyst at run time via HITL — that's a property of the workflow, not of the generation step.)
+
+```mermaid
+flowchart LR
+    classDef known fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef new fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
+    classDef terminal fill:#e0e7ff,stroke:#4338ca,color:#312e81
+
+    Alert([Alert arrives]):::terminal
+    Q{Do we already know<br/>how to investigate it?}
+    Run["Run agentic workflow<br/><b>cheap · fast</b>"]:::known
+    Gen["Generate new agentic workflow<br/><b>slow · deep thinking · high tokens</b>"]:::new
+    Disp([Disposition]):::terminal
+
+    Alert --> Q
+    Q -- yes --> Run
+    Q -- no --> Gen --> Run
+    Run --> Disp
+```
+
+At steady state, the system holds **one agentic workflow per detection rule that has ever fired** in the environment. As rule coverage grows, the rate of expensive synthesis trends toward zero — and the cost of investigating each new alert collapses to the price of replaying a saved workflow.
+
+### Alert lifecycle
+
+The path an alert takes from ingestion to reaction is rule-driven on both ends. Shape vocabulary used below:
+
+- **Parallelogram** — data / event flowing through the system
+- **Diamond** — rule engine / decision logic
+- **Rectangle** — function / executable step
+
+```mermaid
+flowchart LR
+    classDef data fill:#e0e7ff,stroke:#4338ca,color:#312e81
+    classDef logic fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef func fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+
+    Alert[/"Alert<br/>(OCSF)"/]:::data
+    Routing{"Alert Routing<br/>Rules"}:::logic
+    Run["Workflow<br/>Execution"]:::func
+    GenRun["Workflow Generation<br/>+ Execution"]:::func
+    Disp[/"Disposition<br/>Control Event"/]:::data
+    Reaction{"Event Reaction<br/>Rules"}:::logic
+    Action["Reaction Action<br/>(Slack · Jira · SIEM ticket update)"]:::func
+
+    Alert --> Routing
+    Routing -- workflow exists --> Run
+    Routing -- no workflow --> GenRun
+    Run --> Disp
+    GenRun --> Disp
+    Disp --> Reaction --> Action
+```
+
+Two rule engines bracket the agentic core, but they look alike only on the surface — they're populated and matched very differently:
+
+- **Alert Routing Rules** are **auto-generated**, never hand-written. Each rule says "alerts produced by *this detection rule* run *this workflow*". They appear in the database as a side effect of workflow generation: when Analysi synthesizes a workflow for a never-before-seen detection rule, it also writes the routing rule that pins future alerts of the same rule to that workflow. At steady state there is one routing rule per detection rule the system has ever processed.
+- **Event Reaction Rules** are **user-configured**. Each rule matches on properties of the disposition control event (verdict, severity, tags, source, etc.) and fans out to side-effects: post to Slack, open a Jira ticket, update the SIEM case, page on-call, etc. The same disposition can fire any number of reactions — and different teams or environments can configure their own.
+
+#### From OCSF alert to detection rule
+
+The "detection rule" the routing engine keys on is extracted from the OCSF Detection Finding event during ingestion:
+
+```
+ocsf.finding_info.analytic.name   →   Alert.rule_name
+```
+
+(See [`src/analysi/integrations/framework/alert_ingest.py:175`](src/analysi/integrations/framework/alert_ingest.py#L175).) The `rule_name` becomes the unique `title` of an `AnalysisGroup` row ([`src/analysi/models/kea_coordination.py:25`](src/analysi/models/kea_coordination.py#L25)), which the `AlertRoutingRule` table maps to a `workflow_id` ([`src/analysi/models/kea_coordination.py:140`](src/analysi/models/kea_coordination.py#L140)). Routing for a new alert is therefore one lookup: `finding_info.analytic.name` → analysis group → routing rule → workflow.
+
+If the lookup misses (no analysis group, or no routing rule yet), the alert is queued for workflow generation. Once generation completes successfully, both the analysis group and the routing rule exist, and every subsequent alert from the same detection rule takes the cheap path.
+
+The implementation behind the concept above:
 
 ```mermaid
 flowchart LR
