@@ -1,0 +1,349 @@
+# Default values for Analysi Helm chart.
+# Override per-environment via values/local.yaml, values/aws-hybrid.yaml, etc.
+#
+# IMPORTANT: Analysi images are PRIVATE.
+# Do NOT push to public registries. CI/CD publishes to private GHCR only.
+
+global:
+  environment: production
+  logLevel: INFO
+  logPayloads: "false"
+
+  # Unified app image — all services (API, alerts-worker, integrations-worker)
+  # share the same image with different commands.
+  image:
+    repository: analysi/app
+    tag: ""  # defaults to Chart.AppVersion
+    pullPolicy: IfNotPresent
+
+  # Utility image used by init containers (e.g., wait-for-db).
+  # Override for air-gapped or private-registry environments.
+  utilityImage:
+    repository: busybox
+    tag: "1.37"
+
+  # Service hostnames follow the pattern: {release}-{chart}-{component}
+  # With release=analysi and chart=analysi: analysi-analysi-{component}
+  database:
+    host: analysi-analysi-postgresql
+    port: 5432
+    name: analysi
+    user: analysiuser
+    # Password MUST be supplied per-environment via values overlay or --set.
+    # The chart will fail at install/template time if this is empty.
+    password: ""
+    sslmode: disable  # disable for in-cluster PG; require for RDS
+
+  valkey:
+    host: analysi-analysi-valkey
+    port: 6379
+    # Password MUST be supplied per-environment.
+    password: ""
+
+  minio:
+    endpoint: analysi-analysi-minio:9000
+    # Access/secret key MUST be supplied per-environment.
+    accessKey: ""
+    secretKey: ""
+    bucket: analysi
+    artifactsBucket: analysi-artifacts
+
+  vault:
+    host: analysi-analysi-vault
+    port: 8200
+    # Token MUST be supplied per-environment.
+    token: ""
+
+  auth:
+    mode: oidc
+    jwksUri: ""
+    issuer: ""
+    audience: analysi-app
+    # System API key MUST be supplied per-environment.
+    systemApiKey: ""
+    adminApiKey: ""
+    ownerApiKey: ""
+
+  # Optional: enable HMAC verification on POST /alerts by pointing at a
+  # pre-existing Kubernetes Secret whose value is a JSON map of tenant→secret.
+  # Operator creates the secret out-of-band (kubectl create secret /
+  # ExternalSecret / sealed-secret). When unset, alert ingestion accepts
+  # unsigned requests (preserves existing inbound flows).
+  alertWebhookSecretsRef: {}
+    # name: my-webhook-secrets
+    # key: secrets-json   # defaults to ANALYSI_ALERT_WEBHOOK_SECRETS
+
+# ──────────────────────────────────────────
+# NetworkPolicies — restrict pod-to-pod traffic
+# ──────────────────────────────────────────
+# Enabled by default. Disable only if your CNI doesn't enforce NetworkPolicy
+# (Docker Desktop's default kindnet is permissive; install Calico/Cilium for
+# enforcement, or set this to false to skip rendering policies).
+networkPolicies:
+  enabled: true
+
+# ──────────────────────────────────────────
+# Image Pull Secrets (for private GHCR)
+# ──────────────────────────────────────────
+imagePullSecrets: []
+
+# ──────────────────────────────────────────
+# API
+# ──────────────────────────────────────────
+api:
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts: []
+    tls: []
+
+  taskExecutor:
+    workers: "4"
+    timeout: "300"
+    enabledExecutors: "cy"
+
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 3
+
+  initContainers:
+    waitForDb: true
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# ──────────────────────────────────────────
+# Alerts Worker
+# ──────────────────────────────────────────
+alertsWorker:
+  replicaCount: 2
+
+  redisDb: "0"
+  processes: "4"
+  maxJobs: "10"
+  timeout: "600"
+
+  initContainers:
+    waitForDb: true
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# ──────────────────────────────────────────
+# Integrations Worker
+# ──────────────────────────────────────────
+integrationsWorker:
+  replicaCount: 1
+
+  redisDb: "5"
+  defaultTenant: default
+  pollInterval: "60"
+  pullLookback: "120"
+  maxJobs: "10"
+  jobTimeout: "300"
+  reconcileInterval: "300"
+  reconcileLockTtl: "30"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ──────────────────────────────────────────
+# Notifications Worker (HITL — Slack Socket Mode listener)
+# ──────────────────────────────────────────
+notificationsWorker:
+  replicaCount: 1
+
+  initContainers:
+    waitForDb: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# ──────────────────────────────────────────
+# UI
+# ──────────────────────────────────────────
+ui:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: analysi/ui
+    tag: ""
+    pullPolicy: IfNotPresent
+  # Port nginx listens on inside the container. The UI image is built on
+  # nginxinc/nginx-unprivileged which listens on 8080 (non-privileged) by
+  # default so the pod needs zero CAP_* grants.
+  containerPort: 8080
+  backendApiUrl: "http://localhost:8000"
+  tenant: default
+  disableAuth: "false"
+  e2eApiKey: ""
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# ──────────────────────────────────────────
+# Flyway (Database Migrations)
+# ──────────────────────────────────────────
+flyway:
+  enabled: true
+  image:
+    repository: flyway/flyway
+    tag: "11"
+  backoffLimit: 3
+  sqlConfigMap: ""  # name of ConfigMap containing SQL files
+  initContainers:
+    waitForDb: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# ──────────────────────────────────────────
+# Dependency Services (own templates)
+# Same official images as docker-compose for consistency.
+# ──────────────────────────────────────────
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    username: analysiuser
+    # DEPRECATED: ignored at runtime. Credentials now flow from
+    # global.database.password only (single source of truth). Leaving the
+    # field so existing overlays keep parsing cleanly.
+    password: ""
+    database: analysi
+  partitioning:
+    enabled: false  # Set to true in environments with pg_partman installed
+    retention: {}   # Override per-table retention in env-specific values
+  persistence:
+    enabled: false
+    storageClass: ""
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+valkey:
+  enabled: true
+  image:
+    repository: valkey/valkey
+    tag: "8-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    # DEPRECATED: ignored at runtime. Valkey deployment now reads
+    # global.valkey.password directly (single source of truth).
+    password: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+keycloak:
+  enabled: false
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: "26.1"
+    pullPolicy: IfNotPresent
+  # adminUser/adminPassword MUST be supplied per-environment when keycloak.enabled.
+  adminUser: ""
+  adminPassword: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+minio:
+  enabled: true
+  image:
+    repository: minio/minio
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  auth:
+    # DEPRECATED: ignored at runtime. MinIO root credentials now flow from
+    # global.minio.accessKey / global.minio.secretKey only.
+    rootUser: ""
+    rootPassword: ""
+  persistence:
+    enabled: false
+    storageClass: ""
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+vault:
+  enabled: true
+  image:
+    repository: hashicorp/vault
+    tag: "1.17"
+    pullPolicy: IfNotPresent
+  # DEPRECATED: ignored at runtime. Vault dev-root-token now flows from
+  # global.vault.token only (single source of truth).
+  devRootToken: ""
+  logLevel: info
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi

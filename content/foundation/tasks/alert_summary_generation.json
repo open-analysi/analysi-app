@@ -1,0 +1,312 @@
+{
+  "name": "Alert Summary Generation",
+  "cy_name": "alert_summary_generation",
+  "description": "Enriches alerts with AI-generated executive summaries by condensing the detailed security analysis. Creates concise one-sentence summaries (max 128 characters) from the comprehensive alert_detailed_analysis enrichment for SOC leadership and executive briefings.",
+  "app": "default",
+  "directive": "You are a senior SOC analyst creating executive summaries for security leadership. Condense the detailed security analysis into a concise, actionable one-sentence summary that captures the threat, key risk indicators, and recommended actions. Focus on business impact and clarity. Stay within 128 characters.",
+  "script_file": "alert_summary_generation.cy",
+  "function": "summarization",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Alert Enrichment",
+    "Summary",
+    "AI",
+    "Executive Reporting"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 100
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Multi-Enriched Critical IP Alert",
+      "description": "High severity alert with VirusTotal and AbuseIPDB enrichments - should incorporate all threat intelligence",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "severity": "critical",
+        "source_product": "Next-Generation Firewall",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 84.2,
+            "threat_level": "Critical",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 16,
+              "suspicious": 2,
+              "harmless": 1,
+              "total_engines": 19
+            },
+            "recommended_action": "BLOCK_IMMEDIATELY",
+            "llm_analysis": "This IP has been flagged by 16 security engines as malicious, indicating active threat infrastructure."
+          },
+          "abuseipdb_ip": {
+            "data_source": "AbuseIPDB",
+            "abuse_confidence_score": 100,
+            "total_reports": 453,
+            "country_code": "RU",
+            "is_public": true,
+            "usage_type": "Data Center/Web Hosting/Transit",
+            "threat_categories": [
+              "Port Scan",
+              "Brute-Force",
+              "Bad Web Bot"
+            ],
+            "llm_analysis": "IP shows extensive abuse history with 453 reports, primarily for port scanning and brute force attacks."
+          }
+        },
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Outbound Connection to Threat Intelligence Feed IP",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Network Threat"
+          ]
+        },
+        "rule_name": "Outbound Connection to Threat Intelligence Feed IP",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.2.145",
+              "port": 49325
+            },
+            "dst_endpoint": {
+              "ip": "185.220.101.45",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-045.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"FW-DEMO-14352\", \"severity\": \"critical\", \"action\": \"blocked\"}"
+      }
+    },
+    {
+      "name": "User-Focused Alert with Privileged Account Context",
+      "description": "Alert involving privileged user with AD/LDAP enrichment - should highlight user risk",
+      "input": {
+        "triggering_event_time": "2025-10-23T09:15:30Z",
+        "severity": "high",
+        "source_product": "Azure AD",
+        "enrichments": {
+          "ad_ldap_user_context": {
+            "data_source": "Active Directory",
+            "username": "sarah.chen",
+            "display_name": "Sarah Chen",
+            "email": "sarah.chen@corp.example.com",
+            "department": "Finance",
+            "title": "Senior Financial Analyst",
+            "is_privileged": true,
+            "privileged_groups": [
+              "Domain Admins",
+              "Finance-Admins"
+            ],
+            "account_status": "active",
+            "last_logon": "2025-10-22T17:30:00Z",
+            "llm_analysis": "High-risk privileged user with Domain Admin access in Finance department. Compromised account could enable financial fraud and full domain control."
+          }
+        },
+        "title": "Multiple Failed Login Attempts from Privileged Account",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Multiple Failed Login Attempts from Privileged Account",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Brute Force Attack Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Credential Access"
+          ]
+        },
+        "rule_name": "Brute Force Attack Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "192.168.50.200"
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "sarah.chen@corp.example.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AAD-DEMO-09153\", \"failed_attempts\": 15, \"user\": \"sarah.chen\"}"
+      }
+    },
+    {
+      "name": "Clean Alert with Minimal Enrichment",
+      "description": "Low severity alert with benign findings - should reflect low risk",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:12:08Z",
+        "severity": "low",
+        "source_product": "IDS/IPS",
+        "enrichments": {
+          "virustotal_ip_reputation": {
+            "data_source": "VirusTotal",
+            "risk_score": 0,
+            "threat_level": "Low",
+            "confidence": "High",
+            "detection_summary": {
+              "malicious": 0,
+              "suspicious": 0,
+              "harmless": 89,
+              "undetected": 6,
+              "total_engines": 95
+            },
+            "recommended_action": "ALLOW",
+            "llm_analysis": "Google DNS server - legitimate infrastructure with no malicious indicators."
+          }
+        },
+        "title": "Unusual Port Scan Activity Detected",
+        "source_vendor": "Suricata",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Unusual Port Scan Activity Detected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Port Scan Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Reconnaissance"
+          ]
+        },
+        "rule_name": "Port Scan Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:IDS/IPS"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "8.8.8.8"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.50.100"
+            },
+            "dst_endpoint": {
+              "ip": "8.8.8.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "192.168.50.100"
+        },
+        "raw_data": "{\"alert_id\": \"IDS-DEMO-15120\", \"signature\": \"Port Scan\"}"
+      }
+    },
+    {
+      "name": "Alert with No Prior Enrichments",
+      "description": "Alert without enrichments - should summarize based on alert details only",
+      "input": {
+        "triggering_event_time": "2025-10-23T11:45:00Z",
+        "severity": "medium",
+        "source_product": "Next-Generation Firewall",
+        "title": "Large Data Transfer to External Cloud Storage",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Large Data Transfer to External Cloud Storage",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Excessive Data Upload",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Data Exfiltration"
+          ]
+        },
+        "rule_name": "Excessive Data Upload",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:DLP"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "amazonaws.com"
+          }
+        ],
+        "evidences": [
+          {
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "john.doe@corp.example.com"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"DLP-DEMO-11450\", \"bytes\": \"2.4GB\", \"dest\": \"s3.amazonaws.com\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "summarization",
+    "executive-briefing",
+    "enrichment",
+    "ai-analysis"
+  ]
+}

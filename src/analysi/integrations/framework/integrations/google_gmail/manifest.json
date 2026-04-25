@@ -1,0 +1,300 @@
+{
+  "id": "google_gmail",
+  "app": "google_gmail",
+  "name": "Google Gmail",
+  "version": "1.0.0",
+  "description": "Integrates with Google Gmail for email investigation and management actions",
+  "archetypes": [
+    "EmailSecurity"
+  ],
+  "priority": 65,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "key_json": {
+        "type": "string",
+        "description": "Contents of Service Account JSON file from Google Cloud",
+        "required": true,
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [
+      "key_json"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "login_email": {
+        "type": "string",
+        "description": "Login (Admin) email address for delegated access",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "default_format": {
+        "type": "string",
+        "description": "Default format for email retrieval (metadata, minimal, raw)",
+        "enum": [
+          "metadata",
+          "minimal",
+          "raw"
+        ],
+        "default": "metadata"
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Google Gmail API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Get the list of users from Google Workspace",
+      "categories": [
+        "investigation",
+        "user_management"
+      ],
+      "cy_name": "list_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "max_items": {
+            "type": "integer",
+            "description": "Max users to get (max 500)",
+            "default": 500
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Token to specify next page in list"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search emails with query/filtering options",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's Email (Mailbox to search in)"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label (to search in)",
+            "default": "Inbox"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Substring to search in Subject"
+          },
+          "sender": {
+            "type": "string",
+            "description": "Sender Email address to match"
+          },
+          "body": {
+            "type": "string",
+            "description": "Substring to search in Body"
+          },
+          "internet_message_id": {
+            "type": "string",
+            "description": "Internet Message ID"
+          },
+          "query": {
+            "type": "string",
+            "description": "Gmail Query string"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Max Results",
+            "default": 100
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Next page token"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "delete_email",
+      "name": "Delete Email",
+      "description": "Delete emails from Gmail",
+      "categories": [
+        "containment",
+        "email_security"
+      ],
+      "cy_name": "delete_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message IDs to delete (Comma separated IDs allowed)"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email of the mailbox owner"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Retrieve email details via internet message id",
+      "categories": [
+        "investigation",
+        "email_security"
+      ],
+      "cy_name": "get_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's Email (Mailbox to search)"
+          },
+          "internet_message_id": {
+            "type": "string",
+            "description": "Internet Message ID"
+          },
+          "extract_attachments": {
+            "type": "boolean",
+            "description": "Add attachments to vault and create vault artifacts",
+            "default": false
+          },
+          "format": {
+            "type": "string",
+            "description": "Format used for the get email action",
+            "enum": [
+              "metadata",
+              "minimal",
+              "raw"
+            ],
+            "default": "metadata"
+          },
+          "download_email": {
+            "type": "boolean",
+            "description": "Download email to vault",
+            "default": false
+          }
+        },
+        "required": [
+          "email",
+          "internet_message_id"
+        ]
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve user details via email address",
+      "categories": [
+        "investigation",
+        "user_management"
+      ],
+      "cy_name": "get_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's Email (User to search)"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    },
+    {
+      "id": "send_email",
+      "name": "Send Email",
+      "description": "Send emails via Gmail",
+      "categories": [
+        "communication",
+        "email_security"
+      ],
+      "cy_name": "send_email",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "List of recipients email addresses"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Message Subject"
+          },
+          "body": {
+            "type": "string",
+            "description": "Html rendering of message"
+          },
+          "from": {
+            "type": "string",
+            "description": "From field (optional)"
+          },
+          "cc": {
+            "type": "string",
+            "description": "List of recipients email addresses to include on cc line"
+          },
+          "bcc": {
+            "type": "string",
+            "description": "List of recipients email addresses to include on bcc line"
+          },
+          "reply_to": {
+            "type": "string",
+            "description": "Address that should receive replies to the sent email"
+          }
+        },
+        "required": [
+          "to",
+          "subject",
+          "body"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "search_emails": "run_query",
+      "get_email_details": "get_email",
+      "delete_email": "delete_email",
+      "send_email": "send_email"
+    }
+  }
+}

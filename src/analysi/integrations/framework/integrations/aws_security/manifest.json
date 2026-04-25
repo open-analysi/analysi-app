@@ -1,0 +1,395 @@
+{
+  "id": "aws_security",
+  "app": "aws_security",
+  "name": "AWS Security",
+  "version": "1.0.0",
+  "description": "AWS Security Hub and GuardDuty integration for cloud security findings management",
+  "archetypes": [
+    "CloudProvider",
+    "AlertSource"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "aws-security-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "aws-security-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this AWS Security integration instance"
+  },
+
+  "archetype_mappings": {
+    "CloudProvider": {
+      "get_vulnerabilities": "list_findings",
+      "query_events": "list_guardduty_findings"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_key_id": {
+        "type": "string",
+        "display_name": "AWS Access Key ID",
+        "description": "IAM access key ID with Security Hub and GuardDuty permissions",
+        "required": true
+      },
+      "secret_access_key": {
+        "type": "string",
+        "display_name": "AWS Secret Access Key",
+        "description": "IAM secret access key",
+        "format": "password",
+        "required": true
+      },
+      "session_token": {
+        "type": "string",
+        "display_name": "Session Token",
+        "description": "Temporary session token (for STS assumed roles)",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "region": {
+        "type": "string",
+        "display_name": "AWS Region",
+        "description": "AWS region for API calls",
+        "default": "us-east-1"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "guardduty_detector_id": {
+        "type": "string",
+        "display_name": "GuardDuty Detector ID",
+        "description": "GuardDuty detector ID for pulling alerts (optional — if empty, only Security Hub findings are pulled)"
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Lookback (minutes)",
+        "description": "How far back to search when no checkpoint exists",
+        "default": 5,
+        "minimum": 1
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify AWS Security Hub API connectivity",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "List Security Hub findings with optional severity, status, and product filters",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_findings",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "severity_label": {
+            "type": "string",
+            "description": "Filter by severity (CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL)",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFORMATIONAL"]
+          },
+          "workflow_status": {
+            "type": "string",
+            "description": "Filter by workflow status (NEW, NOTIFIED, SUPPRESSED, RESOLVED)",
+            "enum": ["NEW", "NOTIFIED", "SUPPRESSED", "RESOLVED"]
+          },
+          "product_name": {
+            "type": "string",
+            "description": "Filter by product name"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum findings to return (1-100)",
+            "default": 20
+          },
+          "next_token": {
+            "type": "string",
+            "description": "Pagination token from previous response"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_finding",
+      "name": "Get Finding",
+      "description": "Get Security Hub finding details by finding ID (ARN)",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_finding",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "description": "The ARN of the Security Hub finding"
+          }
+        },
+        "required": ["finding_id"]
+      }
+    },
+    {
+      "id": "update_finding_status",
+      "name": "Update Finding Status",
+      "description": "Update the workflow status of a Security Hub finding",
+      "categories": ["response", "cloud_security"],
+      "cy_name": "update_finding_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "description": "The ARN of the finding to update"
+          },
+          "product_arn": {
+            "type": "string",
+            "description": "The ARN of the product that generated the finding"
+          },
+          "workflow_status": {
+            "type": "string",
+            "description": "New workflow status",
+            "enum": ["NEW", "NOTIFIED", "SUPPRESSED", "RESOLVED"]
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note explaining the status change"
+          }
+        },
+        "required": ["finding_id", "product_arn", "workflow_status"]
+      }
+    },
+    {
+      "id": "list_guardduty_detectors",
+      "name": "List GuardDuty Detectors",
+      "description": "List GuardDuty detector IDs in the configured region",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_guardduty_detectors",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum detectors to return (1-50)",
+            "default": 50
+          },
+          "next_token": {
+            "type": "string",
+            "description": "Pagination token"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_guardduty_findings",
+      "name": "List GuardDuty Findings",
+      "description": "List GuardDuty findings for a detector with optional filters",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_guardduty_findings",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detector_id": {
+            "type": "string",
+            "description": "The GuardDuty detector ID"
+          },
+          "severity_min": {
+            "type": "number",
+            "description": "Minimum severity threshold (0-8)"
+          },
+          "finding_type": {
+            "type": "string",
+            "description": "Filter by finding type prefix"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum findings to return (1-50)",
+            "default": 50
+          },
+          "next_token": {
+            "type": "string",
+            "description": "Pagination token"
+          }
+        },
+        "required": ["detector_id"]
+      }
+    },
+    {
+      "id": "get_guardduty_finding",
+      "name": "Get GuardDuty Finding",
+      "description": "Get detailed information for specific GuardDuty findings",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_guardduty_finding",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detector_id": {
+            "type": "string",
+            "description": "The GuardDuty detector ID"
+          },
+          "finding_ids": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of finding IDs to retrieve"
+          }
+        },
+        "required": ["detector_id", "finding_ids"]
+      }
+    },
+    {
+      "id": "archive_guardduty_finding",
+      "name": "Archive GuardDuty Finding",
+      "description": "Archive a GuardDuty finding",
+      "categories": ["response", "cloud_security"],
+      "cy_name": "archive_guardduty_finding",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detector_id": {
+            "type": "string",
+            "description": "The GuardDuty detector ID"
+          },
+          "finding_ids": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of finding IDs to archive"
+          }
+        },
+        "required": ["detector_id", "finding_ids"]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts (OCSF-native)",
+      "description": "Pull security findings from Security Hub via GetFindingsV2 (native OCSF v1.6). GuardDuty findings are included via Security Hub aggregation.",
+      "categories": ["alert_source", "investigation"],
+      "cy_name": "pull_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time (ISO 8601)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time (ISO 8601)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum alerts to return",
+            "default": 200
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF (pass-through)",
+      "description": "Pass-through normalizer for native OCSF findings from GetFindingsV2. Adds raw_data and raw_data_hash for deduplication.",
+      "categories": ["alert_source", "normalization"],
+      "cy_name": "alerts_to_ocsf",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of OCSF finding documents from GetFindingsV2"
+          }
+        },
+        "required": ["raw_alerts"]
+      }
+    },
+    {
+      "id": "pull_alerts_legacy",
+      "name": "Pull Alerts (Legacy ASFF)",
+      "description": "Pull security findings from Security Hub (ASFF) and GuardDuty using the legacy GetFindings API. Use pull_alerts for the native OCSF path.",
+      "categories": ["alert_source", "investigation"],
+      "cy_name": "pull_alerts_legacy",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time (ISO 8601)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time (ISO 8601)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum alerts to return",
+            "default": 200
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf_legacy",
+      "name": "Normalize Alerts to OCSF (Legacy)",
+      "description": "Normalize raw ASFF/GuardDuty findings to OCSF Detection Finding v1.8.0 using the custom normalizer. Use alerts_to_ocsf for native OCSF findings.",
+      "categories": ["alert_source", "normalization"],
+      "cy_name": "alerts_to_ocsf_legacy",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw AWS finding documents (GuardDuty or Security Hub ASFF)"
+          }
+        },
+        "required": ["raw_alerts"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

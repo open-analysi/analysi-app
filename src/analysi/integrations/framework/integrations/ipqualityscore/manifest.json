@@ -1,0 +1,240 @@
+{
+  "id": "ipqualityscore",
+  "app": "ipqualityscore",
+  "name": "IPQualityScore",
+  "version": "1.0.0",
+  "description": "Multi-modal fraud detection and threat intelligence via IPQualityScore API: IP reputation (proxy/VPN/bot detection), email validation, malicious URL scanning, phone validation, and dark web leak lookups",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 60,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ipqualityscore-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ipqualityscore-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this IPQualityScore integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_reputation",
+      "lookup_url": "url_checker",
+      "lookup_email": "email_validation"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "IPQualityScore API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify IPQualityScore API connectivity by querying a known IP",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Query proxy, VPN, TOR, and bot detection for an IP address with fraud scoring",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to check"
+          },
+          "strictness": {
+            "type": "integer",
+            "description": "Detection strictness level (0, 1, or 2)"
+          },
+          "user_agent": {
+            "type": "string",
+            "description": "User agent string for additional bot checks"
+          },
+          "user_language": {
+            "type": "string",
+            "description": "User language for additional risk evaluation"
+          },
+          "fast": {
+            "type": "boolean",
+            "description": "Skip forensic checks for faster response"
+          },
+          "mobile": {
+            "type": "boolean",
+            "description": "Treat lookup as a mobile device"
+          },
+          "allow_public_access_points": {
+            "type": "boolean",
+            "description": "Allow public access points in scoring"
+          },
+          "lighter_penalties": {
+            "type": "boolean",
+            "description": "Lower penalties for mixed-quality IPs"
+          },
+          "transaction_strictness": {
+            "type": "integer",
+            "description": "Weight for transaction irregularity penalties"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "email_validation",
+      "name": "Email Validation",
+      "description": "Validate email deliverability, detect disposable addresses, and score fraud risk",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "email_validation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to validate"
+          },
+          "fast": {
+            "type": "boolean",
+            "description": "Skip SMTP check with mail provider"
+          },
+          "suggest_domain": {
+            "type": "boolean",
+            "description": "Check for domain typos and suggest corrections"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Max seconds to wait for mail service reply"
+          },
+          "strictness": {
+            "type": "integer",
+            "description": "Spam trap and honeypot detection level (0, 1, or 2)"
+          },
+          "abuse_strictness": {
+            "type": "integer",
+            "description": "ML pattern recognition level for abusive addresses"
+          }
+        },
+        "required": ["email"]
+      }
+    },
+    {
+      "id": "url_checker",
+      "name": "URL Checker",
+      "description": "Scan a URL for malware, phishing, and suspicious content",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "url_checker",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to scan"
+          },
+          "strictness": {
+            "type": "integer",
+            "description": "Scan strictness level (0, 1, or 2)"
+          },
+          "fast": {
+            "type": "boolean",
+            "description": "Use lighter checks for faster response"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "phone_validation",
+      "name": "Phone Validation",
+      "description": "Validate phone number risk, carrier, line type, and fraud scoring",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "phone_validation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Phone number to validate"
+          },
+          "strictness": {
+            "type": "integer",
+            "description": "Detection strictness level (0, 1, or 2)"
+          },
+          "country": {
+            "type": "string",
+            "description": "Expected country code(s), comma-separated"
+          }
+        },
+        "required": ["phone"]
+      }
+    },
+    {
+      "id": "dark_web_leak_lookup",
+      "name": "Dark Web Leak Lookup",
+      "description": "Search dark web breach databases for leaked emails, passwords, or usernames",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "dark_web_leak_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of data to search: email, password, or username",
+            "enum": ["email", "password", "username"]
+          },
+          "value": {
+            "type": "string",
+            "description": "The value to search for in breach databases"
+          }
+        },
+        "required": ["type", "value"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

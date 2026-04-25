@@ -1,0 +1,174 @@
+{
+  "id": "wildfire",
+  "app": "wildfire",
+  "name": "Palo Alto WildFire",
+  "version": "1.0.0",
+  "description": "Palo Alto Networks WildFire cloud sandbox for detonating files and URLs, retrieving verdicts and analysis reports",
+  "archetypes": [
+    "Sandbox"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "wildfire-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "wildfire-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this WildFire integration instance"
+  },
+
+  "archetype_mappings": {
+    "Sandbox": {
+      "submit_url": "detonate_url",
+      "submit_file": "detonate_file",
+      "get_analysis_report": "get_report"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "WildFire API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Base URL to WildFire service",
+        "default": "https://wildfire.paloaltonetworks.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 120
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API key and connectivity to WildFire",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate URL",
+      "description": "Submit a URL for WildFire sandbox analysis and retrieve the verdict",
+      "categories": [
+        "sandbox",
+        "analysis"
+      ],
+      "cy_name": "detonate_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to submit for analysis (must start with http:// or https://)"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Submit a file for WildFire sandbox analysis",
+      "categories": [
+        "sandbox",
+        "analysis"
+      ],
+      "cy_name": "detonate_file",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_content": {
+            "type": "string",
+            "description": "Base64-encoded file content"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename with extension"
+          }
+        },
+        "required": [
+          "file_content",
+          "filename"
+        ]
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve analysis report and verdict by file hash (MD5 or SHA-256)",
+      "categories": [
+        "sandbox",
+        "investigation"
+      ],
+      "cy_name": "get_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "MD5 or SHA-256 hash of the file"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "get_url_reputation",
+      "name": "URL Reputation",
+      "description": "Get the WildFire verdict for a URL without triggering new analysis",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "get_url_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to check reputation for"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  ]
+}

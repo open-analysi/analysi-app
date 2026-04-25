@@ -1,0 +1,13 @@
+### Parameter Enumeration & Object Reference Analysis ★
+- **Action:** Extract all HTTP requests from source IP to identify parameter enumeration patterns
+- **Purpose:** Determine attack scope and identify parameter manipulation
+- **Pattern:** integration_query
+- **Integration:** siem
+- **Focus:** Consecutive requests to same endpoint, URL parameter patterns (incrementing IDs, sequential access), request frequency and timing, POST/GET body parameters with object references, ID parameter patterns (user_id, account_id, document_id)
+- **Fields:** get_src_ip(alert), get_dst_ip(alert), get_url(alert)
+- **Output:** access_control_payload_analysis
+- **Decision Points:**
+  - Sequential ID enumeration (1, 2, 3, 4...) → Systematic IDOR attack
+  - Random ID access → Possible authorized usage or targeted access
+  - High request count (50+ IDs) → Automated enumeration
+  - Low request count (5-10 IDs) → Manual testing or targeted access

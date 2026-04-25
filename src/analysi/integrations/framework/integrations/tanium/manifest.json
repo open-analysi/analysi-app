@@ -1,0 +1,232 @@
+{
+  "id": "tanium",
+  "app": "tanium",
+  "name": "Tanium",
+  "version": "1.0.0",
+  "description": "Tanium REST integration for endpoint management, querying, and action execution",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "tanium-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "tanium-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Tanium integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "run_script": "execute_action",
+      "get_host_details": "run_query"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Tanium console username (required if api_token not provided)",
+        "required": false
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Tanium console password (required if api_token not provided)",
+        "format": "password",
+        "required": false
+      },
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Tanium API token (alternative to username/password)",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Tanium server URL (e.g. https://taniumserver)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Whether to verify the server SSL certificate",
+        "default": false
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the Tanium REST API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a Tanium question/query and return the question ID for result retrieval",
+      "categories": ["investigation"],
+      "cy_name": "run_query",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query_text": {
+            "type": "string",
+            "description": "The Tanium question text to run"
+          },
+          "group_name": {
+            "type": "string",
+            "description": "Optional computer group name to scope the query"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "description": "Question expiry in seconds",
+            "default": 600
+          }
+        },
+        "required": ["query_text"]
+      }
+    },
+    {
+      "id": "get_question_results",
+      "name": "Get Question Results",
+      "description": "Get results for a Tanium question by its numeric ID",
+      "categories": ["investigation"],
+      "cy_name": "get_question_results",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "question_id": {
+            "type": "integer",
+            "description": "The numeric Tanium question ID"
+          }
+        },
+        "required": ["question_id"]
+      }
+    },
+    {
+      "id": "list_saved_questions",
+      "name": "List Saved Questions",
+      "description": "List all saved questions from the Tanium server",
+      "categories": ["investigation"],
+      "cy_name": "list_saved_questions",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_system_status",
+      "name": "Get System Status",
+      "description": "Get Tanium server system status and information",
+      "categories": ["investigation"],
+      "cy_name": "get_system_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "execute_action",
+      "name": "Execute Action",
+      "description": "Execute a Tanium action/package on target endpoints",
+      "categories": ["remediation"],
+      "cy_name": "execute_action",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "action_name": {
+            "type": "string",
+            "description": "Name for the action"
+          },
+          "action_group": {
+            "type": "string",
+            "description": "Target action group name"
+          },
+          "package_name": {
+            "type": "string",
+            "description": "Package to deploy"
+          },
+          "package_parameters": {
+            "type": "object",
+            "description": "Optional JSON object of package parameters"
+          },
+          "expire_seconds": {
+            "type": "integer",
+            "description": "Action expiry time in seconds",
+            "default": 600
+          },
+          "group_name": {
+            "type": "string",
+            "description": "Optional target computer group"
+          },
+          "distribute_seconds": {
+            "type": "integer",
+            "description": "Optional distribution window in seconds"
+          },
+          "issue_seconds": {
+            "type": "integer",
+            "description": "Optional issue delay in seconds"
+          }
+        },
+        "required": ["action_name", "action_group", "package_name"]
+      }
+    },
+    {
+      "id": "list_packages",
+      "name": "List Packages",
+      "description": "List available packages on the Tanium server",
+      "categories": ["investigation"],
+      "cy_name": "list_packages",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

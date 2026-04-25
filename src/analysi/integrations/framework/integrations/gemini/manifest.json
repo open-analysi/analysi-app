@@ -1,0 +1,174 @@
+{
+  "id": "gemini",
+  "app": "gemini",
+  "name": "Google Gemini",
+  "version": "1.1.0",
+  "description": "Google Gemini AI/LLM integration for language model operations",
+  "archetypes": [
+    "AI"
+  ],
+  "priority": 75,
+  "integration_id_config": {
+    "default": "gemini-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "gemini-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "AI": {
+      "llm_run": "llm_run",
+      "llm_chat": "llm_chat",
+      "llm_embed": "llm_embed"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Google Gemini API key",
+        "format": "password",
+        "placeholder": "AIza...",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "model": {
+        "type": "string",
+        "display_name": "Model",
+        "description": "Default Gemini model (legacy; prefer model_presets)",
+        "default": "gemini-2.0-flash"
+      },
+      "model_presets": {
+        "type": "object",
+        "display_name": "Model Presets",
+        "description": "Named model configurations keyed by capability",
+        "default": {
+          "default": {
+            "model": "gemini-2.0-flash"
+          },
+          "thinking": {
+            "model": "gemini-2.0-flash-thinking"
+          },
+          "long_context": {
+            "model": "gemini-1.5-pro"
+          },
+          "fast": {
+            "model": "gemini-2.0-flash-lite"
+          },
+          "embedding": {
+            "model": "text-embedding-004"
+          }
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to Google Gemini API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "llm_run",
+      "name": "LLM Run",
+      "description": "Single-turn LLM execution: prompt in, string out",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_run",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to send"
+          },
+          "context": {
+            "type": "string",
+            "description": "Optional system context"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      }
+    },
+    {
+      "id": "llm_chat",
+      "name": "LLM Chat",
+      "description": "Multi-turn LLM chat: messages in, message out",
+      "categories": [
+        "ai",
+        "llm"
+      ],
+      "cy_name": "llm_chat",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "description": "Chat messages array"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Model capability preset",
+            "default": "default"
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      }
+    },
+    {
+      "id": "llm_embed",
+      "name": "LLM Embed",
+      "description": "Generate text embeddings: text in, vector out",
+      "categories": [
+        "ai",
+        "embedding"
+      ],
+      "cy_name": "llm_embed",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to embed"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

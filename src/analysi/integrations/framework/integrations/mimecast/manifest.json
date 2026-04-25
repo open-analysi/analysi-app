@@ -1,0 +1,296 @@
+{
+  "id": "mimecast",
+  "app": "mimecast",
+  "name": "Mimecast",
+  "version": "1.0.0",
+  "description": "Mimecast email security integration for URL protection, sender management, message tracking, and URL decoding via the Mimecast API v2",
+  "archetypes": ["EmailSecurity"],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "mimecast-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "mimecast-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Mimecast integration instance"
+  },
+
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "block_sender": "block_sender",
+      "unblock_sender": "unblock_sender",
+      "get_email_trace": "search_messages"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "OAuth2 Client ID from Mimecast API 2.0 Application",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "OAuth2 Client Secret from Mimecast API 2.0 Application",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Mimecast API base URL (varies by region: us-api.mimecast.com, eu-api.mimecast.com, etc.)",
+        "default": "https://api.services.mimecast.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the Mimecast API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "decode_url",
+      "name": "Decode URL",
+      "description": "Decode Mimecast-rewritten URLs back to original",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "decode_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Mimecast-rewritten URL to decode"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Get details of a specific email message by Mimecast ID",
+      "categories": ["investigation"],
+      "cy_name": "get_email",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Mimecast ID of the email to retrieve"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "list_urls",
+      "name": "List URLs",
+      "description": "List managed URLs from the TTP URL Protection list",
+      "categories": ["investigation"],
+      "cy_name": "list_urls",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "block_sender",
+      "name": "Block Sender",
+      "description": "Add sender to the managed sender block list",
+      "categories": ["containment"],
+      "cy_name": "block_sender",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "description": "Email address of the sender to block"
+          },
+          "to": {
+            "type": "string",
+            "description": "Email address of the recipient"
+          }
+        },
+        "required": ["sender", "to"]
+      }
+    },
+    {
+      "id": "unblock_sender",
+      "name": "Unblock Sender",
+      "description": "Remove sender from the managed sender block list",
+      "categories": ["containment"],
+      "cy_name": "unblock_sender",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "description": "Email address of the sender to unblock"
+          },
+          "to": {
+            "type": "string",
+            "description": "Email address of the recipient"
+          }
+        },
+        "required": ["sender", "to"]
+      }
+    },
+    {
+      "id": "search_messages",
+      "name": "Search Messages",
+      "description": "Search tracked emails by sender, recipient, subject, IP, or message ID",
+      "categories": ["investigation"],
+      "cy_name": "search_messages",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "description": "Internet message ID of the email to track"
+          },
+          "search_reason": {
+            "type": "string",
+            "description": "Reason for tracking the email"
+          },
+          "from_address": {
+            "type": "string",
+            "description": "Sender email address or domain"
+          },
+          "to_address": {
+            "type": "string",
+            "description": "Recipient email address or domain"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Email subject to search for"
+          },
+          "sender_ip": {
+            "type": "string",
+            "description": "Source IP address of the email"
+          },
+          "start": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format"
+          },
+          "end": {
+            "type": "string",
+            "description": "End time in ISO 8601 format"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_managed_url",
+      "name": "Get Managed URL",
+      "description": "Look up managed URL details by ID",
+      "categories": ["investigation"],
+      "cy_name": "get_managed_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Mimecast managed URL ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "add_managed_url",
+      "name": "Add Managed URL",
+      "description": "Add URL to the managed URL list for blocking or permitting",
+      "categories": ["containment"],
+      "cy_name": "add_managed_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to add to the managed list"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to take: 'block' or 'permit'",
+            "default": "block"
+          },
+          "match_type": {
+            "type": "string",
+            "description": "Match type: 'explicit' or 'domain'",
+            "default": "explicit"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment for the managed URL entry"
+          },
+          "disable_log_click": {
+            "type": "boolean",
+            "description": "Disable click logging",
+            "default": false
+          },
+          "disable_rewrite": {
+            "type": "boolean",
+            "description": "Disable URL rewriting",
+            "default": false
+          },
+          "disable_user_awareness": {
+            "type": "boolean",
+            "description": "Disable user awareness",
+            "default": false
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

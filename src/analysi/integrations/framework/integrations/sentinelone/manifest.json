@@ -1,0 +1,542 @@
+{
+  "id": "sentinelone",
+  "app": "sentinelone",
+  "name": "SentinelOne",
+  "version": "1.0.0",
+  "description": "SentinelOne Singularity platform integration for EDR/XDR operations including endpoint management, threat response, and forensics",
+  "archetypes": [
+    "EDR",
+    "AlertSource"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "description": "SentinelOne API Token",
+        "format": "password"
+      }
+    },
+    "required": [
+      "api_token"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "console_url": {
+        "type": "string",
+        "description": "SentinelOne Console URL (e.g., https://your-mgmt.sentinelone.net)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 120,
+        "minimum": 30,
+        "maximum": 300
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to SentinelOne API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Add a file hash to the global blocklist",
+      "categories": [
+        "containment",
+        "threat_response"
+      ],
+      "cy_name": "block_hash",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "SHA1 hash of file to block"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description for the blocklist entry",
+            "default": "Added via Naxos"
+          },
+          "os_family": {
+            "type": "string",
+            "description": "Operating system family",
+            "enum": [
+              "windows",
+              "macos",
+              "linux",
+              "windows_legacy"
+            ],
+            "default": "windows"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Remove a file hash from the global blocklist",
+      "categories": [
+        "containment",
+        "threat_response"
+      ],
+      "cy_name": "unblock_hash",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "SHA1 hash of file to unblock"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "isolate_host",
+      "name": "Isolate Host",
+      "description": "Isolate/quarantine a device from the network",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "isolate_host",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint to isolate"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "release_host",
+      "name": "Release Host",
+      "description": "Release a device from isolation/quarantine",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "release_host",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint to release"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "scan_host",
+      "name": "Scan Host",
+      "description": "Initiate a scan on an endpoint",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "scan_host",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint to scan"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "get_host_details",
+      "name": "Get Host Details",
+      "description": "Get detailed information about an endpoint",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "get_host_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "mitigate_threat",
+      "name": "Mitigate Threat",
+      "description": "Mitigate a threat (kill, quarantine, remediate, rollback, un-quarantine)",
+      "categories": [
+        "threat_response",
+        "incident_response"
+      ],
+      "cy_name": "mitigate_threat",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_id": {
+            "type": "string",
+            "description": "SentinelOne threat ID"
+          },
+          "action": {
+            "type": "string",
+            "description": "Mitigation action to perform",
+            "enum": [
+              "kill",
+              "quarantine",
+              "remediate",
+              "rollback-remediation",
+              "un-quarantine"
+            ]
+          }
+        },
+        "required": [
+          "s1_threat_id",
+          "action"
+        ]
+      }
+    },
+    {
+      "id": "abort_scan",
+      "name": "Abort Scan",
+      "description": "Abort a running scan on an endpoint",
+      "categories": [
+        "endpoint_management"
+      ],
+      "cy_name": "abort_scan",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "shutdown_endpoint",
+      "name": "Shutdown Endpoint",
+      "description": "Shutdown an endpoint remotely",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "shutdown_endpoint",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint to shutdown"
+          }
+        },
+        "required": [
+          "ip_hostname"
+        ]
+      }
+    },
+    {
+      "id": "broadcast_message",
+      "name": "Broadcast Message",
+      "description": "Send a broadcast message to an endpoint",
+      "categories": [
+        "communication"
+      ],
+      "cy_name": "broadcast_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip_hostname": {
+            "type": "string",
+            "description": "IP address or hostname of the endpoint"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to broadcast to the endpoint"
+          }
+        },
+        "required": [
+          "ip_hostname",
+          "message"
+        ]
+      }
+    },
+    {
+      "id": "get_threat_info",
+      "name": "Get Threat Info",
+      "description": "Get detailed information about a threat",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "get_threat_info",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_id": {
+            "type": "string",
+            "description": "SentinelOne threat ID"
+          }
+        },
+        "required": [
+          "s1_threat_id"
+        ]
+      }
+    },
+    {
+      "id": "hash_reputation",
+      "name": "Hash Reputation",
+      "description": "Get reputation information for a file hash",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "hash_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "get_threat_notes",
+      "name": "Get Threat Notes",
+      "description": "Get notes associated with a threat",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_threat_notes",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_id": {
+            "type": "string",
+            "description": "SentinelOne threat ID"
+          }
+        },
+        "required": [
+          "s1_threat_id"
+        ]
+      }
+    },
+    {
+      "id": "add_threat_note",
+      "name": "Add Threat Note",
+      "description": "Add a note to one or more threats",
+      "categories": [
+        "investigation",
+        "case_management"
+      ],
+      "cy_name": "add_threat_note",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_ids": {
+            "type": "string",
+            "description": "Comma-separated list of SentinelOne threat IDs"
+          },
+          "note": {
+            "type": "string",
+            "description": "Note text to add"
+          }
+        },
+        "required": [
+          "s1_threat_ids",
+          "note"
+        ]
+      }
+    },
+    {
+      "id": "update_threat_analyst_verdict",
+      "name": "Update Threat Analyst Verdict",
+      "description": "Update the analyst verdict for a threat",
+      "categories": [
+        "threat_analysis",
+        "case_management"
+      ],
+      "cy_name": "update_threat_analyst_verdict",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_id": {
+            "type": "string",
+            "description": "SentinelOne threat ID"
+          },
+          "analyst_verdict": {
+            "type": "string",
+            "description": "Analyst verdict",
+            "enum": [
+              "true_positive",
+              "false_positive",
+              "suspicious",
+              "undefined"
+            ]
+          }
+        },
+        "required": [
+          "s1_threat_id",
+          "analyst_verdict"
+        ]
+      }
+    },
+    {
+      "id": "update_threat_incident",
+      "name": "Update Threat Incident",
+      "description": "Update threat incident status and analyst verdict",
+      "categories": [
+        "case_management",
+        "incident_response"
+      ],
+      "cy_name": "update_threat_incident",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "s1_threat_id": {
+            "type": "string",
+            "description": "SentinelOne threat ID"
+          },
+          "analyst_verdict": {
+            "type": "string",
+            "description": "Analyst verdict",
+            "enum": [
+              "true_positive",
+              "false_positive",
+              "suspicious",
+              "undefined"
+            ]
+          },
+          "incident_status": {
+            "type": "string",
+            "description": "Incident status",
+            "enum": [
+              "unresolved",
+              "in_progress",
+              "resolved"
+            ]
+          }
+        },
+        "required": [
+          "s1_threat_id",
+          "analyst_verdict",
+          "incident_status"
+        ]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull threats from SentinelOne as alerts",
+      "categories": [
+        "alert_ingestion"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Alerts to OCSF",
+      "description": "Normalize raw SentinelOne threats to OCSF Detection Finding format",
+      "categories": [
+        "alert_normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw SentinelOne threat objects to normalize",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "isolate_host",
+      "release_host": "release_host",
+      "scan_host": "scan_host",
+      "get_host_details": "get_host_details",
+      "kill_process": "mitigate_threat",
+      "quarantine_file": "block_hash",
+      "collect_forensics": "get_threat_info"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

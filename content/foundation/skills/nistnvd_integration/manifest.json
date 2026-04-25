@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "nistnvd-integration",
+  "cy_name": "nistnvd_integration",
+  "description": "NIST NVD CVE lookups via Analysi for SOC alert triage. Use when investigating vulnerability-related alerts, checking CVE severity and CVSS scores, correlating exploit attempts with known vulnerabilities, assessing patch urgency, or enriching alerts with affected product details and CISA KEV status."
+}

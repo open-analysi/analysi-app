@@ -1,0 +1,88 @@
+{
+  "id": "mac_vendors",
+  "app": "mac_vendors",
+  "name": "MAC Vendors",
+  "version": "1.0.0",
+  "description": "MAC address OUI lookup via macvendors.com. Works without credentials (free tier: 1000 req/day). Optional API key unlocks higher rate limits.",
+  "archetypes": ["MacOuiRegistry"],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "mac-vendors",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "mac-vendors",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+  "archetype_mappings": {"MacOuiRegistry": {}},
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Optional macvendors.com API key for higher rate limits. Leave empty for free tier (1000 req/day).",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 120
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the MAC Vendors API by querying a known MAC address",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_mac",
+      "name": "Lookup MAC",
+      "description": "Query the MAC vendor/manufacturer based on the OUI portion of a MAC address",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "lookup_mac",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "mac": {
+            "type": "string",
+            "description": "MAC address to look up (e.g. d0:a6:37:aa:bb:cc or 00-0C-29-BB-47-4D)"
+          }
+        },
+        "required": [
+          "mac"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/10m",
+      "enabled": true
+    }
+  ]
+}

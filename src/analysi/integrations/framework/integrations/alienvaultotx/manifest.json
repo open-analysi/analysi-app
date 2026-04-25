@@ -1,0 +1,227 @@
+{
+  "id": "alienvaultotx",
+  "app": "alienvaultotx",
+  "name": "AlienVault OTX",
+  "version": "1.0.0",
+  "description": "This integration connects with AlienVault Open Threat Exchange (OTX) to perform threat intelligence lookups for domains, IPs, files, URLs, and retrieve pulse information",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_reputation",
+      "lookup_domain": "domain_reputation",
+      "lookup_file_hash": "file_reputation",
+      "lookup_url": "url_reputation"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "AlienVault OTX API Key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Timeout",
+        "description": "Request timeout in seconds",
+        "default": 120
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify SSL certificate",
+        "default": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate the configuration for connectivity to AlienVault OTX",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Query domain reputation information from AlienVault OTX",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "domain_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          },
+          "response_type": {
+            "type": "string",
+            "description": "Type of response data to retrieve",
+            "default": "general",
+            "enum": [
+              "general",
+              "geo",
+              "malware",
+              "url_list",
+              "passive_dns",
+              "whois",
+              "http_scans"
+            ]
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Query IP address reputation information from AlienVault OTX (supports both IPv4 and IPv6)",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "ip_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query (IPv4 or IPv6)"
+          },
+          "response_type": {
+            "type": "string",
+            "description": "Type of response data to retrieve",
+            "default": "general",
+            "enum": [
+              "general",
+              "reputation",
+              "geo",
+              "malware",
+              "url_list",
+              "passive_dns",
+              "http_scans"
+            ]
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Query file hash reputation information from AlienVault OTX",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "file_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash to query (MD5, SHA1, or SHA256)"
+          },
+          "response_type": {
+            "type": "string",
+            "description": "Type of response data to retrieve",
+            "default": "general",
+            "enum": [
+              "general",
+              "analysis"
+            ]
+          }
+        },
+        "required": [
+          "hash"
+        ]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Query URL reputation information from AlienVault OTX",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "url_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to query"
+          },
+          "response_type": {
+            "type": "string",
+            "description": "Type of response data to retrieve",
+            "default": "general",
+            "enum": [
+              "general",
+              "url_list"
+            ]
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "get_pulse",
+      "name": "Get Pulse",
+      "description": "Get details of a specific pulse by ID from AlienVault OTX",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "get_pulse",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "pulse_id": {
+            "type": "string",
+            "description": "Pulse ID to retrieve"
+          }
+        },
+        "required": [
+          "pulse_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

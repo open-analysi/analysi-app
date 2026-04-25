@@ -1,0 +1,65 @@
+/* WorkflowBuilderCanvas - Viewport constraints and styling */
+
+/* Outer wrapper - provides positioning context for fixed UI */
+.workflow-builder-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scrollable container - handles overflow and scrolling */
+.workflow-builder-canvas-container {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  position: relative;
+  overflow: auto;
+  contain: layout size;
+  display: flex;
+  flex-direction: column;
+  /* Light dot grid pattern */
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+}
+
+/* Reaflow canvas wrapper */
+.workflow-builder-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: fit-content;
+  min-height: fit-content;
+}
+
+/* Target the SVG element created by Reaflow */
+.workflow-builder-canvas svg {
+  min-width: fit-content;
+  min-height: fit-content;
+}
+
+/* Pan/zoom container within Reaflow */
+.workflow-builder-canvas > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Edge styling */
+.workflow-builder-edge {
+  stroke: #b685ff;
+  stroke-width: 3;
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 0 2px rgba(182, 133, 255, 0.3));
+}
+
+.workflow-builder-edge:hover {
+  stroke: #c9a0ff;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px rgba(182, 133, 255, 0.5));
+}
+
+.workflow-builder-edge.selected {
+  stroke: #f472b6;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.6));
+}

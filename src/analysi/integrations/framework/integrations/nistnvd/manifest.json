@@ -1,0 +1,99 @@
+{
+  "id": "nistnvd",
+  "app": "nistnvd",
+  "name": "NIST NVD",
+  "version": "1.0.0",
+  "description": "NIST National Vulnerability Database (NVD) integration for CVE vulnerability lookups",
+  "archetypes": [
+    "DatabaseEnrichment"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "nistnvd-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "nistnvd-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "DatabaseEnrichment": {
+      "get_vulnerabilities": "cve_lookup"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Optional NIST NVD API key for higher rate limits",
+        "format": "password",
+        "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "required": false
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "api_version": {
+        "type": "string",
+        "display_name": "API Version",
+        "description": "NIST NVD API version (e.g., 2.0)",
+        "default": "2.0"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to NIST NVD API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "cve_lookup",
+      "name": "CVE Lookup",
+      "description": "Look up CVE information from NIST National Vulnerability Database",
+      "categories": [
+        "vulnerability_management",
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "cve_lookup",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "cve": {
+            "type": "string",
+            "description": "CVE ID to look up (e.g., CVE-2019-1010218)"
+          }
+        },
+        "required": [
+          "cve"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

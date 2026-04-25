@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "echo-edr-integration",
+  "cy_name": "echo_edr_integration",
+  "description": "Echo EDR endpoint detection and response for SOC alert triage. Use when investigating endpoint threats, checking process activity, retrieving host attributes, analyzing behavioral indicators, or correlating endpoint telemetry with alert data via Analysi."
+}

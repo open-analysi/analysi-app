@@ -1,0 +1,132 @@
+# EKS live environment — all services in-cluster with persistent storage.
+# Usage: helm install analysi . -f values/eks-live.yaml --set global.database.password=xxx ...
+#
+# Designed for: integration testing, multi-day demo environments.
+# Cost: ~$150-250/month on-demand, $0 when torn down.
+
+global:
+  environment: development  # Must be "development" until image is rebuilt with DATABASE_SSL setting
+  logLevel: INFO
+  logPayloads: "false"
+  image:
+    repository: ghcr.io/open-analysi/analysi-app
+    tag: latest
+    pullPolicy: Always
+
+  database:
+    host: analysi-analysi-postgresql
+    port: 5432
+    name: analysi
+    user: analysiuser
+    password: OVERRIDE_ME  # set via --set or Terraform
+
+  valkey:
+    host: analysi-analysi-valkey
+    password: OVERRIDE_ME
+
+  minio:
+    endpoint: analysi-analysi-minio:9000
+    accessKey: OVERRIDE_ME
+    secretKey: OVERRIDE_ME
+    bucket: analysi
+    artifactsBucket: analysi-artifacts
+
+  vault:
+    host: analysi-analysi-vault
+    token: OVERRIDE_ME
+
+  auth:
+    mode: dev
+    systemApiKey: OVERRIDE_ME
+    adminApiKey: OVERRIDE_ME
+    ownerApiKey: OVERRIDE_ME
+
+# Private GHCR — requires K8s secret created by Terraform
+imagePullSecrets:
+  - name: ghcr-secret
+
+# ──── Core Services ────────────────────────
+api:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+      alb.ingress.kubernetes.io/healthcheck-path: /health
+      # Terraform overrides to HTTPS + inbound-cidrs when configured.
+      # See var.acm_certificate_arn and var.public_access_cidrs.
+    hosts:
+      - paths:
+          - path: /
+            pathType: Prefix
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+alertsWorker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+integrationsWorker:
+  replicaCount: 1
+
+ui:
+  enabled: false  # UI image not yet published to GHCR — enable after merging UI repo
+
+flyway:
+  sqlConfigMap: flyway-sql
+
+# ──── Dependencies (in-cluster) ────────────
+postgresql:
+  enabled: true
+  auth:
+    password: OVERRIDE_ME  # must match global.database.password
+  persistence:
+    enabled: true
+    storageClass: gp3
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+valkey:
+  enabled: true
+  auth:
+    password: OVERRIDE_ME  # must match global.valkey.password
+
+minio:
+  enabled: true
+  auth:
+    rootUser: OVERRIDE_ME  # must match global.minio.accessKey
+    rootPassword: OVERRIDE_ME  # must match global.minio.secretKey
+  persistence:
+    enabled: true
+    storageClass: gp3
+    size: 20Gi
+
+vault:
+  enabled: true
+  devRootToken: OVERRIDE_ME  # must match global.vault.token
+
+keycloak:
+  enabled: false

@@ -1,0 +1,34 @@
+{
+  "name": "ProxyNotShell Hypothesis Generation",
+  "cy_name": "proxynotshell_hypothesis_generation",
+  "description": "Generate investigation hypotheses for ProxyNotShell (CVE-2022-41082) alerts by combining static runbook hypotheses with alert-specific analysis. Outputs structured investigation_hypotheses array with source attribution to guide subsequent investigation tasks.",
+  "app": "default",
+  "directive": "You are a security analyst forming investigation hypotheses for ProxyNotShell alerts. Evaluate static runbook hypotheses against alert characteristics and generate additional alert-inspired hypotheses to guide investigation of attack success and post-compromise activity.",
+  "script_file": "proxynotshell_hypothesis_generation.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "ProxyNotShell",
+    "Exchange",
+    "Hypothesis Generation",
+    "Investigation"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1200
+  },
+  "authored_by": "system",
+  "tags": [
+    "proxynotshell",
+    "cve-2022-41082",
+    "hypothesis",
+    "investigation",
+    "runbook"
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "Hostname": "Exchange Server 2",
+    "Domain": "corp.local",
+    "IP Address": "10.10.30.8",
+    "Bit Level": "64",
+    "OS": "Windows Server 2019",
+    "Primary User": "ExchangeAdmin",
+    "Client/Server": "Server",
+    "Last Login": "Sep, 22, 2022, 06:25 PM"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "task-builder",
+  "cy_name": "task_builder",
+  "description": "Use when creating or modifying Analysi Security Tasks (analyst automation components that accept OCSF alerts, query integrations, and use LLM reasoning). Also use when understanding Task patterns, validation requirements, or troubleshooting task creation. Requires Cy language proficiency (reference cy-language-programming skill first)."
+}

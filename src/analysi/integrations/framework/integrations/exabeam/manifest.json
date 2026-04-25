@@ -1,0 +1,260 @@
+{
+  "id": "exabeam",
+  "app": "exabeam",
+  "name": "Exabeam",
+  "version": "1.0.0",
+  "description": "Exabeam Advanced Analytics SIEM/UEBA integration for user risk scoring, session tracking, asset monitoring, and watchlist management",
+  "archetypes": [
+    "SIEM"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "exabeam-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "exabeam-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Exabeam integration instance"
+  },
+
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "search_users",
+      "get_alerts": "list_watchlists"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Exabeam API username for Basic Auth",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Exabeam API password for Basic Auth",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Exabeam API base URL, e.g. https://exabeam.example.com:8484/api",
+        "default": "https://exabeam.example.com:8484/api",
+        "required": true
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Whether to verify the server SSL certificate",
+        "default": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity to Exabeam Advanced Analytics",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve all user info including risk score for a given username",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username to look up"
+          }
+        },
+        "required": ["username"]
+      }
+    },
+    {
+      "id": "search_users",
+      "name": "Search Users",
+      "description": "Search for users that contain the keyword specified",
+      "categories": ["investigation", "siem"],
+      "cy_name": "search_users",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "Keyword to search for"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "id": "get_watchlist",
+      "name": "Get Watchlist",
+      "description": "Get members of a specific watchlist",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_watchlist",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "watchlist_id": {
+            "type": "string",
+            "description": "ID of the watchlist to retrieve"
+          }
+        },
+        "required": ["watchlist_id"]
+      }
+    },
+    {
+      "id": "list_watchlists",
+      "name": "List Watchlists",
+      "description": "Retrieve all watchlists and watchlist IDs",
+      "categories": ["investigation", "siem"],
+      "cy_name": "list_watchlists",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "add_to_watchlist",
+      "name": "Add to Watchlist",
+      "description": "Add a user to a specified watchlist",
+      "categories": ["response", "siem"],
+      "cy_name": "add_to_watchlist",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "User to add to the watchlist"
+          },
+          "watchlist_id": {
+            "type": "string",
+            "description": "ID of the watchlist to modify"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Number of days to watch the user (optional)"
+          }
+        },
+        "required": ["username", "watchlist_id"]
+      }
+    },
+    {
+      "id": "remove_from_watchlist",
+      "name": "Remove from Watchlist",
+      "description": "Remove a user from a specified watchlist",
+      "categories": ["response", "siem"],
+      "cy_name": "remove_from_watchlist",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "User to remove from the watchlist"
+          },
+          "watchlist_id": {
+            "type": "string",
+            "description": "ID of the watchlist to modify"
+          }
+        },
+        "required": ["username", "watchlist_id"]
+      }
+    },
+    {
+      "id": "search_assets",
+      "name": "Search Assets",
+      "description": "Search for assets that contain the keyword specified",
+      "categories": ["investigation", "siem"],
+      "cy_name": "search_assets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "Keyword to search for"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 100
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset",
+      "description": "Retrieve all asset info for a given hostname or IP address",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_asset",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "Hostname to look up"
+          },
+          "ip": {
+            "type": "string",
+            "description": "IP address to look up (used if hostname not specified)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

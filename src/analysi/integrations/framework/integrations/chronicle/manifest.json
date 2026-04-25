@@ -1,0 +1,456 @@
+{
+  "id": "chronicle",
+  "app": "chronicle",
+  "name": "Chronicle",
+  "version": "1.0.0",
+  "description": "Chronicle by Google Cloud SIEM integration for security event searches, IOC lookups, alert management, and detection rules",
+  "archetypes": [
+    "SIEM",
+    "ThreatIntel",
+    "AlertSource"
+  ],
+  "priority": 85,
+  "integration_id_config": {
+    "default": "chronicle-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "chronicle-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Chronicle integration"
+  },
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "list_events",
+      "get_alerts": "list_alerts",
+      "add_threat_intel": "list_ioc_details"
+    },
+    "ThreatIntel": {
+      "lookup_domain": "domain_reputation",
+      "lookup_ip": "ip_reputation"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "key_json": {
+        "type": "string",
+        "display_name": "Service Account JSON",
+        "description": "Contents of Google service account JSON file",
+        "format": "password",
+        "required": true
+      },
+      "scopes": {
+        "type": "string",
+        "display_name": "API Scopes",
+        "description": "Chronicle API scopes (JSON formatted list)",
+        "default": "[\"https://www.googleapis.com/auth/chronicle-backstory\"]",
+        "required": false
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Chronicle API base URL",
+        "default": "https://backstory.googleapis.com",
+        "required": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "no_of_retries": {
+        "type": "integer",
+        "display_name": "Number of Retries",
+        "description": "Number of retry attempts for failed requests",
+        "default": 3
+      },
+      "wait_timeout_period": {
+        "type": "integer",
+        "display_name": "Retry Wait Period",
+        "description": "Wait period between retries in seconds",
+        "default": 3
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Chronicle API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_ioc_details",
+      "name": "List IOC Details",
+      "description": "Return any threat intelligence associated with the specified artifact (domain or IP)",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "list_ioc_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "artifact_indicator": {
+            "type": "string",
+            "description": "Type of artifact indicator",
+            "enum": [
+              "Domain Name",
+              "Destination IP Address"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "Artifact value (domain name or IP address)"
+          }
+        },
+        "required": [
+          "artifact_indicator",
+          "value"
+        ]
+      }
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List all assets that accessed the specified artifact within the specified time",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_assets",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "artifact_indicator": {
+            "type": "string",
+            "description": "Type of artifact indicator",
+            "enum": [
+              "Domain Name",
+              "Destination IP Address",
+              "MD5",
+              "SHA1",
+              "SHA256"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "Artifact value"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format (e.g., 2019-10-17T00:00:00Z)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time in ISO 8601 format (e.g., 2019-10-17T23:59:59Z)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of assets to return",
+            "default": 10000
+          }
+        },
+        "required": [
+          "artifact_indicator",
+          "value",
+          "start_time",
+          "end_time"
+        ]
+      }
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List all events discovered on a particular device within the specified time",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_events",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "asset_identifier": {
+            "type": "string",
+            "description": "Asset identifier type (e.g., hostname, mac, product_id)"
+          },
+          "asset_identifier_value": {
+            "type": "string",
+            "description": "Asset identifier value"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time in ISO 8601 format"
+          },
+          "reference_time": {
+            "type": "string",
+            "description": "Optional reference time for pagination"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of events to return",
+            "default": 10000
+          }
+        },
+        "required": [
+          "asset_identifier",
+          "asset_identifier_value",
+          "start_time",
+          "end_time"
+        ]
+      }
+    },
+    {
+      "id": "list_iocs",
+      "name": "List IOCs",
+      "description": "List all IOCs discovered within the enterprise within the specified time",
+      "categories": [
+        "threat_intel",
+        "investigation"
+      ],
+      "cy_name": "list_iocs",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of IOCs to return",
+            "default": 10000
+          }
+        },
+        "required": [
+          "start_time"
+        ]
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Derive the reputation of the specified domain artifact (Malicious, Suspicious, or Unknown)",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "domain_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check reputation"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Derive the reputation of the specified destination IP address (Malicious, Suspicious, or Unknown)",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "ip_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to check reputation"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all security alerts tracked on particular assets and/or users for the specified time",
+      "categories": [
+        "siem",
+        "investigation"
+      ],
+      "cy_name": "list_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time in ISO 8601 format"
+          },
+          "alert_type": {
+            "type": "string",
+            "description": "Type of alerts to retrieve",
+            "enum": [
+              "Asset Alerts",
+              "User Alerts",
+              "All"
+            ],
+            "default": "All"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 10000
+          }
+        },
+        "required": [
+          "start_time",
+          "end_time"
+        ]
+      }
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List the latest versions of detection rules created in the Detection Engine",
+      "categories": [
+        "siem",
+        "discovery"
+      ],
+      "cy_name": "list_rules",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of rules to return",
+            "default": 10000
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "List all detections for specific versions of the given Rule ID(s)",
+      "categories": [
+        "siem",
+        "investigation"
+      ],
+      "cy_name": "list_detections",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Rule ID to list detections for"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Optional start time in ISO 8601 format"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Optional end time in ISO 8601 format"
+          },
+          "alert_state": {
+            "type": "string",
+            "description": "Optional alert state filter"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of detections to return",
+            "default": 10000
+          }
+        },
+        "required": [
+          "rule_id"
+        ]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull detection alerts from Chronicle Detection Engine across all rules",
+      "categories": [
+        "alert_source",
+        "siem"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start of time range in ISO 8601 format (optional, defaults to lookback window)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End of time range in ISO 8601 format (optional, defaults to now)"
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF",
+      "description": "Normalize raw Chronicle detection alerts to OCSF Detection Finding v1.8.0",
+      "categories": [
+        "alert_source",
+        "normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw Chronicle detection documents to normalize"
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,573 @@
+{
+  "id": "okta",
+  "app": "okta",
+  "name": "Okta",
+  "version": "1.0.0",
+  "description": "Okta Identity and Access Management integration for user lifecycle, authentication, group management, and MFA",
+  "archetypes": [
+    "IdentityProvider"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "okta-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "okta-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Okta integration"
+  },
+  "archetype_mappings": {
+    "IdentityProvider": {
+      "disable_user": "disable_user",
+      "enable_user": "enable_user",
+      "reset_password": "reset_password",
+      "get_user_details": "get_user",
+      "add_to_group": "add_group_user",
+      "revoke_sessions": "clear_user_sessions",
+      "enable_mfa": "send_push_notification"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Okta API token (SSWS authentication)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Your Okta organization URL (e.g., https://your-org.okta.com)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify server SSL certificate",
+        "default": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to Okta API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List Okta users with optional filtering",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "list_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query for user names"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter expression"
+          },
+          "search": {
+            "type": "string",
+            "description": "Search expression"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of users to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get user details by user ID, email, or username",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "get_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Okta user ID, email address, or username"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable (suspend) a user account",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "disable_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID to disable"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable (unsuspend) a user account",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "enable_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID to enable"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Reset user password and send reset link",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "reset_password",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID, email, or username"
+          },
+          "receive_type": {
+            "type": "string",
+            "description": "How to receive reset link (Email or UI)",
+            "enum": [
+              "Email",
+              "UI"
+            ],
+            "default": "Email"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "set_password",
+      "name": "Set Password",
+      "description": "Set user password directly",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "set_password",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "new_password": {
+            "type": "string",
+            "description": "New password to set",
+            "format": "password"
+          }
+        },
+        "required": [
+          "id",
+          "new_password"
+        ]
+      }
+    },
+    {
+      "id": "clear_user_sessions",
+      "name": "Clear User Sessions",
+      "description": "Clear all active sessions for a user",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "clear_user_sessions",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "list_user_groups",
+      "name": "List Groups",
+      "description": "List all Okta groups with optional filtering",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "list_user_groups",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query for group names"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter expression"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of groups to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_group",
+      "name": "Get Group",
+      "description": "Get group details by group ID",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "get_group",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group ID to retrieve"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      }
+    },
+    {
+      "id": "add_group",
+      "name": "Add Group",
+      "description": "Create a new Okta group",
+      "categories": [
+        "identity_management"
+      ],
+      "cy_name": "add_group",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Group name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Group description"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      }
+    },
+    {
+      "id": "get_user_groups",
+      "name": "Get User Groups",
+      "description": "Get all groups a user belongs to",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "get_user_groups",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "add_group_user",
+      "name": "Add User to Group",
+      "description": "Add a user to a group",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "add_group_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group ID"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": [
+          "group_id",
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "remove_group_user",
+      "name": "Remove User from Group",
+      "description": "Remove a user from a group",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "remove_group_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Group ID"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": [
+          "group_id",
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "list_providers",
+      "name": "List Identity Providers",
+      "description": "List configured identity providers",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "list_providers",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "type": {
+            "type": "string",
+            "description": "Provider type",
+            "enum": [
+              "SAML2",
+              "FACEBOOK",
+              "GOOGLE",
+              "LINKEDIN",
+              "MICROSOFT"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of providers to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_roles",
+      "name": "List User Roles",
+      "description": "List roles assigned to a user",
+      "categories": [
+        "identity_management",
+        "investigation"
+      ],
+      "cy_name": "list_roles",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    {
+      "id": "assign_role",
+      "name": "Assign Role",
+      "description": "Assign a role to a user",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "assign_role",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "type": {
+            "type": "string",
+            "description": "Role type to assign",
+            "enum": [
+              "SUPER_ADMIN",
+              "ORG_ADMIN",
+              "API_ACCESS_MANAGEMENT_ADMIN",
+              "APP_ADMIN",
+              "USER_ADMIN",
+              "MOBILE_ADMIN",
+              "READ_ONLY_ADMIN",
+              "HELP_DESK_ADMIN",
+              "GROUP_MEMBERSHIP_ADMIN",
+              "REPORT_ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "user_id",
+          "type"
+        ]
+      }
+    },
+    {
+      "id": "unassign_role",
+      "name": "Unassign Role",
+      "description": "Unassign a role from a user",
+      "categories": [
+        "identity_management",
+        "response"
+      ],
+      "cy_name": "unassign_role",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "role_id": {
+            "type": "string",
+            "description": "Role ID to unassign"
+          }
+        },
+        "required": [
+          "user_id",
+          "role_id"
+        ]
+      }
+    },
+    {
+      "id": "send_push_notification",
+      "name": "Send Push Notification",
+      "description": "Send MFA push notification to user for verification",
+      "categories": [
+        "identity_management",
+        "authentication"
+      ],
+      "cy_name": "send_push_notification",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User ID, email address, or username"
+          },
+          "factortype": {
+            "type": "string",
+            "description": "MFA factor type",
+            "enum": [
+              "push",
+              "sms",
+              "token:software:totp"
+            ],
+            "default": "push"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

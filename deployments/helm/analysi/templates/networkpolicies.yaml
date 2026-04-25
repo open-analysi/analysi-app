@@ -1,0 +1,147 @@
+{{/*
+NetworkPolicies for the Analysi platform.
+
+Goal: limit pod-to-pod traffic so that a compromised app pod cannot freely
+reach other workloads on the cluster. Each dependency pod (postgres, valkey,
+minio, vault) only accepts ingress from the explicit set of app components
+that need it.
+
+Toggle off via `networkPolicies.enabled: false` if your CNI doesn't enforce
+NetworkPolicy (kindnet, default Docker for Desktop). Calico, Cilium, AWS VPC
+CNI, and Kind with calico/cilium addon all enforce these.
+*/}}
+{{- if .Values.networkPolicies.enabled -}}
+
+{{/* List of app-tier components that talk to dependency pods.
+     Centralised so we add new workers in one place.
+     `partition-retention` is the post-install Job that applies pg_partman
+     retention config — it only needs PostgreSQL. */}}
+{{- $appConsumers := list "api" "alerts-worker" "integrations-worker" "notifications-worker" "flyway" "partition-retention" -}}
+{{- $cacheConsumers := list "api" "alerts-worker" "integrations-worker" "notifications-worker" -}}
+{{- $objectStoreConsumers := list "api" "alerts-worker" "integrations-worker" -}}
+{{- $secretsConsumers := list "api" "alerts-worker" "integrations-worker" "notifications-worker" -}}
+
+{{- if .Values.postgresql.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "analysi.fullname" . }}-postgresql
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: postgresql
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        {{- range $appConsumers }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $.Chart.Name }}
+              app.kubernetes.io/instance: {{ $.Release.Name }}
+              app.kubernetes.io/component: {{ . }}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: 5432
+{{- end }}
+
+{{- if .Values.valkey.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "analysi.fullname" . }}-valkey
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: valkey
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: valkey
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        {{- range $cacheConsumers }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $.Chart.Name }}
+              app.kubernetes.io/instance: {{ $.Release.Name }}
+              app.kubernetes.io/component: {{ . }}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: 6379
+{{- end }}
+
+{{- if .Values.minio.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "analysi.fullname" . }}-minio
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: minio
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        {{- range $objectStoreConsumers }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $.Chart.Name }}
+              app.kubernetes.io/instance: {{ $.Release.Name }}
+              app.kubernetes.io/component: {{ . }}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: 9000
+{{- end }}
+
+{{- if .Values.vault.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "analysi.fullname" . }}-vault
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "deps") | nindent 4 }}
+    app.kubernetes.io/component: vault
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: vault
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        {{- range $secretsConsumers }}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $.Chart.Name }}
+              app.kubernetes.io/instance: {{ $.Release.Name }}
+              app.kubernetes.io/component: {{ . }}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: 8200
+{{- end }}
+{{- end }}

@@ -1,0 +1,17 @@
+# pip-audit ignore list — CVEs listed here are skipped during CI audit.
+# Use this ONLY for CVEs that have no fix available yet (upstream delay).
+# Remove entries as soon as the fix version is released and updated in poetry.lock.
+#
+# Format: one CVE ID per line (e.g., CVE-2026-12345)
+# Lines starting with # are comments.
+
+# CVE-2026-3219 — pip
+# Issue: pip treats files that are simultaneously valid tar AND ZIP archives
+# as ZIP, so a malicious polyglot archive could install files different from
+# what its filename implies. Build-time only.
+# Why we ignore: dependencies come from PyPI and are integrity-pinned in
+# poetry.lock (cryptographic hashes), so an attacker would need to compromise
+# PyPI or our supply chain for this to bite us. Defense in depth, not live
+# exposure. No upstream pip fix published yet.
+# Remove this entry as soon as pip ships a patched release and is updated.
+CVE-2026-3219

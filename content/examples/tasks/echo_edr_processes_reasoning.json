@@ -1,0 +1,237 @@
+{
+  "name": "Echo EDR: Process Behavior Analysis",
+  "cy_name": "echo_edr_processes_reasoning",
+  "description": "Enriches alerts with Echo EDR process behavior analysis. Extracts IP address from alert (device, IOC, or network fields), retrieves process execution data, performs automated threat detection, and adds structured enrichment data plus AI security assessment to the alert.",
+  "app": "Echo EDR",
+  "directive": "You are a security analyst specializing in endpoint threat detection using EDR process telemetry. Analyze process execution patterns to identify malicious activity, living-off-the-land attacks, and compromise indicators. Focus on clear risk communication and specific recommendations for incident response teams.",
+  "script_file": "echo_edr_processes_reasoning.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "Alert Enrichment",
+    "Echo EDR",
+    "Process Analysis",
+    "Behavioral Analysis",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 512
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "PowerShell Exploit - Exchange CVE-2022-41082",
+      "description": "High severity alert for PowerShell in URL targeting Exchange Server (scenario 02-powershell-exploit)",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Splunk",
+        "source_product": "Enterprise Security",
+        "enrichments": null,
+        "title": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+        "triggering_event_time": "2022-09-30T07:19:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+          "analytic": {
+            "name": "PowerShell in URL Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack"
+          ]
+        },
+        "rule_name": "PowerShell in URL Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "91.234.56.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "91.234.56.6"
+            },
+            "dst_endpoint": {
+              "ip": "10.10.30.8"
+            }
+          },
+          {
+            "http_request": {
+              "http_method": "GET",
+              "user_agent": "Mozilla/5.0 zgrab/0.x"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "10.10.30.8"
+        },
+        "raw_data": "{\"rule_id\": \"powershell-url-cve-2022-41082\", \"severity\": \"high\", \"dest\": \"10.10.30.8\", \"src\": \"91.234.56.6\"}"
+      }
+    },
+    {
+      "name": "SQL Injection with EDR Data",
+      "description": "SQL injection alert targeting web server with endpoint process analysis",
+      "input": {
+        "severity": "high",
+        "source_vendor": "Splunk",
+        "source_product": "Web Application Firewall",
+        "enrichments": null,
+        "title": "SQL Injection Attack Detected",
+        "triggering_event_time": "2025-10-23T14:25:00Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "SQL Injection Attack Detected",
+          "analytic": {
+            "name": "SQL Injection Pattern Match",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack"
+          ]
+        },
+        "rule_name": "SQL Injection Pattern Match",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Web Security"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "203.0.113.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.45"
+            },
+            "dst_endpoint": {
+              "ip": "10.10.20.18",
+              "port": 443
+            }
+          },
+          {
+            "http_request": {
+              "http_method": "POST"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "web-server-01.corp.local"
+        },
+        "raw_data": "{\"alert_type\": \"sql_injection\", \"severity\": \"high\", \"dest\": \"10.10.20.18\"}"
+      }
+    },
+    {
+      "name": "No IP Address - User-based Alert",
+      "description": "Alert with user as primary risk entity but no IP address should be returned unchanged",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Azure AD",
+        "source_product": "Identity Protection",
+        "enrichments": null,
+        "title": "Suspicious Login from Unusual Location",
+        "triggering_event_time": "2025-10-23T16:30:00Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious Login from Unusual Location",
+          "analytic": {
+            "name": "Suspicious Login from Unusual Location",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Authentication"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 99,
+            "type": "Other",
+            "value": "unusual_location"
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jsmith@corp.local"
+          }
+        },
+        "raw_data": "{\"user\": \"jsmith@corp.local\", \"risk_level\": \"medium\"}"
+      }
+    },
+    {
+      "name": "Network Info IP Extraction",
+      "description": "Alert with IP in network_info.dst_ip field",
+      "input": {
+        "severity": "medium",
+        "source_vendor": "Suricata",
+        "source_product": "IDS/IPS",
+        "enrichments": null,
+        "title": "Port Scan Activity Detected",
+        "triggering_event_time": "2025-10-23T18:45:00Z",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Port Scan Activity Detected",
+          "analytic": {
+            "name": "Port Scan Activity Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "192.168.1.100"
+            },
+            "dst_endpoint": {
+              "ip": "10.10.30.8"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "raw_data": "{\"signature\": \"Port Scan\", \"severity\": \"medium\"}"
+      }
+    }
+  ],
+  "tags": [
+    "security",
+    "echo-edr",
+    "process-monitoring",
+    "endpoint-telemetry",
+    "threat-detection",
+    "enrichment",
+    "behavioral-analysis"
+  ]
+}

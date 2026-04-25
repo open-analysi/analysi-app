@@ -1,0 +1,13 @@
+### SQL Injection Payload & Technique Analysis ★
+- **Action:** Extract SQL injection attempts, URL decode payloads, and identify injection techniques
+- **Purpose:** Validates: "Scanner probing" vs "Targeted exploitation"
+- **Pattern:** integration_query
+- **Integration:** siem
+- **Focus:** SQL patterns in URLs (OR, UNION, SELECT, quotes), URL encoding (%27 = ', %22 = ", %20 = space), identify techniques (OR-based, UNION SELECT, ORDER BY enumeration, comment terminators), assess sophistication and attack progression
+- **Fields:** get_src_ip(alert)
+- **Output:** sqli_payload_analysis
+- **Decision Points:**
+  - Single payload variation → Manual testing
+  - Multiple payload types in sequence → Automated scanner
+  - Increasing complexity → Progressive enumeration
+  - Classic patterns (OR 1=1, UNION SELECT) → Basic attack

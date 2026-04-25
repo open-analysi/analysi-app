@@ -1,0 +1,154 @@
+{
+  "id": "ciscotalosintelligence",
+  "app": "ciscotalosintelligence",
+  "name": "Cisco Talos Intelligence",
+  "version": "1.0.0",
+  "description": "Threat intelligence lookups for IP addresses, domains, and URLs using the Cisco Talos reputation API with mTLS certificate authentication",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "cisco-talos-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "cisco-talos-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco Talos integration instance"
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "certificate": {
+        "type": "string",
+        "display_name": "Client Certificate",
+        "description": "PEM-encoded client certificate for mTLS authentication with Talos API (base64 content without BEGIN/END headers)",
+        "format": "password",
+        "required": true
+      },
+      "key": {
+        "type": "string",
+        "display_name": "Private Key",
+        "description": "PEM-encoded private key for mTLS authentication with Talos API (base64 content without BEGIN/END headers)",
+        "format": "password",
+        "required": true
+      }
+    },
+    "required": [
+      "certificate",
+      "key"
+    ]
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Talos API base URL",
+        "default": "https://soar-api.talos.cisco.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate Talos API connectivity by querying reputation of cisco.com",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Look up Cisco Talos threat intelligence for a given IP address",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Look up Cisco Talos threat intelligence for a given domain",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "domain_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Look up Cisco Talos threat intelligence for a given URL",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "url_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to query (must include scheme, e.g. https://example.com)"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ],
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_reputation",
+      "lookup_domain": "domain_reputation",
+      "lookup_url": "url_reputation"
+    }
+  },
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/6m",
+      "enabled": true
+    }
+  ]
+}

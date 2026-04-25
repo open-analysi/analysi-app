@@ -1,0 +1,176 @@
+{
+  "id": "censys",
+  "app": "censys",
+  "name": "Censys",
+  "version": "1.0.0",
+  "description": "Internet-wide scanning platform for looking up hosts, certificates, and searching for exposed assets and services",
+  "archetypes": [
+    "DatabaseEnrichment"
+  ],
+  "priority": 60,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "censys-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "censys-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Censys integration instance"
+  },
+
+  "archetype_mappings": {
+    "DatabaseEnrichment": {
+      "lookup_ip": "lookup_ip",
+      "search_hosts": "query_ip"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_id": {
+        "type": "string",
+        "display_name": "API ID",
+        "description": "Censys API ID for authentication",
+        "required": true
+      },
+      "secret": {
+        "type": "string",
+        "display_name": "API Secret",
+        "description": "Censys API Secret for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "Censys API base URL",
+        "default": "https://search.censys.io"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 120
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to the Censys API and validate credentials",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Look up host information for an IP address including services, location, and autonomous system details",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to look up"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "lookup_certificate",
+      "name": "Lookup Certificate",
+      "description": "Look up certificate details by SHA-256 fingerprint including issuer, subject, validity, and extensions",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "lookup_certificate",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "description": "SHA-256 fingerprint of the certificate"
+          }
+        },
+        "required": ["sha256"]
+      }
+    },
+    {
+      "id": "query_ip",
+      "name": "Query IP",
+      "description": "Search the Censys hosts dataset using the Censys query language with pagination support",
+      "categories": ["investigation"],
+      "cy_name": "query_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Censys search query string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 200
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "query_certificate",
+      "name": "Query Certificate",
+      "description": "Search the Censys certificates dataset using the Censys query language with pagination support",
+      "categories": ["investigation"],
+      "cy_name": "query_certificate",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Censys search query string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 200
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

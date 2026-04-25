@@ -1,0 +1,191 @@
+{
+  "name": "Domain Analysis Workflow",
+  "description": "Basic domain analysis: VirusTotal Domain → Detailed Summary",
+  "is_dynamic": false,
+  "io_schema": {
+    "input": {
+      "$schema": "http://json-schema.org/schema#",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "raw_alert": {
+          "type": "string"
+        },
+        "rule_name": {
+          "type": "string"
+        },
+        "alert_type": {
+          "type": "string"
+        },
+        "network_info": {
+          "type": "object",
+          "properties": {
+            "src_ip": {
+              "type": "string"
+            },
+            "protocol": {
+              "type": "string"
+            },
+            "query_type": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "protocol",
+            "src_ip"
+          ]
+        },
+        "device_action": {
+          "type": "string"
+        },
+        "source_vendor": {
+          "type": "string"
+        },
+        "source_product": {
+          "type": "string"
+        },
+        "source_category": {
+          "type": "string"
+        },
+        "primary_ioc_type": {
+          "type": "string"
+        },
+        "primary_ioc_value": {
+          "type": "string"
+        },
+        "triggering_event_time": {
+          "type": "string"
+        },
+        "primary_risk_entity_type": {
+          "type": "string"
+        },
+        "primary_risk_entity_value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "severity",
+        "raw_alert",
+        "rule_name",
+        "alert_type",
+        "network_info",
+        "device_action",
+        "source_vendor",
+        "source_product",
+        "source_category",
+        "primary_ioc_type",
+        "primary_ioc_value",
+        "triggering_event_time",
+        "primary_risk_entity_type",
+        "primary_risk_entity_value"
+      ]
+    },
+    "output": {
+      "type": "object"
+    }
+  },
+  "data_samples": [
+    {
+      "name": "Malicious Domain - DNS Alert",
+      "input": {
+        "source_product": "DNS Security",
+        "severity": "high",
+        "source_vendor": "Cisco Umbrella",
+        "title": "Suspicious DNS Query to Known Malicious Domain",
+        "triggering_event_time": "2025-10-23T14:22:15Z",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious DNS Query to Known Malicious Domain",
+          "analytic": {
+            "name": "DNS Query to Threat Intelligence Feed Domain",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Command and Control"
+          ]
+        },
+        "rule_name": "DNS Query to Threat Intelligence Feed Domain",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Network"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 1,
+            "type": "Hostname",
+            "value": "malicious-c2.example.com"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "10.50.3.78"
+            },
+            "connection_info": {
+              "protocol_name": "DNS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "workstation-078.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"DNS-DEMO-14221\", \"severity\": \"high\", \"action\": \"blocked\", \"domain\": \"malicious-c2.example.com\", \"src\": \"10.50.3.78\"}"
+      },
+      "description": "High severity DNS alert for query to known malicious domain"
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "vt_domain",
+      "kind": "task",
+      "name": "VirusTotal Domain Reputation",
+      "is_start_node": true,
+      "task_cy_name": "virustotal_domain_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "detailed",
+      "kind": "task",
+      "name": "Detailed Analysis",
+      "task_cy_name": "alert_detailed_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1",
+      "from_node_id": "vt_domain",
+      "to_node_id": "detailed"
+    }
+  ],
+  "categories": [
+    "Examples"
+  ]
+}

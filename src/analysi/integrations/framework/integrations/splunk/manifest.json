@@ -1,0 +1,368 @@
+{
+  "id": "splunk",
+  "app": "splunk",
+  "name": "Splunk Enterprise",
+  "version": "1.0.0",
+  "description": "Splunk SIEM integration for alert ingestion, event querying, and security operations",
+  "archetypes": [
+    "SIEM",
+    "AlertSource"
+  ],
+  "priority": 90,
+  "integration_id_config": {
+    "default": "splunk-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "splunk-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "pull_alerts",
+      "create_alert": "send_events",
+      "update_alert_status": "update_notable",
+      "get_alerts": "pull_alerts",
+      "run_saved_search": "list_saved_searches"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Splunk username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Splunk password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "host": {
+        "type": "string",
+        "display_name": "Splunk Host",
+        "description": "Splunk server hostname or IP",
+        "default": "localhost"
+      },
+      "port": {
+        "type": "integer",
+        "display_name": "Management Port",
+        "description": "Splunk management port",
+        "default": 8089
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Alert Lookback Period",
+        "description": "Default time window (in minutes) to look back for alerts when not specified",
+        "default": 5,
+        "minimum": 1
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to Splunk server",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull notable events from Splunk",
+      "categories": [
+        "alert_ingestion"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Alerts to OCSF",
+      "description": "Normalize raw Splunk notable events to OCSF Detection Finding format",
+      "categories": [
+        "alert_normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw Splunk notable events to normalize",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    },
+    {
+      "id": "update_notable",
+      "name": "Update Notable",
+      "description": "Update notable event status and comments",
+      "categories": [
+        "response",
+        "siem"
+      ],
+      "cy_name": "update_notable",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "notable_id": {
+            "type": "string",
+            "description": "ID of the notable event"
+          },
+          "status": {
+            "type": "string",
+            "description": "New status for the notable event"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment to add to the notable event"
+          }
+        },
+        "required": [
+          "notable_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "id": "send_events",
+      "name": "Send Events",
+      "description": "Send events to Splunk HEC endpoint",
+      "categories": [
+        "data_output",
+        "siem"
+      ],
+      "cy_name": "send_events",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "description": "List of events to send to Splunk",
+            "items": {
+              "type": "object"
+            }
+          },
+          "index": {
+            "type": "string",
+            "description": "Target Splunk index (optional)"
+          },
+          "sourcetype": {
+            "type": "string",
+            "description": "Sourcetype for the events (optional)"
+          }
+        },
+        "required": [
+          "events"
+        ]
+      }
+    },
+    {
+      "id": "list_datamodels",
+      "name": "List Data Models",
+      "description": "List available Splunk data models",
+      "categories": [
+        "discovery",
+        "siem"
+      ],
+      "cy_name": "list_datamodels",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_saved_searches",
+      "name": "List Saved Searches",
+      "description": "List saved searches in Splunk",
+      "categories": [
+        "discovery",
+        "siem"
+      ],
+      "cy_name": "list_saved_searches",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_index_stats",
+      "name": "Get Index Stats",
+      "description": "Get statistics for Splunk indexes",
+      "categories": [
+        "monitoring",
+        "siem"
+      ],
+      "cy_name": "get_index_stats",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "string",
+            "description": "Specific index name to get stats for (optional, returns all if not specified)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "sourcetype_discovery",
+      "name": "Sourcetype Discovery",
+      "description": "Discover available sourcetypes and indexes in Splunk and store in Knowledge Unit table",
+      "categories": [
+        "knowledge_building"
+      ],
+      "cy_name": "sourcetype_discovery",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_indexes",
+      "name": "List Indexes",
+      "description": "List all available Splunk indexes",
+      "categories": [
+        "discovery",
+        "siem"
+      ],
+      "cy_name": "list_indexes",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "spl_run",
+      "name": "Run SPL Query",
+      "description": "Execute arbitrary SPL (Splunk Processing Language) query",
+      "categories": [
+        "query",
+        "siem"
+      ],
+      "cy_name": "spl_run",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "spl_query": {
+            "type": "string",
+            "description": "The SPL query to execute"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Query timeout in seconds (default: 120)",
+            "default": 120
+          }
+        },
+        "required": [
+          "spl_query"
+        ]
+      }
+    },
+    {
+      "id": "generate_triggering_events_spl",
+      "name": "Generate Triggering Events SPL",
+      "description": "Generate SPL query from alert for triggering event search using CIM mappings",
+      "categories": [
+        "query",
+        "siem",
+        "alert_analysis"
+      ],
+      "cy_name": "generate_triggering_events_spl",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert": {
+            "type": "object",
+            "description": "Alert data dict with source_category, triggering_event_time, and entity/IOC information"
+          },
+          "lookback_seconds": {
+            "type": "integer",
+            "description": "Seconds to look back from triggering event time (default: 60)",
+            "default": 60
+          }
+        },
+        "required": [
+          "alert"
+        ]
+      }
+    },
+    {
+      "id": "resolve_sourcetypes",
+      "name": "Resolve Sourcetypes",
+      "description": "Resolve relevant Splunk sourcetypes for an alert via CIM triple join. Returns index/sourcetype pairs and a ready-to-use SPL filter fragment. Use this before building custom SPL queries to avoid hardcoding sourcetypes.",
+      "categories": [
+        "discovery",
+        "siem",
+        "alert_analysis"
+      ],
+      "cy_name": "resolve_sourcetypes",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert": {
+            "type": "object",
+            "description": "Alert data containing source_category field"
+          },
+          "source_category": {
+            "type": "string",
+            "description": "Direct source category (e.g., 'Web', 'Firewall'). Alternative to passing full alert."
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    },
+    {
+      "action_id": "sourcetype_discovery",
+      "schedule": "every/24h",
+      "enabled": true
+    }
+  ]
+}

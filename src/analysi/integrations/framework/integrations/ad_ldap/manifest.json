@@ -1,0 +1,159 @@
+{
+  "id": "ad_ldap",
+  "app": "ad_ldap",
+  "name": "AD LDAP",
+  "version": "1.0.0",
+  "description": "Microsoft Active Directory LDAP integration for identity management and directory services",
+  "archetypes": [
+    "IdentityProvider"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "ad-ldap-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ad-ldap-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "The username with which to bind to LDAP",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "The password for the binding user",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "server": {
+        "type": "string",
+        "display_name": "Server",
+        "description": "The Active Directory Server hostname, IP, or VIP for binding",
+        "required": true
+      },
+      "force_ssl": {
+        "type": "boolean",
+        "display_name": "Force SSL",
+        "description": "Force the use of SSL protocol. Note that some actions are not possible without secure binding!",
+        "default": true
+      },
+      "ssl_port": {
+        "type": "integer",
+        "display_name": "SSL Port",
+        "description": "The port to bind for SSL (default 636)",
+        "default": 636
+      },
+      "validate_ssl_cert": {
+        "type": "boolean",
+        "display_name": "Validate SSL Certificate",
+        "description": "Select if you want to validate the LDAP SSL certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "LDAP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate the asset configuration for connectivity using supplied configuration",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_attributes",
+      "name": "Get Attributes",
+      "description": "Get attributes of various principals (sAMAccountName, distinguishedName, or userPrincipalName)",
+      "categories": [
+        "identity",
+        "investigation"
+      ],
+      "cy_name": "get_attributes",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "principals": {
+            "type": "string",
+            "description": "Semi-colon separated principals (sAMAccountName, userprincipalname, or distinguishedName)"
+          },
+          "attributes": {
+            "type": "string",
+            "description": "Semi-colon separated list of attributes to collect",
+            "default": "sAMAccountName"
+          }
+        },
+        "required": [
+          "principals",
+          "attributes"
+        ]
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Query Active Directory LDAP using LDAP filter syntax",
+      "categories": [
+        "identity",
+        "investigation"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "The LDAP filter (must be in LDAP Syntax)"
+          },
+          "attributes": {
+            "type": "string",
+            "description": "Semi-colon separated list of attributes to collect (e.g. sAMAccountName;mail)",
+            "default": "sAMAccountName"
+          },
+          "search_base": {
+            "type": "string",
+            "description": "The search base to use in its distinguishedName format. If not specified, the 'defaultNamingContext' will be used"
+          }
+        },
+        "required": [
+          "filter",
+          "attributes"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "IdentityProvider": {
+      "get_user_details": "get_attributes"
+    }
+  },
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

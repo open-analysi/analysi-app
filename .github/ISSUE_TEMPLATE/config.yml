@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/open-analysi/analysi-app/security/advisories/new
+    about: Please report security issues privately via GitHub Security Advisories. Do not open a public issue. See SECURITY.md for details.
+  - name: Question or discussion
+    url: https://github.com/open-analysi/analysi-app/discussions
+    about: For usage questions, design discussions, or general help, please open a Discussion.

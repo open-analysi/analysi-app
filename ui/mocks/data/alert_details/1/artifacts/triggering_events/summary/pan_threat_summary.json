@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-26T07:19:00.000-07:00",
+  "event": "THREAT",
+  "threat": "Autodiscover-Exploit-Block",
+  "action": "block",
+  "description": "Blocked an Autodiscover exploit targeting Microsoft Exchange. Attack originated from 91.234.56.6 to 10.10.30.8 on port 443 using a malicious request to /autodiscover/autodiscover.json.",
+  "log_purpose": "This log is generated when the firewall detects and blocks an attempted exploit targeting a known vulnerability.",
+  "log_trigger": "Logged when a security policy or threat prevention profile blocks a request that matches a known exploit signature."
+}

@@ -1,0 +1,331 @@
+{
+  "id": "echo_edr",
+  "app": "echo_edr",
+  "name": "Echo EDR",
+  "version": "1.0.0",
+  "description": "Simulated EDR for development, testing, and demos (not a real product connector)",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "echo-edr-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "echo-edr-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Echo EDR API authentication key",
+        "format": "password",
+        "placeholder": "sk-...",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "api_url": {
+        "type": "string",
+        "display_name": "API URL",
+        "description": "Base URL for Echo EDR API",
+        "default": "http://echo-server:8000",
+        "placeholder": "http://echo-server:8000",
+        "required": true
+      }
+    }
+  },
+  "archetype_mappings": {
+    "EDR": {
+      "pull_processes": "pull_processes",
+      "pull_network_connections": "pull_network_connections",
+      "pull_browser_history": "pull_browser_history",
+      "pull_terminal_history": "pull_terminal_history",
+      "isolate_host": "isolate_host",
+      "release_host": "release_host",
+      "scan_host": "scan_host",
+      "get_host_details": "get_host_details"
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity and health of Echo EDR server",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "credential_scopes": [
+        "read",
+        "read/write",
+        "admin"
+      ],
+      "default_schedule": {
+        "schedule_type": "every",
+        "schedule_value": "1m",
+        "enabled": true
+      },
+      "params_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "pull_processes",
+      "name": "Pull Process Data",
+      "description": "Retrieve process execution data from endpoints",
+      "categories": [
+        "investigation",
+        "data_collection"
+      ],
+      "cy_name": "pull_processes",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address of the endpoint to query"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Optional start time for filtering (ISO 8601 format)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Optional end time for filtering (ISO 8601 format)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "pull_browser_history",
+      "name": "Pull Browser History",
+      "description": "Retrieve browser history data from endpoints",
+      "categories": [
+        "investigation",
+        "data_collection"
+      ],
+      "cy_name": "pull_browser_history",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address of the endpoint to query"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Optional start time for filtering (ISO 8601 format)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Optional end time for filtering (ISO 8601 format)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "pull_network_connections",
+      "name": "Pull Network Connections",
+      "description": "Retrieve network connection data from endpoints",
+      "categories": [
+        "investigation",
+        "data_collection"
+      ],
+      "cy_name": "pull_network_connections",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address of the endpoint to query"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Optional start time for filtering (ISO 8601 format)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Optional end time for filtering (ISO 8601 format)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "pull_terminal_history",
+      "name": "Pull Terminal History",
+      "description": "Retrieve terminal/command history data from endpoints",
+      "categories": [
+        "investigation",
+        "data_collection"
+      ],
+      "cy_name": "pull_terminal_history",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address of the endpoint to query"
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Optional start time for filtering (ISO 8601 format)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Optional end time for filtering (ISO 8601 format)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "isolate_host",
+      "name": "Isolate Host",
+      "description": "Isolate a host from the network",
+      "categories": [
+        "response",
+        "containment"
+      ],
+      "cy_name": "isolate_host",
+      "enabled": false,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The hostname or identifier of the host to isolate"
+          }
+        },
+        "required": [
+          "hostname"
+        ]
+      }
+    },
+    {
+      "id": "release_host",
+      "name": "Release Host",
+      "description": "Release a host from network isolation",
+      "categories": [
+        "response",
+        "containment"
+      ],
+      "cy_name": "release_host",
+      "enabled": false,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The hostname or identifier of the host to release from isolation"
+          }
+        },
+        "required": [
+          "hostname"
+        ]
+      }
+    },
+    {
+      "id": "scan_host",
+      "name": "Scan Host",
+      "description": "Initiate a security scan on a host",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "scan_host",
+      "enabled": false,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The hostname or identifier of the host to scan"
+          },
+          "scan_type": {
+            "type": "string",
+            "description": "Type of scan to perform (default: 'full')",
+            "default": "full"
+          }
+        },
+        "required": [
+          "hostname"
+        ]
+      }
+    },
+    {
+      "id": "get_host_details",
+      "name": "Get Host Details",
+      "description": "Retrieve detailed information about a host",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_host_details",
+      "enabled": false,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The hostname or identifier of the host to retrieve details for"
+          }
+        },
+        "required": [
+          "hostname"
+        ]
+      }
+    }
+  ],
+  "credentials": {
+    "type": "api_key",
+    "fields": [
+      "api_key"
+    ]
+  }
+}

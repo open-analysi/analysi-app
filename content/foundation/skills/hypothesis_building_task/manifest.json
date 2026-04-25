@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "hypothesis-building-task",
+  "cy_name": "hypothesis_building_task",
+  "description": "Build hypothesis generation tasks for security investigation workflows. Use when creating tasks that form investigation hypotheses from runbooks. These tasks combine static hypotheses (baked in at Kea-time) with dynamic LLM augmentation (at runtime)."
+}

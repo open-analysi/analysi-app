@@ -1,0 +1,16 @@
+{
+  "version": "1.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "cy-language-programming",
+  "cy_name": "cy_language_programming",
+  "description": "Write and debug Cy language scripts for automation and workflow composition. Use when working with .cy files, Security Tasks, writing Cy programs, or debugging Cy syntax errors."
+}

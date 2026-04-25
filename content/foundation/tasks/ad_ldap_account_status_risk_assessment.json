@@ -1,0 +1,233 @@
+{
+  "name": "AD LDAP: Account Status and Risk Assessment",
+  "cy_name": "ad_ldap_account_status_risk_assessment",
+  "description": "Enriches alerts with Active Directory account status and risk assessment. Validates primary risk entity is a user, queries LDAP for account details (email, display name, group memberships), and provides AI-powered security analysis connecting account status to the alert context.",
+  "app": "IdentityProvider",
+  "directive": "You are an identity security analyst. Analyze Active Directory account attributes in the context of security alerts. Assess whether the account is privileged based on group memberships, determine risk level, identify security concerns, and recommend immediate actions. Be concise and actionable.",
+  "script_file": "ad_ldap_account_status_risk_assessment.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Identity Management",
+    "Active Directory",
+    "Account Security",
+    "Risk Assessment",
+    "LDAP",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1000
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Suspicious Login - Active User Account",
+      "description": "High severity suspicious login alert for an active user account with normal security posture",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:22:15Z",
+        "severity": "high",
+        "source_product": "Azure AD Identity Protection",
+        "title": "Suspicious Login from Unusual Location",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Login from Unusual Location",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Impossible Travel Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Suspicious Authentication"
+          ]
+        },
+        "rule_name": "Impossible Travel Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "alice.johnson"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AAD-DEMO-14221\", \"user\": \"alice.johnson\", \"location\": \"Moscow, Russia\", \"previous_location\": \"New York, USA\"}"
+      }
+    },
+    {
+      "name": "Privilege Escalation - Locked Account",
+      "description": "Critical privilege escalation alert for a locked account indicating potential compromise",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:45:30Z",
+        "severity": "critical",
+        "source_product": "Falcon EDR",
+        "title": "Privilege Escalation Attempt Detected",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Privilege Escalation Attempt Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Privilege Escalation via Token Manipulation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Privilege Escalation"
+          ]
+        },
+        "rule_name": "Privilege Escalation via Token Manipulation",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "john.doe"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"EDR-DEMO-15453\", \"technique\": \"T1134\", \"user\": \"john.doe\", \"process\": \"powershell.exe\"}"
+      }
+    },
+    {
+      "name": "Malware Execution - Dormant Service Account",
+      "description": "Medium severity malware alert for service account with risky password policy",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:12:00Z",
+        "severity": "medium",
+        "source_product": "Defender for Endpoint",
+        "title": "Suspicious Process Execution - Potential Malware",
+        "source_vendor": "Microsoft",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Suspicious Process Execution - Potential Malware",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Suspicious PowerShell Activity",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malware"
+          ]
+        },
+        "rule_name": "Suspicious PowerShell Activity",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "service.backup"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"MDE-DEMO-16120\", \"user\": \"service.backup\", \"file\": \"malicious.ps1\"}"
+      }
+    },
+    {
+      "name": "Non-User Entity Alert - Device IOC",
+      "description": "Alert with device as primary risk entity should be returned unchanged (no user enrichment)",
+      "input": {
+        "triggering_event_time": "2025-10-23T17:30:45Z",
+        "severity": "critical",
+        "source_product": "Singularity",
+        "title": "Ransomware Behavior Detected",
+        "source_vendor": "SentinelOne",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Ransomware Behavior Detected",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Ransomware Behavior Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 7,
+            "type": "File Name",
+            "value": "ransomware.exe"
+          }
+        ],
+        "device": {
+          "hostname": "WORKSTATION-042"
+        },
+        "raw_data": "{\"alert_id\": \"S1-DEMO-17304\", \"device\": \"WORKSTATION-042\", \"threat\": \"ransomware\"}"
+      }
+    },
+    {
+      "name": "User Not Found in AD",
+      "description": "Alert for user that doesn't exist in Active Directory - enrichment with not found status",
+      "input": {
+        "triggering_event_time": "2025-10-23T18:00:00Z",
+        "severity": "medium",
+        "source_product": "Cortex XDR",
+        "title": "Failed Login Attempt - Brute Force",
+        "source_vendor": "Palo Alto",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Failed Login Attempt - Brute Force",
+          "uid": "sample-005",
+          "analytic": {
+            "name": "Multiple Failed Authentication Attempts",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Brute Force"
+          ]
+        },
+        "rule_name": "Multiple Failed Authentication Attempts",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "nonexistent.user"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"XDR-DEMO-18000\", \"user\": \"nonexistent.user\", \"attempts\": 15}"
+      }
+    }
+  ],
+  "tags": [
+    "identity",
+    "active-directory",
+    "ldap",
+    "account-status",
+    "risk-assessment",
+    "enrichment"
+  ]
+}

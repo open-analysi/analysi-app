@@ -1,0 +1,247 @@
+{
+  "id": "mandiantti",
+  "app": "mandiantti",
+  "name": "Mandiant Advantage Threat Intelligence",
+  "version": "1.0.0",
+  "description": "Premium threat intelligence from Mandiant (Google) for indicators, threat actors, campaigns, vulnerabilities, malware families, and reports",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 85,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "mandiantti-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "mandiantti-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Mandiant TI integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "indicator_lookup",
+      "lookup_domain": "indicator_lookup",
+      "lookup_file_hash": "indicator_lookup",
+      "lookup_url": "indicator_lookup",
+      "get_threat_context": "threat_actor_lookup"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Mandiant Threat Intelligence API Key (used as OAuth2 client ID)",
+        "format": "password",
+        "required": true
+      },
+      "secret_key": {
+        "type": "string",
+        "display_name": "Secret Key",
+        "description": "Mandiant Threat Intelligence API Secret Key (used as OAuth2 client secret)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "Base URL for the Mandiant Threat Intelligence API",
+        "default": "https://api.intelligence.mandiant.com/"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to Mandiant TI API and validate credentials",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "indicator_lookup",
+      "name": "Lookup Indicator",
+      "description": "Retrieve indicator information for an IP, domain, hash, or URL including confidence score, categories, attributed associations, and related reports",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "indicator_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "indicator": {
+            "type": "string",
+            "description": "Indicator value to look up (IP, domain, hash, or URL)"
+          }
+        },
+        "required": ["indicator"]
+      }
+    },
+    {
+      "id": "threat_actor_lookup",
+      "name": "Lookup Threat Actor",
+      "description": "Retrieve threat actor information including motivations, tools, malware, targeted industries, locations, reports, and campaigns",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "threat_actor_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "threat_actor": {
+            "type": "string",
+            "description": "Threat actor name or ID to look up (e.g., APT29)"
+          }
+        },
+        "required": ["threat_actor"]
+      }
+    },
+    {
+      "id": "vulnerability_lookup",
+      "name": "Lookup Vulnerability",
+      "description": "Retrieve vulnerability (CVE) information from Mandiant TI including risk rating and exploitation details",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "vulnerability_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "vulnerability": {
+            "type": "string",
+            "description": "Vulnerability identifier to look up (e.g., CVE-2021-44228)"
+          }
+        },
+        "required": ["vulnerability"]
+      }
+    },
+    {
+      "id": "malware_family_lookup",
+      "name": "Lookup Malware Family",
+      "description": "Retrieve malware family information including associated reports and campaigns",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "malware_family_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "malware_family": {
+            "type": "string",
+            "description": "Malware family name or ID to look up"
+          }
+        },
+        "required": ["malware_family"]
+      }
+    },
+    {
+      "id": "campaign_lookup",
+      "name": "Lookup Campaign",
+      "description": "Retrieve campaign information including actors, malware, tools, industries, and associated reports",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "campaign_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "campaign": {
+            "type": "string",
+            "description": "Campaign name or ID to look up"
+          }
+        },
+        "required": ["campaign"]
+      }
+    },
+    {
+      "id": "search",
+      "name": "Search Mandiant TI",
+      "description": "Search Mandiant Threat Intelligence for a given query string with automatic pagination",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "search",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query string"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "report_lookup",
+      "name": "Lookup Report",
+      "description": "Retrieve a single report in HTML format from Mandiant TI",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "report_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "description": "Report ID to retrieve"
+          }
+        },
+        "required": ["report_id"]
+      }
+    },
+    {
+      "id": "report_list",
+      "name": "List Reports",
+      "description": "Retrieve a list of reports from Mandiant TI within a time window, optionally filtered by report type",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "report_list",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "integer",
+            "description": "Number of days to look back for reports (default: 7)",
+            "default": 7
+          },
+          "report_type": {
+            "type": "string",
+            "description": "Optional filter by report type (e.g., ACTOR, MALWARE, INDUSTRY)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

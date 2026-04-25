@@ -1,0 +1,149 @@
+{
+  "id": "bigquery",
+  "app": "bigquery",
+  "name": "Google BigQuery",
+  "version": "1.0.0",
+  "description": "Google BigQuery data warehouse integration for SQL queries and table management",
+  "archetypes": [
+    "Lakehouse"
+  ],
+  "priority": 65,
+  "integration_id_config": {
+    "default": "bigquery-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "bigquery-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "Lakehouse": {
+      "execute_query": "run_query",
+      "list_tables": "list_tables",
+      "get_job_status": "get_results"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "service_account_json": {
+        "type": "string",
+        "display_name": "Service Account JSON",
+        "description": "Contents of Google Cloud service account JSON file",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "project_id": {
+        "type": "string",
+        "display_name": "Project ID",
+        "description": "Google Cloud project ID (optional, uses service account's project if not provided)",
+        "required": false
+      },
+      "default_timeout": {
+        "type": "integer",
+        "display_name": "Default Query Timeout",
+        "description": "Default timeout for query execution in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to BigQuery API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List tables in BigQuery datasets",
+      "categories": [
+        "data",
+        "investigation"
+      ],
+      "cy_name": "list_tables",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "description": "Optional dataset name to filter tables (lists all if not provided)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Execute a SQL query in BigQuery",
+      "categories": [
+        "data",
+        "investigation"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "SQL query to execute"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Optional timeout in seconds (uses default if not provided)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "id": "get_results",
+      "name": "Get Results",
+      "description": "Get results from a previously started query job",
+      "categories": [
+        "data",
+        "investigation"
+      ],
+      "cy_name": "get_results",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "BigQuery job ID from run_query"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Optional timeout in seconds (uses default if not provided)"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

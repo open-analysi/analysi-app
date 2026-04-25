@@ -1,0 +1,432 @@
+{
+  "id": "databricks",
+  "app": "databricks",
+  "name": "Databricks",
+  "version": "1.0.0",
+  "description": "This integration supports investigation and data manipulation actions in Databricks analytics platform",
+  "archetypes": [
+    "Lakehouse"
+  ],
+  "priority": 60,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "Username for basic authentication (optional if token is provided)"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for basic authentication (optional if token is provided)",
+        "secret": true,
+        "format": "password"
+      },
+      "token": {
+        "type": "string",
+        "description": "Personal access token for authentication (optional if username/password provided)",
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "host": {
+        "type": "string",
+        "description": "Databricks Host (must begin with https://)",
+        "examples": [
+          "https://example.cloud.databricks.com"
+        ],
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 300
+      }
+    },
+    "additionalProperties": false
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Databricks workspace",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all SQL alerts in the workspace",
+      "categories": [
+        "investigation",
+        "monitoring"
+      ],
+      "cy_name": "list_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create a new SQL alert",
+      "categories": [
+        "configuration",
+        "monitoring"
+      ],
+      "cy_name": "create_alert",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Alert name"
+          },
+          "query_id": {
+            "type": "string",
+            "description": "Query ID to monitor"
+          },
+          "column": {
+            "type": "string",
+            "description": "Column to monitor"
+          },
+          "operator": {
+            "type": "string",
+            "description": "Comparison operator",
+            "enum": [
+              "GREATER_THAN",
+              "LESS_THAN",
+              "EQUAL",
+              "NOT_EQUAL"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "Threshold value"
+          },
+          "custom_body": {
+            "type": "string",
+            "description": "Custom alert body (optional)"
+          },
+          "custom_subject": {
+            "type": "string",
+            "description": "Custom alert subject (optional)"
+          },
+          "muted": {
+            "type": "boolean",
+            "description": "Whether alert is muted (optional)"
+          },
+          "empty_result_state": {
+            "type": "string",
+            "description": "State when query returns no results (optional)",
+            "enum": [
+              "UNKNOWN",
+              "OK",
+              "TRIGGERED"
+            ]
+          },
+          "rearm": {
+            "type": "integer",
+            "description": "Rearm time in seconds (optional)"
+          },
+          "parent": {
+            "type": "string",
+            "description": "Parent folder path or ID (optional)"
+          }
+        },
+        "required": [
+          "name",
+          "query_id",
+          "column",
+          "operator",
+          "value"
+        ]
+      }
+    },
+    {
+      "id": "delete_alert",
+      "name": "Delete Alert",
+      "description": "Delete a SQL alert",
+      "categories": [
+        "configuration",
+        "monitoring"
+      ],
+      "cy_name": "delete_alert",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Alert ID to delete"
+          }
+        },
+        "required": [
+          "alert_id"
+        ]
+      }
+    },
+    {
+      "id": "list_clusters",
+      "name": "List Clusters",
+      "description": "List all compute clusters in the workspace",
+      "categories": [
+        "investigation",
+        "infrastructure"
+      ],
+      "cy_name": "list_clusters",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_warehouses",
+      "name": "List Warehouses",
+      "description": "List all SQL warehouses in the workspace",
+      "categories": [
+        "investigation",
+        "infrastructure"
+      ],
+      "cy_name": "list_warehouses",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "perform_query",
+      "name": "Perform Query",
+      "description": "Execute a SQL query on a warehouse",
+      "categories": [
+        "investigation",
+        "data_analysis"
+      ],
+      "cy_name": "perform_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "statement": {
+            "type": "string",
+            "description": "SQL statement to execute"
+          },
+          "warehouse_id": {
+            "type": "string",
+            "description": "SQL warehouse ID"
+          },
+          "wait_timeout": {
+            "type": "integer",
+            "description": "Wait timeout in seconds (0 for async execution, optional)"
+          },
+          "on_wait_timeout": {
+            "type": "string",
+            "description": "Action on timeout (optional)",
+            "enum": [
+              "CONTINUE",
+              "CANCEL"
+            ]
+          },
+          "byte_limit": {
+            "type": "integer",
+            "description": "Result size limit in bytes (optional)"
+          },
+          "catalog": {
+            "type": "string",
+            "description": "Catalog name (optional)"
+          },
+          "schema": {
+            "type": "string",
+            "description": "Schema name (optional)"
+          },
+          "format": {
+            "type": "string",
+            "description": "Result format (optional, default: JSON_ARRAY)",
+            "enum": [
+              "JSON_ARRAY",
+              "ARROW_STREAM",
+              "CSV"
+            ]
+          },
+          "disposition": {
+            "type": "string",
+            "description": "Result disposition (optional, default: INLINE)",
+            "enum": [
+              "INLINE",
+              "EXTERNAL_LINKS"
+            ]
+          }
+        },
+        "required": [
+          "statement",
+          "warehouse_id"
+        ]
+      }
+    },
+    {
+      "id": "get_query_status",
+      "name": "Get Query Status",
+      "description": "Get the status of a SQL query execution",
+      "categories": [
+        "investigation",
+        "monitoring"
+      ],
+      "cy_name": "get_query_status",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "statement_id": {
+            "type": "string",
+            "description": "Statement ID to check"
+          }
+        },
+        "required": [
+          "statement_id"
+        ]
+      }
+    },
+    {
+      "id": "cancel_query",
+      "name": "Cancel Query",
+      "description": "Cancel a running SQL query",
+      "categories": [
+        "containment",
+        "operations"
+      ],
+      "cy_name": "cancel_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "statement_id": {
+            "type": "string",
+            "description": "Statement ID to cancel"
+          }
+        },
+        "required": [
+          "statement_id"
+        ]
+      }
+    },
+    {
+      "id": "get_job_run",
+      "name": "Get Job Run",
+      "description": "Get details of a job run",
+      "categories": [
+        "investigation",
+        "monitoring"
+      ],
+      "cy_name": "get_job_run",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "Job run ID"
+          }
+        },
+        "required": [
+          "run_id"
+        ]
+      }
+    },
+    {
+      "id": "get_job_output",
+      "name": "Get Job Output",
+      "description": "Get the output of a job run",
+      "categories": [
+        "investigation",
+        "monitoring"
+      ],
+      "cy_name": "get_job_output",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "Job run ID"
+          }
+        },
+        "required": [
+          "run_id"
+        ]
+      }
+    },
+    {
+      "id": "execute_notebook",
+      "name": "Execute Notebook",
+      "description": "Execute a Databricks notebook",
+      "categories": [
+        "operations",
+        "automation"
+      ],
+      "cy_name": "execute_notebook",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "notebook_path": {
+            "type": "string",
+            "description": "Path to the notebook"
+          },
+          "new_cluster": {
+            "type": "string",
+            "description": "JSON string of ClusterSpec for new cluster (optional)"
+          },
+          "existing_cluster_id": {
+            "type": "string",
+            "description": "ID of existing cluster to use (optional)"
+          },
+          "libraries": {
+            "type": "string",
+            "description": "JSON array of Library specs (optional)"
+          },
+          "git_source": {
+            "type": "string",
+            "description": "JSON object of GitSource (optional)"
+          },
+          "access_control_list": {
+            "type": "string",
+            "description": "JSON array of AccessControlRequest (optional)"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "description": "Job timeout in seconds (optional)"
+          },
+          "run_name": {
+            "type": "string",
+            "description": "Name for the run (optional)"
+          },
+          "idempotency_token": {
+            "type": "string",
+            "description": "Token for idempotent submission (optional)"
+          }
+        },
+        "required": [
+          "notebook_path"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "Lakehouse": {
+      "execute_query": "perform_query",
+      "get_query_status": "get_query_status",
+      "list_tables": "list_warehouses"
+    }
+  }
+}

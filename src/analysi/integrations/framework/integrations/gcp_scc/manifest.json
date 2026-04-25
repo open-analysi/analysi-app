@@ -1,0 +1,254 @@
+{
+  "id": "gcp_scc",
+  "app": "gcp_scc",
+  "name": "Google Cloud SCC",
+  "version": "1.0.0",
+  "description": "Google Cloud Security Command Center integration for managing security findings, vulnerabilities, and misconfigurations across GCP resources",
+  "archetypes": [
+    "CloudProvider"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "gcp-scc-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "gcp-scc-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this GCP SCC integration instance"
+  },
+
+  "archetype_mappings": {
+    "CloudProvider": {
+      "get_security_findings": "list_findings"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "display_name": "Access Token",
+        "description": "OAuth2 access token. Generate via: gcloud auth print-access-token",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "organization_id": {
+        "type": "string",
+        "display_name": "Organization ID",
+        "description": "GCP organization numeric ID (e.g. 123456789012)",
+        "required": true
+      },
+      "project_id": {
+        "type": "string",
+        "display_name": "Project ID",
+        "description": "GCP project ID (optional, for project-scoped queries)"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to GCP Security Command Center API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "List security findings with optional filters (severity, state, category)",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_findings",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "description": "Source ID to filter findings. Use '-' for all sources (default)."
+          },
+          "filter": {
+            "type": "string",
+            "description": "SCC filter expression (e.g. 'severity=\"HIGH\" AND state=\"ACTIVE\"')"
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Number of results per page (max 1000)",
+            "default": 100
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Token for fetching the next page of results"
+          },
+          "order_by": {
+            "type": "string",
+            "description": "Sort order (e.g. 'eventTime desc')"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_finding",
+      "name": "Get Finding",
+      "description": "Get details of a specific security finding by resource name",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_finding",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "finding_name": {
+            "type": "string",
+            "description": "Full resource name (e.g. organizations/123/sources/456/findings/789)"
+          }
+        },
+        "required": ["finding_name"]
+      }
+    },
+    {
+      "id": "update_finding_state",
+      "name": "Update Finding State",
+      "description": "Set a finding's state to ACTIVE, INACTIVE, or MUTED",
+      "categories": ["response", "cloud_security"],
+      "cy_name": "update_finding_state",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "finding_name": {
+            "type": "string",
+            "description": "Full resource name of the finding"
+          },
+          "state": {
+            "type": "string",
+            "description": "New state: ACTIVE, INACTIVE, or MUTED",
+            "enum": ["ACTIVE", "INACTIVE", "MUTED"]
+          }
+        },
+        "required": ["finding_name", "state"]
+      }
+    },
+    {
+      "id": "list_sources",
+      "name": "List Sources",
+      "description": "List security sources (Security Health Analytics, Event Threat Detection, etc.)",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_sources",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "page_size": {
+            "type": "integer",
+            "description": "Number of results per page (max 1000)",
+            "default": 100
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Token for fetching the next page of results"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List cloud assets with optional filters",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_assets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "SCC filter expression for assets"
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Number of results per page (max 1000)",
+            "default": 100
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Token for fetching the next page of results"
+          },
+          "order_by": {
+            "type": "string",
+            "description": "Sort order"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_notification_config",
+      "name": "Get Notification Config",
+      "description": "Get a notification configuration by resource name",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "get_notification_config",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "config_name": {
+            "type": "string",
+            "description": "Full resource name (e.g. organizations/123/notificationConfigs/my-config)"
+          }
+        },
+        "required": ["config_name"]
+      }
+    },
+    {
+      "id": "list_notification_configs",
+      "name": "List Notification Configs",
+      "description": "List notification configurations for the organization",
+      "categories": ["investigation", "cloud_security"],
+      "cy_name": "list_notification_configs",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "page_size": {
+            "type": "integer",
+            "description": "Number of results per page (max 1000)",
+            "default": 100
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Token for fetching the next page of results"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

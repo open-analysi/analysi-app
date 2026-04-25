@@ -1,0 +1,82 @@
+{
+  "id": "tor",
+  "app": "tor",
+  "name": "Tor",
+  "version": "1.0.0",
+  "description": "Check if IP addresses are Tor exit nodes using the Tor Project's public exit node lists. No authentication required.",
+  "archetypes": ["TorExitList"],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "tor",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "tor",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+  "archetype_mappings": {"TorExitList": {}},
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds when fetching the Tor exit node list",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 120
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the Tor Project exit node list endpoint",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Check if one or more IP addresses are Tor exit nodes. Accepts a single IP or a comma-separated list.",
+      "categories": [
+        "investigation",
+        "enrichment",
+        "threat_intel"
+      ],
+      "cy_name": "lookup_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address or comma-separated list of IP addresses to check"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

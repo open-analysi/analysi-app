@@ -1,0 +1,74 @@
+{
+  "id": "whois_rdap",
+  "app": "whois_rdap",
+  "name": "WHOIS RDAP",
+  "version": "1.0.0",
+  "description": "IP address WHOIS lookups via the RDAP protocol. Free public service — no authentication required.",
+  "archetypes": ["Whois"],
+  "priority": 50,
+  "integration_id_config": {
+    "default": "whois-rdap",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "whois-rdap",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration instance"
+  },
+  "archetype_mappings": {"Whois": {}},
+  "requires_credentials": false,
+  "credential_schema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {}
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test RDAP connectivity by querying registration data for 8.8.8.8 (Google DNS)",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "whois_ip",
+      "name": "WHOIS IP",
+      "description": "Look up WHOIS registration data for an IPv4 or IPv6 address using the RDAP protocol",
+      "categories": [
+        "investigation",
+        "enrichment"
+      ],
+      "cy_name": "whois_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to query (e.g. 8.8.8.8 or 2001:4860:4860::8888)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

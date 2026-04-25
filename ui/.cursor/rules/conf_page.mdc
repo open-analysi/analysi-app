@@ -1,0 +1,241 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Settings Page in our UI
+
+This is a page in our UI where our Users can view, edit, create, and experiment with Tasks and Knowledge Units (KUs). 
+
+# Page Goals 
+
+* View all Tasks and Knowledge Unites (KUs) as a table  
+* Workbench: Be able to create new KUs and Tasks where applicable and to link them together. For example:   
+  * Create a new Directive to be added to a Task  
+  * Make a new Tool available to a Task  
+  * Add entries to an existing Table  
+  * Create a new Table  
+  * Be able to experiment with the changes to a Task or KU  
+    * For example change table X and see how that affects the prior executions of a task  
+* Understand how a specific Task is executed, and what knowledge it depends on  
+* Quickly navigate from a KU, say, a Table to all the, say, Tasks that use it  
+* Trace which Tools are used by decision-making Tasks
+
+# Overview of Tabs in the Page
+
+The page supports the following sub-type of tabs: 
+
+* Structured lists with filtering/grouping (list of all Tasks and KUs)  
+* An interactive knowledge graph showing task-to-KU and KU-to-KU relationships  
+* A Workbench that allows experimentation  
+* An Knowledge Importer Experience allowing you to convert documents to KUs 
+
+With the above sub-types in mind, here is the list of Tabs:
+
+* **Tasks**  
+  * Table with expandable rows  
+* **KUnits**  
+  * Table with expandable rows  
+* **Knowledge Graph (Interactive Graph)**  
+  * Combined node-link view of Tasks and KUs  
+  * Interactions:  
+    * Click a Task → highlight used KUs  
+    * Click a KU → highlight consuming Tasks  
+* **Workbench**   
+  * An area where we can edit/create/test KUs and Tasks  
+* **Knowledge Unit Importer**  
+  * A way to import new Knowledge Units  
+  * Example: A PDF containing knowledge about the enterprise is used to update Directives and Tables with new information 
+
+## Tasks View
+
+In this table every row is a task. The rows are expandable. 
+
+Visible Columns 
+
+* Name   
+* Description  
+* Function  
+* Scope  
+* Status  
+* Last Run Timestamp  
+* Last Modified Timestamp   
+* Version  
+* Owner (user that created it or system)  
+* From “Task Execution Runs”  
+  * Number of Thumbs Down  
+  * Number of Thumbs Up  
+  * Total number of runs
+
+The table can be filtered and ordered by any of the given fields above and search bar. The default order is by “Last Modified”.
+
+Pagination is supported. We should allow at least 20 rows per page. 
+
+When a row is clicked it should expand just below it to provide additional details. When that happens, the remaining rows are pushed down to the bottom as needed.
+
+When a row is clicked we show
+
+* All fields (not just the ones visible in the table)  
+* Last N execution examples as a table with timestamps, inputs, and outputs  
+  * These are all the relevant information collected in the “Task Execution Runs” table  
+* Feedback by user  
+  * M examples that user has given a thumbs up \+ feedback (default M \= 3\)   
+  * M examples the user has given a thumbs down \+ feedback (default M \= 3\)   
+* N dependencies as a list (KUs etc.) (default N=5)  
+* Show which task depend on it (which tasks will break if we change this)  
+  * Transitive list of tasks. This list can grow long; we just show a number and cap it at 5\.  
+* Action  
+  * Create a workbench session with this task selected
+
+Additional Layout and Workflow Details
+
+* At the top right we have a button to create a new Task  
+  * That creates a new empty Workflow Session (and moves you to the workbench experience).
+
+## Knowledge Units View
+
+In this table every row is a different type of KU (table, directive, tool). 
+
+Pagination is supported. We should allow at least 20 rows per page.
+
+The table can be filtered and ordered by any of the given fields above and search bar. The default order is by “Last Modified”.
+
+Visible Columns: 
+
+* Name  
+* Description  
+* Type: Document, Directive, Table, Tool  
+* Origin  
+* Owner  
+* Creation Timestamp  
+* Version  
+* Last Modified Timestamp
+
+When a row is clicked it should expand just below it to provide additional details. When that happens, the remaining rows are pushed down to the bottom as needed.
+
+When a row is clicked we show
+
+* Show all fields (not just the ones visible from the tabulated view)  
+* The actual content of the Directive and Table (not relevant for Tools)  
+* N dependencies as a list (KUs etc.) (default N=5)  
+* Show which task depend on it (which tasks will break if we change this)  
+  * Transitive list of tasks. This list can grow long; we just show a number and cap it at 5\.  
+* Action  
+  * Create a workbench session with this KU selected
+
+## Graph View
+
+Bellow we clearly define the types of edges and relationships that will appear in the graph:
+
+- `Task → Directive (uses)`  
+- `Task → Table (uses)`  
+- `Task → Tool (uses)`  
+- `Task → Document (uses)`  
+- `Directive → Table (reference)`  
+- `Directive → Document (references)`  
+- `Directive → Directive (reference)`
+
+Details
+
+* Edges are directed  
+* Cycles are not allowed\!  
+  * There is a risk of Cycles only with the Directive to Directive edges.  
+* The graph is interactive   
+  * You can move nodes and edges around to better visualize the graph  
+  * When you click on a node it should show summary of the node on a details panel   
+    * The panel should open somewhere where is less likely to have parts of the graph rendering, like the upper left corner is a good option  
+    * What to show?  
+      * Name at the very top  
+      * Description  
+      * Owner   
+      * Last update time  
+    * What not to show?  
+      * Relationships and dependencies since those are going to be the centerpiece of the graph visualization   
+    * What details to show for different Knowledge Unit Types?  
+      * Directives: have the first 256 characters or so shown (the react can appear after you manually expand by clicking “...”)  
+      * Document: Same as directive only the first part and expand to about twice as much (but avoid showing the whole thing as it can grow long)  
+      * Table: Show the table up to 50 entries or so (have a limit on how much we can attempt to show in terms of rows or columns)  
+      * Task: The function of the task
+
+## Workbench 
+
+Workbench is a common experience for Tasks and KUs. 
+
+Entry points:
+
+* Visit the Workbench Tab  
+  * Initially it should be empty  
+  * There may be different “In-Progress” saved sessions to choose from  
+  * Else we can search to load a task/KU into workbench (though a search bar that can search through both Tasks and KUs)  
+* From the Tasks or KUs page  
+  * There is an option (button) to move the selected Tasks or KU to a new Workbench Session. 
+
+Changes to Tasks and KUs are version controller and audited. There should be a way to select and revert to a different version. 
+
+* Diff view  
+* System update vs user update  
+* Revert  
+* Experiment with an older version without reverting
+
+Additional Layout and Workflow Details
+
+* For KUs the workbench it’s simple  
+  * You have an editor experience (think VS Code)  
+  * Where you can make changes to the active file (directive, document)  
+    * For Tables we have a simpler table edit capability  
+    * Add a new row or column, delete or edit fields  
+  * On the right hand side you have all the versions   
+    * Witi the different timestamps   
+    * Very similar to Google Docs does versioning  
+    * At any time you make any of the previous version to be the active one  
+    * Only one version can be the active one  
+    * User can create named version  
+    * Named versions of KUs can be used in other workbench session when experimenting with a Task  
+  * For Documents we can create different chunking strategies, essentially allowing us to have different configurations of a single document.   
+    * A same document can have multiple configurations   
+    * E.g., with different chunking strategies   
+* For Tasks  
+  * At the bottom we also have two boxes side-by-side  
+    * One for Input  
+    * The other for the generated Output  
+    * Any version of any of the dependencies can be selected allowing you to test different configurations with Input and Output
+
+## Knowledge Units Importer
+
+An easy way to automatically extract, populate, and update Tables, Documents, and Directives from documents:
+
+* PDFs  
+* Website  
+* Text  
+* …
+
+The process of ingesting a document and automatically (a) extracting new Knowledge Units in the form of Tables and Directives, (b) enhancing existing Knowledge Units (so add new information to existing units). This is a great way to influence knowledge you didn’t even know existed. 
+
+For example, a user may upload a PDF and give a prompt that this PDF represents Crown Jewels. The PDF will be parsed and all assets extracted will automatically be merged into the Table of Crown Jewels. 
+
+The user adds a piece of information in a text box. The system automatically checks to see if this information can be used to improve an existing Table or Directive or create a new one. 
+
+When uploading a new document, we always generate a document KU. The use can decide if they want to keep it or not. 
+
+Additional Layout and Workflow Details
+
+* At the top we have   
+  * an option to upload a file (PDF, txt)  
+  * link a website (URL)  
+  * paste text  
+* Multiple files/urls/pasted-text can be selected and remembered   
+* An Import button will trigger the extraction of the text   
+* In the background we show a progress bar of the extraction and processing of the text  
+* After everything is completed the screen is splitted in a 1x3 grid of three boxes  
+  * Left box contains all the information added to existing units with their names listed and a count of entries added for tables and the changed text if it’s a directive  
+  * Middle box shows a list of new directives created   
+  * Right box any information that didn’t fit anywhere   
+* The user can edit the changes and click to save the directives/tables created/updated  
+  * All newly created Directives and Tables (not the ones edited are automatically added to a new Workbench Session).
+
+## Future Additions
+
+* Task execution dashboard (maybe as part of a larger dashboard that shows ingested alerts and other aggregated stats about what is going on)  
+  * Tasks triggered over time   
+  * Feedback over time  
+  * Tasks that take the most time

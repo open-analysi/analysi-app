@@ -1,0 +1,45 @@
+{
+  "python_total": 76132,
+  "python_src": 25634,
+  "python_tests": 47686,
+  "python_scripts": 2535,
+  "python_migrations": 0,
+  "sql": 2293,
+  "yaml": 356,
+  "toml": 150,
+  "dockerfile": 118,
+  "makefile": 147,
+  "ini_cfg_conf": 34,
+  "env_files": 215,
+  "json_project": 2431,
+  "json_test_data": 3228,
+  "shell": 636,
+  "markdown": 28910,
+  "cy": 706,
+  "txt": 100,
+  "measurements": [
+    {
+      "timestamp": "2026-04-26T00:00:00",
+      "metrics": {
+        "python_total": 380805,
+        "python_src": 138228,
+        "python_tests": 235304,
+        "python_scripts": 5449,
+        "python_migrations": 0,
+        "sql": 5529,
+        "yaml": 2982,
+        "toml": 281,
+        "dockerfile": 154,
+        "makefile": 988,
+        "ini_cfg_conf": 107,
+        "env_files": 505,
+        "json_project": 100218,
+        "json_test_data": 3228,
+        "shell": 2687,
+        "markdown": 213567,
+        "cy": 3952,
+        "txt": 3664
+      }
+    }
+  ]
+}

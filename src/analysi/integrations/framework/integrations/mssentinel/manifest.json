@@ -1,0 +1,401 @@
+{
+  "id": "mssentinel",
+  "app": "mssentinel",
+  "name": "Microsoft Sentinel",
+  "version": "1.0.0",
+  "description": "Microsoft Sentinel SIEM/XDR integration for incident management, threat hunting, and security analytics",
+  "archetypes": [
+    "SIEM",
+    "AlertSource"
+  ],
+  "priority": 85,
+  "integration_id_config": {
+    "default": "mssentinel-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "mssentinel-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "SIEM": {
+      "get_alert_details": "get_incident",
+      "query_events": "run_query",
+      "update_alert_status": "update_incident",
+      "get_alerts": "list_incidents"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "Application (client) ID for Azure AD app registration",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "Client secret for Azure AD app registration",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "tenant_id": {
+        "type": "string",
+        "display_name": "Tenant ID",
+        "description": "Azure AD Tenant ID (e.g. 1e309abf-db6c-XXXX-a1d2-XXXXXXXXXXXX)",
+        "required": true
+      },
+      "subscription_id": {
+        "type": "string",
+        "display_name": "Subscription ID",
+        "description": "Azure subscription ID",
+        "required": true
+      },
+      "resource_group_name": {
+        "type": "string",
+        "display_name": "Resource Group Name",
+        "description": "Azure resource group name (case insensitive)",
+        "required": true
+      },
+      "workspace_name": {
+        "type": "string",
+        "display_name": "Workspace Name",
+        "description": "Sentinel workspace name",
+        "required": true
+      },
+      "workspace_id": {
+        "type": "string",
+        "display_name": "Workspace ID",
+        "description": "Sentinel workspace ID (for Log Analytics queries)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 1
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Lookback (minutes)",
+        "description": "How far back to search when no checkpoint exists",
+        "default": 5
+      },
+      "pull_alerts_limit": {
+        "type": "integer",
+        "display_name": "Pull Alerts Limit",
+        "description": "Maximum number of incidents per pull_alerts call",
+        "default": 200,
+        "minimum": 1
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Microsoft Sentinel",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Get all incidents from Sentinel workspace",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "list_incidents",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of incidents to retrieve",
+            "default": 100,
+            "minimum": 1
+          },
+          "filter": {
+            "type": "string",
+            "description": "OData filter condition (e.g., 'properties/severity eq High')"
+          }
+        },
+        "required": [
+          "limit"
+        ]
+      }
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Get details of a specific incident",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "get_incident",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_name": {
+            "type": "string",
+            "description": "Incident name/ID (GUID format)"
+          }
+        },
+        "required": [
+          "incident_name"
+        ]
+      }
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident",
+      "categories": [
+        "response",
+        "siem"
+      ],
+      "cy_name": "update_incident",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_name": {
+            "type": "string",
+            "description": "Incident name/ID to update"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Updated severity (High, Medium, Low, Informational)",
+            "enum": [
+              "High",
+              "Medium",
+              "Low",
+              "Informational"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Updated status (New, Active, Closed)",
+            "enum": [
+              "New",
+              "Active",
+              "Closed"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Updated incident title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated incident description"
+          },
+          "owner_upn": {
+            "type": "string",
+            "description": "Owner user principal name"
+          },
+          "classification": {
+            "type": "string",
+            "description": "Classification when closing (BenignPositive, FalsePositive, TruePositive, Undetermined)",
+            "enum": [
+              "BenignPositive",
+              "FalsePositive",
+              "TruePositive",
+              "Undetermined"
+            ]
+          },
+          "classification_comment": {
+            "type": "string",
+            "description": "Comment explaining classification"
+          },
+          "classification_reason": {
+            "type": "string",
+            "description": "Reason for classification",
+            "enum": [
+              "InaccurateData",
+              "IncorrectAlertLogic",
+              "SuspiciousActivity",
+              "SuspiciousButExpected"
+            ]
+          }
+        },
+        "required": [
+          "incident_name"
+        ]
+      }
+    },
+    {
+      "id": "add_incident_comment",
+      "name": "Add Incident Comment",
+      "description": "Add a comment to an incident",
+      "categories": [
+        "response",
+        "siem"
+      ],
+      "cy_name": "add_incident_comment",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_name": {
+            "type": "string",
+            "description": "Incident name/ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Comment message"
+          }
+        },
+        "required": [
+          "incident_name",
+          "message"
+        ]
+      }
+    },
+    {
+      "id": "get_incident_entities",
+      "name": "Get Incident Entities",
+      "description": "Get all entities associated with an incident",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "get_incident_entities",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_name": {
+            "type": "string",
+            "description": "Incident name/ID"
+          }
+        },
+        "required": [
+          "incident_name"
+        ]
+      }
+    },
+    {
+      "id": "get_incident_alerts",
+      "name": "Get Incident Alerts",
+      "description": "Get all alerts for an incident",
+      "categories": [
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "get_incident_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_name": {
+            "type": "string",
+            "description": "Incident name/ID"
+          }
+        },
+        "required": [
+          "incident_name"
+        ]
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run KQL Query",
+      "description": "Execute a KQL query against Log Analytics workspace",
+      "categories": [
+        "query",
+        "siem"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "KQL query to execute (e.g., 'SecurityIncident | limit 10')"
+          },
+          "timespan": {
+            "type": "string",
+            "description": "Time interval in ISO 8601 duration format (e.g., 'P7D' for 7 days)"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum number of rows to return",
+            "default": 3000,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "query",
+          "max_rows"
+        ]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull incidents from Microsoft Sentinel workspace",
+      "categories": [
+        "alert_ingestion"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Alerts to OCSF",
+      "description": "Normalize raw Sentinel incidents to OCSF Detection Finding format",
+      "categories": [
+        "alert_normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw Sentinel incidents to normalize",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

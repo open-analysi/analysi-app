@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "tor-integration",
+  "cy_name": "tor_integration",
+  "description": "Tor exit node lookups for SOC investigations via Analysi. Use when triaging alerts involving suspicious IPs, anonymous access, credential stuffing, or brute-force attacks to determine if source IPs are Tor exit nodes."
+}

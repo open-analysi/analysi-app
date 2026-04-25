@@ -1,0 +1,114 @@
+{
+  "id": "shodan",
+  "app": "shodan",
+  "name": "Shodan",
+  "version": "1.0.0",
+  "description": "Shodan threat intelligence integration for IP and domain lookups to discover exposed services and vulnerabilities",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "integration_id_config": {
+    "default": "shodan-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "shodan-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_lookup",
+      "lookup_domain": "domain_lookup"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Shodan API key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to Shodan API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "ip_lookup",
+      "name": "IP Lookup",
+      "description": "Get information about an IP address from Shodan, including open ports, services, and vulnerabilities",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "ip_lookup",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "domain_lookup",
+      "name": "Domain Lookup",
+      "description": "Get information about a domain from Shodan, including associated hosts and services",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "domain_lookup",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

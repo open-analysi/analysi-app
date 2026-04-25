@@ -1,0 +1,277 @@
+{
+  "id": "paloalto_firewall",
+  "app": "paloalto_firewall",
+  "name": "Palo Alto Networks Firewall",
+  "version": "1.0.0",
+  "description": "Enterprise firewall integration for URL/IP/application blocking and security policy management",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_url": "block_url",
+      "unblock_url": "unblock_url",
+      "block_ip": "block_ip",
+      "unblock_ip": "unblock_ip"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Firewall administrator username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Firewall administrator password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "device": {
+        "type": "string",
+        "display_name": "Device IP/Hostname",
+        "description": "Firewall device IP address or hostname",
+        "required": true
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify Server Certificate",
+        "description": "Verify SSL certificate when connecting to firewall",
+        "default": true,
+        "required": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Timeout",
+        "description": "Request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Palo Alto Networks Firewall",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_url",
+      "name": "Block URL",
+      "description": "Block URL by adding to custom URL category and security policy",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to block"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          },
+          "sec_policy": {
+            "type": "string",
+            "description": "Insert policy above this security policy (optional)"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock URL",
+      "description": "Unblock URL by removing from custom URL category",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to unblock"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "block_application",
+      "name": "Block Application",
+      "description": "Block application by adding to application group and security policy",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_application",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "application": {
+            "type": "string",
+            "description": "Application to block"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          }
+        },
+        "required": [
+          "application"
+        ]
+      }
+    },
+    {
+      "id": "unblock_application",
+      "name": "Unblock Application",
+      "description": "Unblock application by removing from application group",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_application",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "application": {
+            "type": "string",
+            "description": "Application to unblock"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          }
+        },
+        "required": [
+          "application"
+        ]
+      }
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP",
+      "description": "Block IP address by adding to address group and security policy",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to block (supports IP, CIDR, range, FQDN)"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          },
+          "is_source_address": {
+            "type": "boolean",
+            "description": "Block as source address instead of destination",
+            "default": false
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock IP",
+      "description": "Unblock IP address by removing from address group",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to unblock"
+          },
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to configure (default: vsys1)",
+            "default": "vsys1"
+          },
+          "is_source_address": {
+            "type": "boolean",
+            "description": "Unblock from source address list instead of destination",
+            "default": false
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "list_applications",
+      "name": "List Applications",
+      "description": "List all applications available on the firewall",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_applications",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "vsys": {
+            "type": "string",
+            "description": "Virtual system (vsys) to query (default: vsys1)",
+            "default": "vsys1"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "id": "elasticsearch",
+  "app": "elasticsearch",
+  "name": "Elasticsearch",
+  "version": "1.0.0",
+  "description": "Elasticsearch SIEM integration for event querying, index management, and security operations",
+  "archetypes": [
+    "SIEM",
+    "AlertSource"
+  ],
+  "priority": 75,
+  "integration_id_config": {
+    "default": "elasticsearch-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "elasticsearch-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Elasticsearch integration"
+  },
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "run_query",
+      "get_alerts": "run_query"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Elasticsearch username",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Elasticsearch password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "display_name": "Elasticsearch URL",
+        "description": "Device URL including the port, e.g. https://myelastic.enterprise.com:9200",
+        "required": true
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify Server Certificate",
+        "description": "Verify SSL/TLS server certificate",
+        "default": false
+      },
+      "alert_index": {
+        "type": "string",
+        "display_name": "Alert Index",
+        "description": "Elastic Security alerts index pattern",
+        "default": ".alerts-security.alerts-default"
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Lookback (minutes)",
+        "description": "How far back to search when no checkpoint exists",
+        "default": 5
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Elasticsearch cluster",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on the Elasticsearch installation",
+      "categories": [
+        "query",
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "run_query",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "string",
+            "description": "Comma-separated list of indexes to query on"
+          },
+          "routing": {
+            "type": "string",
+            "description": "Shards to query on (routing value)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Query to run (in Elasticsearch DSL JSON format)"
+          }
+        },
+        "required": [
+          "index"
+        ]
+      }
+    },
+    {
+      "id": "index_document",
+      "name": "Index Document",
+      "description": "Index a JSON document into an Elasticsearch index",
+      "categories": [
+        "write",
+        "investigation",
+        "siem"
+      ],
+      "cy_name": "index_document",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "string",
+            "description": "Target index name to write the document to"
+          },
+          "document": {
+            "type": "string",
+            "description": "JSON string of the document to index"
+          }
+        },
+        "required": [
+          "index",
+          "document"
+        ]
+      }
+    },
+    {
+      "id": "get_config",
+      "name": "Get Configuration",
+      "description": "Returns the list of indices and their information currently configured on the Elasticsearch instance",
+      "categories": [
+        "discovery",
+        "siem"
+      ],
+      "cy_name": "get_config",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull security alerts from Elastic Security detection engine",
+      "categories": [
+        "alert_source",
+        "siem"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time (ISO 8601)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time (ISO 8601)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum alerts to return",
+            "default": 1000
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF",
+      "description": "Normalize raw Elastic Security alerts to OCSF Detection Finding v1.8.0",
+      "categories": [
+        "alert_source",
+        "normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw Elastic alert documents"
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

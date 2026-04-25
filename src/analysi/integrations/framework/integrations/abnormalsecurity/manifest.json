@@ -1,0 +1,195 @@
+{
+  "id": "abnormalsecurity",
+  "app": "abnormalsecurity",
+  "name": "Abnormal Security",
+  "version": "1.0.0",
+  "description": "AI-based email security platform for detecting and remediating email threats, managing abuse mailbox campaigns, and tracking threat remediation status",
+  "archetypes": [
+    "EmailSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "abnormalsecurity-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "abnormalsecurity-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Abnormal Security integration instance"
+  },
+
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "get_email_threats": "list_threats",
+      "get_threat_details": "get_threat_details",
+      "remediate_email": "update_threat_status"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "display_name": "Access Token",
+        "description": "Abnormal Security API access token (Bearer authentication)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "Abnormal Security API base URL",
+        "default": "https://api.abnormalplatform.com/v1"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to Abnormal Security API and validate access token",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_threats",
+      "name": "List Threats",
+      "description": "Fetch the list of threat IDs from the threat log",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "list_threats",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return (default 100, -1 for unlimited)",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_threat_details",
+      "name": "Get Threat Details",
+      "description": "List threat details (messages) for a given threat ID",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_threat_details",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "threat_id": {
+            "type": "string",
+            "description": "A UUID representing the threat"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of messages to return (default 100, -1 for unlimited)",
+            "default": 100
+          }
+        },
+        "required": ["threat_id"]
+      }
+    },
+    {
+      "id": "list_abuse_mailboxes",
+      "name": "List Abuse Mailboxes",
+      "description": "Fetch the list of abuse mailbox campaign IDs",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "list_abuse_mailboxes",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return (default 100, -1 for unlimited)",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "update_threat_status",
+      "name": "Update Threat Status",
+      "description": "Change the remediation status of a threat (remediate or unremediate)",
+      "categories": ["containment", "email_security"],
+      "cy_name": "update_threat_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "threat_id": {
+            "type": "string",
+            "description": "A UUID representing the threat"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to update status for threat",
+            "enum": ["remediate", "unremediate"]
+          }
+        },
+        "required": ["threat_id", "action"]
+      }
+    },
+    {
+      "id": "get_threat_status",
+      "name": "Get Threat Status",
+      "description": "Fetch the status of a previously submitted threat action",
+      "categories": ["investigation", "email_security"],
+      "cy_name": "get_threat_status",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "threat_id": {
+            "type": "string",
+            "description": "A UUID representing the threat"
+          },
+          "action_id": {
+            "type": "string",
+            "description": "A UUID representing the action (from update_threat_status)"
+          }
+        },
+        "required": ["threat_id", "action_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

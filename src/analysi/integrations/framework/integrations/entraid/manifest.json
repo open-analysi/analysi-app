@@ -1,0 +1,250 @@
+{
+  "id": "entraid",
+  "app": "entraid",
+  "name": "Microsoft Entra ID",
+  "version": "1.0.0",
+  "description": "Microsoft Entra ID (Azure AD) cloud identity provider via Microsoft Graph API for user management, group membership, session revocation, and sign-in activity",
+  "archetypes": [
+    "IdentityProvider"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "entraid-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "entraid-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Microsoft Entra ID integration instance"
+  },
+
+  "archetype_mappings": {
+    "IdentityProvider": {
+      "get_user_details": "get_user",
+      "disable_user": "disable_user",
+      "enable_user": "enable_user",
+      "reset_password": "reset_password",
+      "revoke_sessions": "revoke_sessions",
+      "get_authentication_logs": "list_sign_ins"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "Application (client) ID from Azure App Registration",
+        "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "Client secret value from Azure App Registration",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "tenant_id": {
+        "type": "string",
+        "display_name": "Tenant ID",
+        "description": "Azure AD Tenant ID (directory ID)",
+        "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "required": true
+      },
+      "base_url": {
+        "type": "string",
+        "display_name": "Graph API Base URL",
+        "description": "Microsoft Graph API base URL (change for sovereign clouds)",
+        "default": "https://graph.microsoft.com/v1.0"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity to Microsoft Entra ID by acquiring a token and querying the users endpoint",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Look up a user by UPN, email address, or object ID and return their attributes",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user account by blocking sign-in (sets accountEnabled to false)",
+      "categories": ["containment", "remediation"],
+      "cy_name": "disable_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Re-enable a user account by allowing sign-in (sets accountEnabled to true)",
+      "categories": ["remediation"],
+      "cy_name": "enable_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Force a password reset for a user with an optional temporary password",
+      "categories": ["containment", "remediation"],
+      "cy_name": "reset_password",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          },
+          "temp_password": {
+            "type": "string",
+            "description": "Temporary password (optional, auto-generated if empty)"
+          },
+          "force_change": {
+            "type": "boolean",
+            "description": "Require password change on next sign-in (default: true)",
+            "default": true
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List the groups a user belongs to",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "list_groups",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "get_group_members",
+      "name": "Get Group Members",
+      "description": "List members of a specific group",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_group_members",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "Azure AD group object ID"
+          }
+        },
+        "required": ["group_id"]
+      }
+    },
+    {
+      "id": "revoke_sessions",
+      "name": "Revoke Sessions",
+      "description": "Revoke all active sign-in sessions for a user, forcing re-authentication on all devices",
+      "categories": ["containment", "remediation"],
+      "cy_name": "revoke_sessions",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name, email, or Azure AD object ID"
+          }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "id": "list_sign_ins",
+      "name": "List Sign-Ins",
+      "description": "Get recent sign-in activity for a user from Azure AD audit logs",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "list_sign_ins",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "User principal name to filter sign-in logs"
+          },
+          "top": {
+            "type": "integer",
+            "description": "Maximum number of sign-in records to return (default: 50)",
+            "default": 50
+          }
+        },
+        "required": ["user_id"]
+      }
+    }
+  ]
+}

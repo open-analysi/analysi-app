@@ -1,0 +1,203 @@
+{
+  "id": "fortigate",
+  "app": "fortigate",
+  "name": "FortiGate Firewall",
+  "version": "1.0.0",
+  "description": "Fortinet FortiGate Firewall integration for IP containment and firewall policy management",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "fortigate-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "fortigate-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this FortiGate instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_ip": "block_ip",
+      "unblock_ip": "unblock_ip"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "FortiGate REST API key for Bearer token authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "display_name": "Device URL",
+        "description": "FortiGate device URL (e.g., https://myforti.contoso.com)",
+        "placeholder": "https://myforti.contoso.com",
+        "required": true
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify Server Certificate",
+        "description": "Verify SSL certificate when connecting to FortiGate",
+        "default": false,
+        "required": false
+      },
+      "vdom": {
+        "type": "string",
+        "display_name": "Virtual Domain (VDOM)",
+        "description": "Default virtual domain for API requests (optional)"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to the FortiGate device by querying the banned IPs endpoint",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP",
+      "description": "Block an IP address by adding it to a FortiGate firewall deny policy. Creates an address object if needed and adds it to the specified policy's source or destination address list.",
+      "categories": [
+        "containment",
+        "remediation"
+      ],
+      "cy_name": "block_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to block (supports IP, CIDR, IP + subnet mask)"
+          },
+          "policy": {
+            "type": "string",
+            "description": "IPv4 policy name (must be a deny policy)"
+          },
+          "address_type": {
+            "type": "string",
+            "description": "Address type: srcaddr (source) or dstaddr (destination)",
+            "default": "dstaddr",
+            "enum": [
+              "srcaddr",
+              "dstaddr"
+            ]
+          },
+          "vdom": {
+            "type": "string",
+            "description": "Virtual domain (overrides default vdom setting)"
+          }
+        },
+        "required": [
+          "ip",
+          "policy"
+        ]
+      }
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock IP",
+      "description": "Unblock an IP address by removing it from a FortiGate firewall deny policy. Does not delete the address object from the system.",
+      "categories": [
+        "remediation"
+      ],
+      "cy_name": "unblock_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to unblock"
+          },
+          "policy": {
+            "type": "string",
+            "description": "IPv4 policy name"
+          },
+          "address_type": {
+            "type": "string",
+            "description": "Address type: srcaddr (source) or dstaddr (destination)",
+            "default": "dstaddr",
+            "enum": [
+              "srcaddr",
+              "dstaddr"
+            ]
+          },
+          "vdom": {
+            "type": "string",
+            "description": "Virtual domain (overrides default vdom setting)"
+          }
+        },
+        "required": [
+          "ip",
+          "policy"
+        ]
+      }
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List configured IPv4 firewall policies with pagination support",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_policies",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "vdom": {
+            "type": "string",
+            "description": "Virtual domain to query"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of policies to return (default: 100)",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

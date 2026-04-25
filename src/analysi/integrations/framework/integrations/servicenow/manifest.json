@@ -1,0 +1,275 @@
+{
+  "id": "servicenow",
+  "app": "servicenow",
+  "name": "ServiceNow",
+  "version": "1.0.0",
+  "description": "ServiceNow ticketing system integration for incident management, ticket operations, and user queries",
+  "archetypes": [
+    "TicketingSystem"
+  ],
+  "priority": 65,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "Username for basic authentication"
+      },
+      "password": {
+        "type": "string",
+        "description": "Password for basic authentication",
+        "secret": true,
+        "format": "password"
+      },
+      "client_id": {
+        "type": "string",
+        "description": "OAuth client ID (optional, for OAuth authentication)"
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "OAuth client secret (optional, for OAuth authentication)",
+        "secret": true,
+        "format": "password"
+      }
+    },
+    "required": []
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "ServiceNow instance URL (e.g., https://your-instance.service-now.com)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      },
+      "max_results": {
+        "type": "integer",
+        "description": "Default maximum number of results for list operations",
+        "default": 100
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to ServiceNow instance",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new ticket in ServiceNow",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "create_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table to create ticket in (default: incident)",
+            "default": "incident"
+          },
+          "short_description": {
+            "type": "string",
+            "description": "Short description of the ticket"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the ticket"
+          },
+          "fields": {
+            "type": "string",
+            "description": "JSON string of additional fields to set"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Retrieve details of a specific ticket",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "get_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Ticket ID (number) or sys_id"
+          },
+          "table": {
+            "type": "string",
+            "description": "Table to query (default: incident)",
+            "default": "incident"
+          },
+          "is_sys_id": {
+            "type": "boolean",
+            "description": "Whether the ID is a sys_id",
+            "default": false
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update an existing ticket in ServiceNow",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "update_ticket",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Ticket ID (number) or sys_id"
+          },
+          "table": {
+            "type": "string",
+            "description": "Table name (default: incident)",
+            "default": "incident"
+          },
+          "is_sys_id": {
+            "type": "boolean",
+            "description": "Whether the ID is a sys_id",
+            "default": false
+          },
+          "fields": {
+            "type": "string",
+            "description": "JSON string of fields to update"
+          }
+        },
+        "required": [
+          "id",
+          "fields"
+        ]
+      }
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List tickets from ServiceNow",
+      "categories": [
+        "ticketing",
+        "investigation"
+      ],
+      "cy_name": "list_tickets",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "Table to query (default: incident)",
+            "default": "incident"
+          },
+          "query": {
+            "type": "string",
+            "description": "ServiceNow query string to filter results"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to a ServiceNow ticket",
+      "categories": [
+        "ticketing",
+        "incident_response"
+      ],
+      "cy_name": "add_comment",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Ticket ID (number) or sys_id"
+          },
+          "table": {
+            "type": "string",
+            "description": "Table name (default: incident)",
+            "default": "incident"
+          },
+          "is_sys_id": {
+            "type": "boolean",
+            "description": "Whether the ID is a sys_id",
+            "default": false
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment text to add to the ticket"
+          }
+        },
+        "required": [
+          "id",
+          "comment"
+        ]
+      }
+    },
+    {
+      "id": "query_users",
+      "name": "Query Users",
+      "description": "Query users in ServiceNow system",
+      "categories": [
+        "investigation",
+        "user_management"
+      ],
+      "cy_name": "query_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Query string to filter users"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "TicketingSystem": {
+      "create_ticket": "create_ticket",
+      "update_ticket": "update_ticket",
+      "get_ticket_status": "get_ticket",
+      "assign_ticket": "update_ticket",
+      "add_comment": "add_comment",
+      "close_ticket": "update_ticket"
+    }
+  }
+}

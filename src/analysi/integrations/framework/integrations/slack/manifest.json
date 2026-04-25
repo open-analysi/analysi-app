@@ -1,0 +1,408 @@
+{
+  "id": "slack",
+  "app": "slack",
+  "name": "Slack",
+  "version": "1.0.0",
+  "description": "Integrate with Slack to post messages and attachments to channels",
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "bot_token": {
+        "type": "string",
+        "description": "Bot User OAuth Token (required for all actions)",
+        "format": "password"
+      },
+      "user_token": {
+        "type": "string",
+        "description": "User OAuth Token (optional - only required for creating channels and inviting users)",
+        "format": "password"
+      },
+      "app_token": {
+        "type": "string",
+        "description": "App-Level Token (xapp-...) for Socket Mode. Required for HITL interactive messages (ask_question, ask_question_channel). Generate at api.slack.com > Your App > Basic Information > App-Level Tokens with connections:write scope.",
+        "format": "password"
+      }
+    },
+    "required": [
+      "bot_token"
+    ]
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "description": "Tests authorization with Slack",
+      "categories": [
+        "polling"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_channel",
+      "description": "Create a new Slack channel",
+      "categories": [],
+      "cy_name": "create_channel",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of channel"
+          },
+          "channel_type": {
+            "type": "string",
+            "description": "Type of channel to create (public or private)"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "id": "list_channels",
+      "description": "List public channels of a Slack team",
+      "categories": [],
+      "cy_name": "list_channels",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Specify the maximum number of results to return. Default is 100"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "description": "List users of a Slack team",
+      "categories": [],
+      "cy_name": "list_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Specify the maximum number of results to return. Default is 100"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_user",
+      "description": "Get information about a user of a Slack team",
+      "categories": [],
+      "cy_name": "get_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Unique ID of user to get info of"
+          },
+          "email_address": {
+            "type": "string",
+            "description": "Email address of user to get info of. Will not be used if User ID is specified"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "invite_users",
+      "description": "Invite user(s) to a Slack channel",
+      "categories": [],
+      "cy_name": "invite_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "description": "ID of channel"
+          },
+          "users": {
+            "type": "string",
+            "description": "Comma-separated list of users (IDs) to invite"
+          }
+        },
+        "required": [
+          "channel_id",
+          "users"
+        ]
+      }
+    },
+    {
+      "id": "send_message",
+      "description": "Send a message to Slack",
+      "categories": [],
+      "cy_name": "send_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Channel (e.g. #channel or C1A1A1AAA)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message to send, required if 'blocks' is not set. If 'blocks' is set, this is used as fallback text"
+          },
+          "blocks": {
+            "type": "string",
+            "description": "Blocks to send, required if 'message' is not set"
+          },
+          "parent_message_ts": {
+            "type": "string",
+            "description": "Parent message timestamp to reply in thread"
+          },
+          "reply_broadcast": {
+            "type": "boolean",
+            "description": "Used in conjunction with 'parent_message_ts' and indicates whether reply should be made visible to everyone in the channel or conversation"
+          },
+          "link_names": {
+            "type": "boolean",
+            "description": "Check this if you want to enable announcements in your Slack messages using mentions. E.g.: Use @someone or @channel in your message in combination with this check to notify people"
+          }
+        },
+        "required": [
+          "destination"
+        ]
+      }
+    },
+    {
+      "id": "add_reaction",
+      "description": "React to a message in Slack",
+      "categories": [],
+      "cy_name": "add_reaction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Channel ID (C1A1A1AAA) to send message to"
+          },
+          "emoji": {
+            "type": "string",
+            "description": "Reaction (emoji) to add"
+          },
+          "message_ts": {
+            "type": "string",
+            "description": "Timestamp of the message to add reaction to"
+          }
+        },
+        "required": [
+          "destination",
+          "emoji",
+          "message_ts"
+        ]
+      }
+    },
+    {
+      "id": "upload_file",
+      "description": "Upload file to Slack",
+      "categories": [],
+      "cy_name": "upload_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Channel (e.g. #channel or C1A1A1AAA) or user (e.g. @user or U1A1A1AAA) to upload to"
+          },
+          "parent_message_ts": {
+            "type": "string",
+            "description": "Parent message timestamp to reply in thread"
+          },
+          "file": {
+            "type": "string",
+            "description": "Vault ID of file to upload"
+          },
+          "content": {
+            "type": "string",
+            "description": "Contents of the file"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Caption to add to the file"
+          },
+          "filetype": {
+            "type": "string",
+            "description": "A file type identifier (https://api.slack.com/types/file#file_types)"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Name of the file"
+          }
+        },
+        "required": [
+          "destination"
+        ]
+      }
+    },
+    {
+      "id": "ask_question",
+      "description": "Ask a question to a Slack user",
+      "categories": [],
+      "cy_name": "ask_question",
+      "hi_latency": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "User (e.g. @user or U1A1A1AAA) to ask question to"
+          },
+          "question": {
+            "type": "string",
+            "description": "Question to ask"
+          },
+          "responses": {
+            "type": "string",
+            "description": "Comma separated string values for responses. (Maximum responses allowed are 5)"
+          },
+          "confirmation": {
+            "type": "string",
+            "description": "Message to user after response"
+          }
+        },
+        "required": [
+          "destination",
+          "question"
+        ]
+      }
+    },
+    {
+      "id": "ask_question_channel",
+      "description": "Ask a question in slack channel",
+      "categories": [],
+      "cy_name": "ask_question_channel",
+      "hi_latency": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Channel (e.g. #channel-name or C1A1A1AAA) to ask question to"
+          },
+          "question": {
+            "type": "string",
+            "description": "Question to ask"
+          },
+          "responses": {
+            "type": "string",
+            "description": "Comma separated string values for responses. (Maximum responses allowed are 5)"
+          }
+        },
+        "required": [
+          "destination",
+          "question"
+        ]
+      }
+    },
+    {
+      "id": "get_response",
+      "description": "Get the response to a previously asked question",
+      "categories": [],
+      "cy_name": "get_response",
+      "hi_latency": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "description": "Question ID"
+          }
+        },
+        "required": [
+          "question_id"
+        ]
+      }
+    },
+    {
+      "id": "on_poll",
+      "description": "Start SlackBot and make health checks to it",
+      "categories": [
+        "polling"
+      ],
+      "cy_name": "on_poll",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "integer",
+            "description": "Parameter ignored in this app"
+          },
+          "end_time": {
+            "type": "integer",
+            "description": "Parameter ignored in this app"
+          },
+          "container_id": {
+            "type": "string",
+            "description": "Parameter ignored in this app"
+          },
+          "container_count": {
+            "type": "integer",
+            "description": "Parameter ignored in this app"
+          },
+          "artifact_count": {
+            "type": "integer",
+            "description": "Parameter ignored in this app"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "stop_bot",
+      "description": "Stop SlackBot",
+      "categories": [],
+      "cy_name": "stop_bot",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_history",
+      "description": "Get conversation history from specific Slack channel",
+      "categories": [],
+      "cy_name": "get_history",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "description": "Unique ID of a Slack channel"
+          },
+          "message_ts": {
+            "type": "string",
+            "description": "Message timestamp (e.g. 1234567890.123456)"
+          }
+        },
+        "required": [
+          "channel_id"
+        ]
+      }
+    }
+  ],
+  "archetypes": [
+    "Notification"
+  ],
+  "priority": 50,
+  "archetype_mappings": {
+    "Notification": {}
+  },
+  "default_schedules": [],
+  "metadata": {
+    "logo": "logo.svg",
+    "logo_dark": "logo_dark.svg"
+  }
+}

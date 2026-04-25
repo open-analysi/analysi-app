@@ -1,0 +1,172 @@
+{
+  "name": "AD LDAP: User Lookup and Enrichment",
+  "cy_name": "ad_ldap_user_lookup",
+  "description": "Enriches alerts with Active Directory user identity information. Validates primary risk entity is a user, performs LDAP lookup, and adds structured enrichment data plus AI security assessment to the alert. Requires AD LDAP integration configuration.",
+  "app": "IdentityProvider",
+  "directive": "You are a senior identity and access management analyst. Analyze Active Directory user information in the context of security alerts to provide identity context for investigations. Identify user roles, group memberships, privileged access indicators, and any identity-related risk factors relevant to the specific alert type and severity.",
+  "script_file": "ad_ldap_user_lookup.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Identity Management",
+    "Active Directory",
+    "Alert Enrichment",
+    "LDAP",
+    "Security Context",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1500
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "User Found - Failed Login Alert",
+      "description": "High severity authentication alert for user with AD identity context enrichment",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:35:22Z",
+        "severity": "high",
+        "source_product": "Active Directory",
+        "enrichments": null,
+        "title": "Multiple Failed Login Attempts Detected",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Multiple Failed Login Attempts Detected",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Brute Force Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Authentication Anomaly"
+          ]
+        },
+        "rule_name": "Brute Force Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.45"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jdoe"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AD-DEMO-14352\", \"severity\": \"high\", \"user\": \"jdoe\", \"failed_attempts\": 15}"
+      }
+    },
+    {
+      "name": "User Not Found - Suspicious Activity",
+      "description": "Critical severity alert for non-existent user (potential external threat)",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:20:15Z",
+        "severity": "critical",
+        "source_product": "Active Directory",
+        "enrichments": null,
+        "title": "Unauthorized Access Attempt from Unknown Account",
+        "source_vendor": "Microsoft",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Unauthorized Access Attempt from Unknown Account",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Invalid Account Login Attempt",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Unauthorized Access"
+          ]
+        },
+        "rule_name": "Invalid Account Login Attempt",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "185.220.101.45"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "hacker123"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AD-DEMO-16201\", \"severity\": \"critical\", \"user\": \"hacker123\", \"status\": \"blocked\"}"
+      }
+    },
+    {
+      "name": "Non-User Entity - Device Alert",
+      "description": "Alert with device entity should be returned unchanged (no user enrichment)",
+      "input": {
+        "triggering_event_time": "2025-10-23T18:10:30Z",
+        "severity": "high",
+        "source_product": "Falcon EDR",
+        "enrichments": null,
+        "title": "Malware Detected on Endpoint",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Malware Detected on Endpoint",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Malware Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malware"
+          ]
+        },
+        "rule_name": "Malware Detection",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "WORKSTATION-045"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-DEMO-18103\", \"device\": \"WORKSTATION-045\", \"malware\": \"TrojanDownloader\"}"
+      }
+    }
+  ],
+  "tags": [
+    "identity",
+    "active-directory",
+    "ldap",
+    "user-lookup",
+    "enrichment",
+    "security-context",
+    "automated-analysis"
+  ]
+}

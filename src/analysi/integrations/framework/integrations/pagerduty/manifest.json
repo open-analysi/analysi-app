@@ -1,0 +1,245 @@
+{
+  "id": "pagerduty",
+  "app": "pagerduty",
+  "name": "PagerDuty",
+  "version": "1.0.0",
+  "description": "Incident management and on-call routing platform. Create incidents, list on-call users, manage escalation policies, and query services and teams.",
+  "archetypes": [
+    "Notification"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "pagerduty-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "pagerduty-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this PagerDuty integration instance"
+  },
+
+  "archetype_mappings": {
+    "Notification": {
+      "send_notification": "create_incident"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "PagerDuty REST API v2 token (General Access or User Token)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "PagerDuty REST API base URL",
+        "default": "https://api.pagerduty.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity and token validity by querying a single incident",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "Get list of teams configured on PagerDuty",
+      "categories": ["investigation"],
+      "cy_name": "list_teams",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_oncalls",
+      "name": "List Oncalls",
+      "description": "Get list of on-call entries on PagerDuty",
+      "categories": ["investigation"],
+      "cy_name": "list_oncalls",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_services",
+      "name": "List Services",
+      "description": "Get list of available services on PagerDuty, optionally filtered by team IDs",
+      "categories": ["investigation"],
+      "cy_name": "list_services",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "team_ids": {
+            "type": "string",
+            "description": "Comma-separated list of team IDs to filter by"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Get list of users on PagerDuty, optionally filtered by team IDs",
+      "categories": ["investigation"],
+      "cy_name": "list_users",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "team_ids": {
+            "type": "string",
+            "description": "Comma-separated list of team IDs to filter by"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_escalations",
+      "name": "List Escalation Policies",
+      "description": "Get list of escalation policies on PagerDuty, optionally filtered by user IDs and/or team IDs",
+      "categories": ["investigation"],
+      "cy_name": "list_escalations",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_ids": {
+            "type": "string",
+            "description": "Comma-separated list of user IDs to filter by"
+          },
+          "team_ids": {
+            "type": "string",
+            "description": "Comma-separated list of team IDs to filter by"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create an incident on PagerDuty with optional escalation policy or user assignment",
+      "categories": ["remediation"],
+      "cy_name": "create_incident",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the incident"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description / body details of the incident"
+          },
+          "service_id": {
+            "type": "string",
+            "description": "ID of the impacted PagerDuty service"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the user creating the incident (used in From header)"
+          },
+          "escalation_id": {
+            "type": "string",
+            "description": "ID of escalation policy to use (optional)"
+          },
+          "assignee_id": {
+            "type": "string",
+            "description": "ID of user to assign incident to (optional)"
+          }
+        },
+        "required": ["title", "description", "service_id", "email"]
+      }
+    },
+    {
+      "id": "get_oncall_user",
+      "name": "Get Oncall User",
+      "description": "Get list of on-call users for a specific escalation policy with full user details",
+      "categories": ["investigation"],
+      "cy_name": "get_oncall_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "escalation_id": {
+            "type": "string",
+            "description": "ID of escalation policy to look up on-call users for"
+          }
+        },
+        "required": ["escalation_id"]
+      }
+    },
+    {
+      "id": "get_user_info",
+      "name": "Get User Info",
+      "description": "Get detailed information about a specific PagerDuty user by user ID",
+      "categories": ["investigation"],
+      "cy_name": "get_user_info",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "PagerDuty user ID to look up"
+          }
+        },
+        "required": ["user_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

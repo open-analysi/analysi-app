@@ -1,0 +1,164 @@
+{
+  "id": "nessus",
+  "app": "nessus",
+  "name": "Nessus",
+  "version": "1.0.0",
+  "description": "Nessus vulnerability scanner integration for endpoint scanning and vulnerability management",
+  "archetypes": [
+    "VulnerabilityManagement"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "nessus-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "nessus-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "VulnerabilityManagement": {
+      "scan_assets": "scan_host",
+      "get_asset_vulnerabilities": "get_host_vulnerabilities"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_key": {
+        "type": "string",
+        "display_name": "Access Key",
+        "description": "API access key from user's API settings",
+        "format": "password",
+        "required": true
+      },
+      "secret_key": {
+        "type": "string",
+        "display_name": "Secret Key",
+        "description": "API secret key from user's API settings",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "server": {
+        "type": "string",
+        "display_name": "Nessus Server",
+        "description": "Nessus server IP address or hostname",
+        "required": true
+      },
+      "port": {
+        "type": "integer",
+        "display_name": "Port",
+        "description": "Nessus server port (default: 8834)",
+        "default": 8834
+      },
+      "verify_server_cert": {
+        "type": "boolean",
+        "display_name": "Verify Server Certificate",
+        "description": "Whether to verify SSL/TLS certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to Nessus API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List available scan policies",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "list_policies",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "scan_host",
+      "name": "Scan Host",
+      "description": "Scan a host using a selected scan policy ID",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "scan_host",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "target_to_scan": {
+            "type": "string",
+            "description": "IP address or hostname to scan"
+          },
+          "policy_id": {
+            "type": "string",
+            "description": "ID of the scan policy to use"
+          }
+        },
+        "required": [
+          "target_to_scan",
+          "policy_id"
+        ]
+      }
+    },
+    {
+      "id": "get_host_vulnerabilities",
+      "name": "Get Host Vulnerabilities",
+      "description": "Get detailed vulnerability information for a specific host from scan results",
+      "categories": [
+        "investigation",
+        "vulnerability_management"
+      ],
+      "cy_name": "get_host_vulnerabilities",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_id": {
+            "type": "string",
+            "description": "Scan ID returned from scan_host"
+          },
+          "host_id": {
+            "type": "string",
+            "description": "Host ID from scan results"
+          }
+        },
+        "required": [
+          "scan_id",
+          "host_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

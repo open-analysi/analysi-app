@@ -1,0 +1,199 @@
+{
+  "id": "urlscan",
+  "app": "urlscan",
+  "name": "urlscan.io",
+  "version": "1.0.0",
+  "description": "urlscan.io integration for URL analysis, detonation, and threat intelligence",
+  "archetypes": [
+    "Sandbox"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "urlscan-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "urlscan-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "Sandbox": {
+      "submit_url": "detonate_url",
+      "get_analysis_report": "get_report"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "urlscan.io API key (optional for public queries, required for scans)",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 120
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to urlscan.io API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Query for results of an already completed URL scan",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "get_report",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Report UUID (submission ID)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Search for URLs associated with a domain in urlscan.io database",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "hunt_domain",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to search for"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt IP",
+      "description": "Search for URLs associated with an IP address in urlscan.io database",
+      "categories": [
+        "investigation",
+        "threat_intel"
+      ],
+      "cy_name": "hunt_ip",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to search for (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate URL",
+      "description": "Submit a URL for analysis and scanning",
+      "categories": [
+        "investigation",
+        "threat_intel",
+        "analysis"
+      ],
+      "cy_name": "detonate_url",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to scan and analyze"
+          },
+          "private": {
+            "type": "boolean",
+            "description": "Make the scan private (default: false)",
+            "default": false
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to attach to the scan (max 10)"
+          },
+          "custom_agent": {
+            "type": "string",
+            "description": "Custom user agent string to use for the scan"
+          },
+          "get_result": {
+            "type": "boolean",
+            "description": "Wait for and retrieve scan results (default: true)",
+            "default": true
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "get_screenshot",
+      "name": "Get Screenshot",
+      "description": "Get screenshot for a completed URL scan",
+      "categories": [
+        "investigation",
+        "forensics"
+      ],
+      "cy_name": "get_screenshot",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "description": "Report UUID (submission ID)"
+          }
+        },
+        "required": [
+          "report_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

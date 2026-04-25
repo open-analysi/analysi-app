@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "ocsf-detection-finding",
+  "cy_name": "ocsf_detection_finding",
+  "description": "Parse, validate, and map OCSF Detection Finding events. Use when normalizing security alerts to OCSF, building detection-as-code pipelines, mapping vendor alerts to MITRE ATT&CK, extracting observables, or working with finding_info structures and severity/status enums."
+}

@@ -1,0 +1,10 @@
+{
+  "Title": "Alert #1: PowerShell in URL Possible CVE-2022-41082",
+  "Rule Name": "SOC175 - PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+  "Type": "Web Attack",
+  "Date": "2026-04-26T07:19:00",
+  "Severity": "High",
+  "Status": "Resolved",
+  "Actor": "91.234.56.6",
+  "Target": "10.10.30.8"
+}

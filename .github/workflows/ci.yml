@@ -1,0 +1,730 @@
+# CI Pipeline — runs on every PR to main
+# Lint, unit tests, code quality, and production image builds
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+  REGISTRY: ghcr.io
+
+jobs:
+  # ── Detect what changed — skip expensive jobs that don't apply ──
+  #
+  # Two independent signals:
+  #   - infra: build-affecting paths (src, deployments, migrations, etc.)
+  #            → drives image build + smoke test
+  #   - docs_only: every changed file is markdown / docs / mkdocs config
+  #                → drives skip of code-quality, unit tests, CLI tests
+  detect-changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read   # needed for pulls.listFiles in github-script
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      docs_only: ${{ steps.filter.outputs.docs_only }}
+    steps:
+      - name: Check what kind of changes this PR has
+        id: filter
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        with:
+          script: |
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              }
+            );
+            const buildPatterns = [
+              /^src\//,
+              /^deployments\//,
+              /^migrations\//,
+              /^agents\/dist\//,
+              /^pyproject\.toml$/,
+              /^poetry\.lock$/,
+              /^\.github\/workflows\/ci\.yml$/,
+              /^\.dockerignore$/,
+              /^dist\//,
+            ];
+            // Docs-only patterns. A PR is docs_only iff EVERY changed file
+            // matches at least one of these. Conservative on purpose —
+            // anything outside this set (code, deps, CI workflow, integration
+            // manifests, etc.) forces full CI.
+            const docsPatterns = [
+              /^docs\//,         // public docs site content
+              /\.md$/,           // any markdown (READMEs, CLAUDE.md, etc.)
+              /^mkdocs\.yml$/,   // docs site config
+            ];
+            const buildNeeded = files.some(f =>
+              buildPatterns.some(p => p.test(f.filename))
+            );
+            const docsOnly = files.length > 0 && files.every(f =>
+              docsPatterns.some(p => p.test(f.filename))
+            );
+            core.setOutput('infra', buildNeeded.toString());
+            core.setOutput('docs_only', docsOnly.toString());
+            if (docsOnly) {
+              core.info('Docs-only PR — skipping code quality, unit tests, CLI tests, image build, and smoke test');
+            } else if (buildNeeded) {
+              const triggers = files
+                .filter(f => buildPatterns.some(p => p.test(f.filename)))
+                .map(f => f.filename);
+              core.info(`Build-affecting changes detected: ${triggers.join(', ')}`);
+            } else {
+              core.info('No build-affecting changes — skipping image build and smoke test (code quality + unit tests still run)');
+            }
+
+  # ── Code Quality & Security (merged lint + security — saves a runner) ──
+  code-quality:
+    name: Code Quality & Security
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read              # codeql upload-sarif reads workflow-run context
+      security-events: write     # SARIF upload to GitHub Security tab
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry deps
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: poetry-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      # ── Linting (blocking) ──
+      - name: Ruff check
+        run: poetry run ruff check src/ tests/
+
+      - name: Check internal HTTP client usage
+        run: poetry run python scripts/code_quality_tools/detect_bare_httpx.py
+
+      - name: Check CLI ↔ API route sync
+        run: poetry run python scripts/code_quality_tools/check_cli_api_sync.py
+
+      - name: Set up Helm
+        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/v3.20.1/scripts/get-helm-3 | DESIRED_VERSION=v3.20.1 bash
+
+      - name: Helm lint
+        run: helm lint deployments/helm/analysi/
+
+      - name: Helm template validation
+        run: |
+          for values_file in deployments/helm/analysi/values/*.yaml; do
+            echo "Validating with $(basename "$values_file")..."
+            helm template analysi deployments/helm/analysi/ \
+              -f "$values_file" > /dev/null
+          done
+          echo "All Helm values files render successfully"
+
+      # ── Security scanning (runs even if lint fails — independent signal) ──
+      - name: Bandit security scan
+        if: always()
+        run: |
+          set +e
+          poetry run bandit -r src/analysi/ -ll --exclude '*/tests/*' -f json -o bandit-results.json
+          exit_code=$?
+          if [ $exit_code -ge 2 ]; then
+            echo "::error::Bandit crashed with exit code $exit_code"
+            exit $exit_code
+          fi
+          # exit 0 = clean, exit 1 = findings (checked in next step)
+
+      - name: Check Bandit results
+        if: always()
+        run: |
+          if [ ! -f bandit-results.json ]; then
+            echo "::error::bandit-results.json not found — scanner may have failed"
+            exit 1
+          fi
+          results=$(python3 -c "import json; r=json.load(open('bandit-results.json')); print(len(r.get('results', [])))")
+          if [ "$results" -gt 0 ]; then
+            echo "::error::Bandit found $results security issue(s) at medium+ severity"
+            poetry run bandit -r src/analysi/ -ll --exclude '*/tests/*'
+            exit 1
+          fi
+          echo "Bandit: no issues found"
+
+      - name: Semgrep SAST scan
+        if: always()
+        continue-on-error: true  # informational until we triage findings
+        run: |
+          pipx install semgrep
+          semgrep scan --config auto --config p/python \
+            --severity WARNING --severity ERROR \
+            --sarif --output semgrep-results.sarif \
+            src/analysi/ \
+            || true
+
+      - name: pip-audit vulnerability scan
+        if: always()
+        run: |
+          # Blocking — PRs cannot merge with known CVEs in dependencies.
+          # To temporarily ignore a CVE while waiting for an upstream fix,
+          # add it to .pip-audit-ignore.txt (one CVE ID per line).
+          IGNORE_ARGS=""
+          if [ -f .pip-audit-ignore.txt ]; then
+            while IFS= read -r cve; do
+              # Skip comments and blank lines
+              [[ "$cve" =~ ^#.*$ || -z "$cve" ]] && continue
+              IGNORE_ARGS="$IGNORE_ARGS --ignore-vuln $cve"
+            done < .pip-audit-ignore.txt
+          fi
+          poetry run pip-audit $IGNORE_ARGS -f json -o pip-audit-results.json
+
+      - name: Install gitleaks
+        if: always()
+        run: |
+          GITLEAKS_VERSION=8.18.4
+          curl -sfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+
+      - name: Gitleaks secrets scan
+        if: always()
+        run: |
+          # Blocking — PRs cannot merge if real secrets are detected in the working tree.
+          # Uses --no-git to scan the checked-out files directly (matches the local sweep
+          # used before the OSS cutover and rules out historical noise).
+          # Allowlists live in .gitleaks.toml (path-based) and .gitleaksignore (per-finding).
+          gitleaks detect \
+            --no-git \
+            --source . \
+            --config .gitleaks.toml \
+            --redact \
+            --verbose \
+            --exit-code 1
+
+      - name: Install Trivy
+        if: always()
+        continue-on-error: true  # informational — don't block builds on network failures
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.69.3
+
+      - name: Trivy IaC scan
+        if: always()
+        continue-on-error: true
+        run: |
+          trivy config deployments/terraform/ deployments/helm/ \
+            --severity HIGH,CRITICAL \
+            --format sarif \
+            --output trivy-iac-results.sarif \
+            || true
+
+      - name: Trivy filesystem scan
+        if: always()
+        continue-on-error: true
+        run: |
+          trivy fs --scanners vuln . \
+            --severity HIGH,CRITICAL \
+            --format sarif \
+            --output trivy-fs-results.sarif \
+            || true
+
+      - name: Upload Semgrep SARIF
+        if: always() && hashFiles('semgrep-results.sarif') != ''
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@820e3160e279568db735cee8ed8f8e77a6da7818  # v3
+        with:
+          sarif_file: semgrep-results.sarif
+          category: semgrep
+
+      - name: Upload Trivy IaC SARIF
+        if: always() && hashFiles('trivy-iac-results.sarif') != ''
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@820e3160e279568db735cee8ed8f8e77a6da7818  # v3
+        with:
+          sarif_file: trivy-iac-results.sarif
+          category: trivy-iac
+
+      - name: Upload Trivy FS SARIF
+        if: always() && hashFiles('trivy-fs-results.sarif') != ''
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@820e3160e279568db735cee8ed8f8e77a6da7818  # v3
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        with:
+          name: security-results
+          path: |
+            bandit-results.json
+            pip-audit-results.json
+
+      # ── Informational code quality ──
+      - name: Code quality report (informational)
+        if: always()
+        continue-on-error: true
+        run: |
+          poetry run python scripts/code_quality_tools/detect_stdlib_logging.py
+          poetry run python scripts/code_quality_tools/test_flakiness_detector.py
+          poetry run python scripts/code_quality_tools/test_hygiene_audit.py
+
+  # ── Unit Tests ──
+  test-unit:
+    name: Unit Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: analysi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry deps
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: poetry-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Run unit tests
+        env:
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: poetry run pytest tests/unit/ -q --tb=short --junitxml=test-results/junit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
+
+  # ── CLI Tests (TypeScript — vitest) ──
+  # Runs independently — not in build-images.needs (CLI ≠ Docker image).
+  # Enforce via branch protection: add "CLI Tests" as a required status check.
+  test-cli:
+    name: CLI Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm deps
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5
+        with:
+          path: cli/node_modules
+          key: npm-${{ runner.os }}-${{ hashFiles('cli/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Install CLI dependencies
+        working-directory: cli
+        run: npm ci
+
+      - name: Build CLI (TypeScript compilation)
+        working-directory: cli
+        run: npx tsc -b
+
+      - name: Run CLI tests
+        working-directory: cli
+        run: npx vitest run --reporter=default --reporter=junit --outputFile=test-results/junit.xml
+
+      - name: Upload CLI test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        if: always()
+        with:
+          name: cli-test-results
+          path: cli/test-results/
+
+  # ── Build Image (only when infrastructure files change) ──
+  # Skipped for pure src/ or tests/ changes — Release workflow builds on merge anyway.
+  # Single unified image for all services (api, alerts-worker, integrations-worker).
+  build-images:
+    name: Build unified image
+    needs: [detect-changes, code-quality, test-unit]
+    if: needs.detect-changes.outputs.infra == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd  # v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2  # v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294  # v7
+        with:
+          context: .
+          file: deployments/docker/Dockerfile
+          target: production
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/analysi-app:pr-${{ github.event.pull_request.number }}
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Kind Smoke Test (auto-skipped when build-images is skipped) ──
+  smoke-test:
+    name: Kind Smoke Test
+    needs: [build-images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    # Kind smoke tests are blocking — failures break the build
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Create kind cluster
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc  # v1
+        with:
+          config: deployments/k8s/kind-config.yaml
+          cluster_name: ci-smoke
+
+      - name: Set up Helm
+        run: curl -fsSL https://raw.githubusercontent.com/helm/helm/v3.20.1/scripts/get-helm-3 | DESIRED_VERSION=v3.20.1 bash
+
+      - name: Log in to GHCR
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2  # v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Free disk space
+        run: |
+          # Remove preinstalled tools we don't need to free ~8GB
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          docker system prune -af --volumes
+          df -h /
+
+      - name: Pull and load app image
+        run: |
+          PR_TAG="pr-${{ github.event.pull_request.number }}"
+          GHCR_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/analysi-app:${PR_TAG}"
+          LOCAL_NAME="analysi/app:latest"
+          docker pull "$GHCR_NAME"
+          docker tag "$GHCR_NAME" "$LOCAL_NAME"
+          kind load docker-image "$LOCAL_NAME" --name ci-smoke
+          docker rmi "$GHCR_NAME" "$LOCAL_NAME" || true
+
+      - name: Build custom postgres image (pg_partman + pg_cron)
+        run: |
+          docker build -t analysi-postgres:15-partman \
+            --build-arg PG_MAJOR=15 \
+            deployments/docker/postgres/
+          kind load docker-image analysi-postgres:15-partman --name ci-smoke
+
+      - name: Pull and load dependency images
+        run: |
+          images=(
+            "valkey/valkey:8-alpine"
+            "minio/minio:latest"
+            "hashicorp/vault:1.17"
+            "flyway/flyway:11"
+            "busybox:1.37"
+          )
+          for img in "${images[@]}"; do
+            docker pull "$img"
+            kind load docker-image "$img" --name ci-smoke
+            docker rmi "$img" || true
+          done
+
+      - name: Create Flyway configmap
+        run: kubectl create configmap flyway-sql --from-file=migrations/flyway/sql/
+
+      - name: Helm install
+        run: |
+          helm install analysi deployments/helm/analysi/ \
+            -f deployments/helm/analysi/values/ci.yaml \
+            --wait --timeout 8m
+
+      - name: Wait for pods
+        run: |
+          # Wait for deployments (skip completed Jobs like flyway)
+          kubectl wait --for=condition=available deployment --all --timeout=300s
+          # Verify all non-job pods are ready
+          kubectl get pods
+
+      - name: Verify Flyway migrations completed
+        run: |
+          echo "Checking Flyway job status..."
+          # Wait for the Flyway job to complete (it may retry on transient errors).
+          # kubectl wait --for=condition=complete handles retries and multiple pods.
+          FLYWAY_JOB=$(kubectl get job -l app.kubernetes.io/component=flyway -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+          if [ -z "$FLYWAY_JOB" ]; then
+            echo "::error::No Flyway job found"
+            kubectl get jobs
+            exit 1
+          fi
+          echo "  Waiting for job/$FLYWAY_JOB to complete (up to 120s)..."
+          if ! kubectl wait --for=condition=complete "job/$FLYWAY_JOB" --timeout=120s 2>/dev/null; then
+            echo "::error::Flyway migration job did not complete within 120s"
+            kubectl get pods -l app.kubernetes.io/component=flyway
+            kubectl logs "job/$FLYWAY_JOB" --tail=50
+            exit 1
+          fi
+          echo "  OK: Flyway migrations completed"
+
+          # Verify migration count from logs
+          MIGRATION_COUNT=$(kubectl logs "job/$FLYWAY_JOB" 2>/dev/null | grep -c "Successfully applied" || echo "0")
+          echo "  Migrations applied: $MIGRATION_COUNT"
+
+      - name: Verify no pods in CrashLoopBackOff
+        run: |
+          echo "Checking for unhealthy pods..."
+          ERRORS=0
+
+          # Check for CrashLoopBackOff (go-template pairs pod+container names correctly)
+          CRASH_PODS=$(kubectl get pods -o go-template='{{range .items}}{{$pod := .metadata.name}}{{range .status.containerStatuses}}{{if .state.waiting}}{{if eq .state.waiting.reason "CrashLoopBackOff"}}{{$pod}}{{"\t"}}{{.name}}{{"\n"}}{{end}}{{end}}{{end}}{{end}}' 2>/dev/null || true)
+          if [ -n "$CRASH_PODS" ]; then
+            echo "::error::Pods in CrashLoopBackOff:"
+            echo "$CRASH_PODS"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # Check for OOMKilled (go-template pairs pod+container names correctly)
+          OOM_PODS=$(kubectl get pods -o go-template='{{range .items}}{{$pod := .metadata.name}}{{range .status.containerStatuses}}{{if .lastState.terminated}}{{if eq .lastState.terminated.reason "OOMKilled"}}{{$pod}}{{"\t"}}{{.name}}{{"\n"}}{{end}}{{end}}{{end}}{{end}}' 2>/dev/null || true)
+          if [ -n "$OOM_PODS" ]; then
+            echo "::error::Pods with OOMKilled:"
+            echo "$OOM_PODS"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # Check restart counts (>3 is suspicious)
+          # Use go-template to correctly pair pod name with each container's restart count
+          HIGH_RESTARTS=$(kubectl get pods -o go-template='{{range .items}}{{$pod := .metadata.name}}{{range .status.containerStatuses}}{{if gt .restartCount 3}}{{$pod}}{{"\t"}}{{.name}}{{"\t"}}{{.restartCount}}{{"\n"}}{{end}}{{end}}{{end}}' 2>/dev/null || true)
+          if [ -n "$HIGH_RESTARTS" ]; then
+            echo "::warning::Pods with high restart counts (>3):"
+            echo "$HIGH_RESTARTS"
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::Unhealthy pods detected"
+            kubectl describe pods | grep -A5 "State:\|Last State:"
+            exit 1
+          fi
+          echo "  OK: All pods healthy (no CrashLoopBackOff or OOMKilled)"
+
+      - name: Verify API serves OpenAPI schema
+        run: |
+          echo "Fetching /openapi.json from API..."
+          HTTP_CODE=$(curl -s -o /tmp/openapi.json -w "%{http_code}" http://localhost:8000/openapi.json)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::OpenAPI schema returned HTTP $HTTP_CODE (expected 200)"
+            exit 1
+          fi
+
+          # Verify it's valid JSON with expected structure
+          PATHS_COUNT=$(python3 -c "import json; d=json.load(open('/tmp/openapi.json')); print(len(d.get('paths', {})))")
+          if [ "$PATHS_COUNT" -lt 1 ]; then
+            echo "::error::OpenAPI schema has no paths — API may have import errors"
+            exit 1
+          fi
+          echo "  OK: OpenAPI schema served ($PATHS_COUNT endpoints registered)"
+
+      - name: Verify auth rejects invalid token
+        run: |
+          echo "Testing auth with random bogus API key..."
+          BOGUS_KEY="bogus-random-token-$(date +%s)"
+          HTTP_CODE=$(curl -s -o /tmp/auth-reject.json -w "%{http_code}" \
+            -H "X-API-Key: $BOGUS_KEY" \
+            -H "Content-Type: application/json" \
+            http://localhost:8000/v1/default/tasks)
+          if [ "$HTTP_CODE" != "401" ]; then
+            echo "::error::Random API key returned HTTP $HTTP_CODE (expected 401)"
+            cat /tmp/auth-reject.json
+            exit 1
+          fi
+          echo "  OK: Invalid API key correctly rejected with 401"
+
+      - name: Verify admin cannot access platform-admin routes
+        env:
+          # CI dev keys from ci.yaml — not real secrets
+          CI_ADMIN_KEY: dev-admin-api-key
+        run: |
+          echo "Testing admin key against /platform/v1/tenants (should be 403)..."
+          HTTP_CODE=$(curl -s -o /tmp/admin-403.json -w "%{http_code}" \
+            -H "X-API-Key: $CI_ADMIN_KEY" \
+            -H "Content-Type: application/json" \
+            http://localhost:8000/platform/v1/tenants)
+          if [ "$HTTP_CODE" != "403" ]; then
+            echo "::error::Admin key on /platform/v1/ returned HTTP $HTTP_CODE (expected 403)"
+            cat /tmp/admin-403.json
+            exit 1
+          fi
+          echo "  OK: Admin correctly blocked from platform-admin routes (403)"
+
+          echo "Testing unauthenticated access to /platform/v1/tenants (should be 401)..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            http://localhost:8000/platform/v1/tenants)
+          if [ "$HTTP_CODE" != "401" ]; then
+            echo "::error::Unauthenticated /platform/v1/ returned HTTP $HTTP_CODE (expected 401)"
+            exit 1
+          fi
+          echo "  OK: Unauthenticated access to platform-admin routes rejected (401)"
+
+      - name: Verify agent files in alerts-worker container
+        run: |
+          # Get the alerts-worker pod name
+          POD=$(kubectl get pods -l app.kubernetes.io/component=alerts-worker -o jsonpath='{.items[0].metadata.name}')
+          echo "Checking alerts-worker pod: $POD"
+
+          # Expected agent .md files (from agents/dist/)
+          EXPECTED_AGENTS=(
+            "cy-script-segment-tester.md"
+            "cybersec-task-builder.md"
+            "runbook-match-agent.md"
+            "runbook-to-task-proposals.md"
+            "splunk-spl-writer-basic.md"
+            "workflow-builder.md"
+          )
+
+          ERRORS=0
+
+          for agent in "${EXPECTED_AGENTS[@]}"; do
+            # Check /home/appuser/.claude/agents/ (where Claude Code CLI discovers them)
+            if kubectl exec "$POD" -c alerts-worker -- test -f "/home/appuser/.claude/agents/$agent"; then
+              echo "  OK: /home/appuser/.claude/agents/$agent"
+            else
+              echo "  MISSING: /home/appuser/.claude/agents/$agent"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # Also verify /app/agents/ has the same files (source copy)
+          # Exclude README.md from count — it's not an agent file
+          ACTUAL_COUNT=$(kubectl exec "$POD" -c alerts-worker -- sh -c 'ls /app/agents/*.md 2>/dev/null | grep -cv README')
+          EXPECTED_COUNT=${#EXPECTED_AGENTS[@]}
+          echo ""
+          echo "Agent files in /app/agents/: $ACTUAL_COUNT (expected: $EXPECTED_COUNT)"
+
+          if [ "$ACTUAL_COUNT" -ne "$EXPECTED_COUNT" ]; then
+            echo "::error::Agent file count mismatch in /app/agents/"
+            kubectl exec "$POD" -c alerts-worker -- ls -la /app/agents/
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::$ERRORS agent file verification(s) failed"
+            exit 1
+          fi
+          echo "All agent files verified successfully"
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install test dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Run smoke test
+        env:
+          BACKEND_API_EXTERNAL_PORT: "8000"
+        run: poetry run python scripts/smoke_tests/functional_test.py
+
+      - name: Run Kind CI integration tests
+        env:
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: "15432"
+          TEST_DB_USER: analysiuser
+          TEST_DB_PASSWORD: localdevpass
+          TEST_DB_NAME: analysi
+          # The app reads DATABASE_URL (not TEST_DB_*) for its DB connection.
+          # Set it here so load_dotenv(.env.test) won't override with port 5434.
+          DATABASE_URL: "postgresql+asyncpg://analysiuser:localdevpass@localhost:15432/analysi"
+        run: |
+          # Port-forward Kind's PostgreSQL to localhost:15432
+          kubectl port-forward svc/analysi-analysi-postgresql 15432:5432 &
+          PF_PID=$!
+          sleep 3
+
+          # Run kind_ci-marked integration tests against the live DB
+          poetry run pytest tests/integration/ -m kind_ci -q --tb=short \
+            --junitxml=test-results/kind-ci.xml || EXIT_CODE=$?
+
+          kill $PF_PID 2>/dev/null || true
+          exit ${EXIT_CODE:-0}
+
+      - name: Upload Kind CI test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        if: always()
+        with:
+          name: kind-ci-test-results
+          path: test-results/kind-ci.xml
+
+      - name: Check pod log health
+        if: always()
+        run: bash scripts/ci/check-pod-log-health.sh k8s-debug-logs
+
+      - name: Collect debug logs
+        if: always()
+        run: bash scripts/ci/collect-k8s-logs.sh k8s-debug-logs
+
+      - name: Upload debug logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        with:
+          name: k8s-debug-logs
+          path: k8s-debug-logs/

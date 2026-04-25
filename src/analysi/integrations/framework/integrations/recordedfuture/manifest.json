@@ -1,0 +1,310 @@
+{
+  "id": "recordedfuture",
+  "app": "recordedfuture",
+  "name": "Recorded Future",
+  "version": "1.0.0",
+  "description": "Premier threat intelligence platform providing intelligence, reputation, vulnerability, and threat assessment for IPs, domains, URLs, file hashes, and CVEs",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 85,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "recordedfuture-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "recordedfuture-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Recorded Future integration instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_intelligence",
+      "lookup_domain": "domain_intelligence",
+      "lookup_file_hash": "file_intelligence",
+      "lookup_url": "url_intelligence"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Recorded Future API token (X-RFToken)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "API Base URL",
+        "description": "Recorded Future API gateway URL",
+        "default": "https://api.recordedfuture.com/gw/phantom"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 120
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": true
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to Recorded Future API and validate API token",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "ip_intelligence",
+      "name": "IP Intelligence",
+      "description": "Get full threat intelligence for an IP address including risk scores, evidence, related entities, and location data",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_intelligence",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query (IPv4 or IPv6)"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Get risk score and rule count for an IP address",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "ip_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to query"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "domain_intelligence",
+      "name": "Domain Intelligence",
+      "description": "Get full threat intelligence for a domain including risk scores, evidence, and related entities",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "domain_intelligence",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get risk score and rule count for a domain",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "domain_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "file_intelligence",
+      "name": "File Intelligence",
+      "description": "Get full threat intelligence for a file hash (MD5, SHA1, SHA256)",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "file_intelligence",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash to query (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Get risk score and rule count for a file hash",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "file_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash to query (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "url_intelligence",
+      "name": "URL Intelligence",
+      "description": "Get full threat intelligence for a URL",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "url_intelligence",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to query"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Get risk score and rule count for a URL",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "url_reputation",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to query"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "vulnerability_lookup",
+      "name": "Vulnerability Lookup",
+      "description": "Get threat intelligence for a CVE including risk score, CVSS, NVD description, and related entities",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "vulnerability_lookup",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "cve": {
+            "type": "string",
+            "description": "CVE identifier (e.g., CVE-2021-44228)"
+          }
+        },
+        "required": ["cve"]
+      }
+    },
+    {
+      "id": "threat_assessment",
+      "name": "Threat Assessment",
+      "description": "Get a risk assessment for a collection of IOCs (IPs, domains, URLs, hashes) in a threat context (c2, malware, phishing)",
+      "categories": ["threat_intel", "investigation"],
+      "cy_name": "threat_assessment",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "threat_context": {
+            "type": "string",
+            "description": "Threat context: c2, malware, or phishing",
+            "enum": ["c2", "malware", "phishing"]
+          },
+          "ip": {
+            "type": "string",
+            "description": "Comma-separated IP addresses to assess"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Comma-separated domains to assess"
+          },
+          "url": {
+            "type": "string",
+            "description": "Comma-separated URLs to assess"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Comma-separated file hashes to assess"
+          }
+        },
+        "required": ["threat_context"]
+      }
+    },
+    {
+      "id": "alert_search",
+      "name": "Alert Search",
+      "description": "Search alerts by alert rule ID and time range, with full alert details",
+      "categories": ["investigation"],
+      "cy_name": "alert_search",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Alert Rule ID to look up alert data for"
+          },
+          "timeframe": {
+            "type": "string",
+            "description": "Time range for when rules were triggered (e.g., '-24h to now', 'anytime')",
+            "default": "-24h to now"
+          }
+        },
+        "required": ["rule_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

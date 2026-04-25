@@ -1,0 +1,19 @@
+{
+  "Title": "PowerShell Found in Requested URL",
+  "Rule Name": "SOC175 - PowerShell Found in Requested URL - Possible CVE-2022-41082 Exploitation",
+  "Type": "notable",
+  "Severity": "high",
+  "Event Time": "2026-04-26T07:19:00.000Z",
+  "Actor": "91.234.56.6",
+  "Target": "10.10.30.8",
+  "Attack Type": "Web Attack",
+  "CVE": "CVE-2022-41082",
+  "MITRE ATT&CK Tactic": "T1190 (Exploit Public-Facing Application)",
+  "Disposition": "Undetermined",
+  "Risk Score": "80",
+  "Action Taken": "Blocked",
+  "Requested URL": "/autodiscover/autodiscover.json?@attacker.example/owa/&Email=autodiscover/autodiscover.json%3f@attacker.example&Protocol=XYZ&FooProtocol=Powershell",
+  "HTTP Method": "GET",
+  "Log Source": "IIS",
+  "User-Agent": "Mozilla/5.0 zgrab/0.x"
+}

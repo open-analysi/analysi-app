@@ -1,0 +1,157 @@
+{
+  "name": "Template Fan-Out Demo",
+  "description": "Pure template workflow: Identity \u2192 [Identity \u00d7 3] \u2192 Collect \u2192 Identity",
+  "is_dynamic": false,
+  "io_schema": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "a"
+      ]
+    },
+    "output": {
+      "type": "array"
+    }
+  },
+  "data_samples": [
+    {
+      "name": "Object Input",
+      "description": "Test with object input",
+      "input": {
+        "a": 1
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "start",
+      "kind": "transformation",
+      "name": "Start Identity",
+      "is_start_node": true,
+      "node_template_id": "00000000-0000-0000-0000-000000000001",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "branch1",
+      "kind": "transformation",
+      "name": "Branch 1 Identity",
+      "node_template_id": "00000000-0000-0000-0000-000000000001",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "branch2",
+      "kind": "transformation",
+      "name": "Branch 2 Identity",
+      "node_template_id": "00000000-0000-0000-0000-000000000001",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "branch3",
+      "kind": "transformation",
+      "name": "Branch 3 Identity",
+      "node_template_id": "00000000-0000-0000-0000-000000000001",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "collect",
+      "kind": "transformation",
+      "name": "Collect Results",
+      "node_template_id": "00000000-0000-0000-0000-000000000003",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "array"
+        }
+      }
+    },
+    {
+      "node_id": "end",
+      "kind": "transformation",
+      "name": "End Identity",
+      "node_template_id": "00000000-0000-0000-0000-000000000001",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "array"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1",
+      "from_node_id": "start",
+      "to_node_id": "branch1"
+    },
+    {
+      "edge_id": "e2",
+      "from_node_id": "start",
+      "to_node_id": "branch2"
+    },
+    {
+      "edge_id": "e3",
+      "from_node_id": "start",
+      "to_node_id": "branch3"
+    },
+    {
+      "edge_id": "e4",
+      "from_node_id": "branch1",
+      "to_node_id": "collect"
+    },
+    {
+      "edge_id": "e5",
+      "from_node_id": "branch2",
+      "to_node_id": "collect"
+    },
+    {
+      "edge_id": "e6",
+      "from_node_id": "branch3",
+      "to_node_id": "collect"
+    },
+    {
+      "edge_id": "e7",
+      "from_node_id": "collect",
+      "to_node_id": "end"
+    }
+  ],
+  "categories": [
+    "Examples"
+  ]
+}

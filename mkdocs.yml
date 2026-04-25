@@ -1,0 +1,86 @@
+site_name: Analysi
+site_description: Security automation platform that processes alerts through AI-powered investigation workflows.
+site_url: https://open-analysi.github.io/analysi-app/
+repo_url: https://github.com/open-analysi/analysi-app
+repo_name: open-analysi/analysi-app
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - mermaid2
+
+nav:
+  - Home: index.md
+  - Concepts:
+      - concepts/index.md
+      - Concept: concepts/concept.md
+      - Alert lifecycle: concepts/alert-lifecycle.md
+      - Component architecture: concepts/component-architecture.md
+  - Reference:
+      - reference/index.md
+      - Terminology: reference/terminology.md
+      - Integrations: reference/integrations.md
+
+# Internal contributor docs (operations/, projects/, specs/, context/)
+# live under docs/ but are excluded from the public site.
+not_in_nav: |
+  /operations/**
+  /projects/**
+  /specs/**
+  /context/**
+  /PROJECTS.md

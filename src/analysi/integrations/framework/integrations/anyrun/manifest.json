@@ -1,0 +1,247 @@
+{
+  "id": "anyrun",
+  "app": "anyrun",
+  "name": "ANY.RUN",
+  "version": "1.0.0",
+  "description": "ANY.RUN interactive malware sandbox for detonating files and URLs, retrieving analysis reports, and obtaining threat intelligence",
+  "archetypes": [
+    "Sandbox"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "anyrun-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "anyrun-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this ANY.RUN integration instance"
+  },
+
+  "archetype_mappings": {
+    "Sandbox": {
+      "submit_url": "detonate_url",
+      "submit_file": "detonate_file",
+      "get_analysis_report": "get_report"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "ANY.RUN API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "ANY.RUN API base URL",
+        "default": "https://api.any.run/v1"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 300
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API key and connectivity to ANY.RUN",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate URL",
+      "description": "Submit a URL for interactive sandbox analysis",
+      "categories": [
+        "sandbox",
+        "analysis"
+      ],
+      "cy_name": "detonate_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to detonate (5-512 characters)"
+          },
+          "os_type": {
+            "type": "string",
+            "description": "Operating system: windows, linux, or android",
+            "default": "windows",
+            "enum": ["windows", "linux", "android"]
+          },
+          "env_type": {
+            "type": "string",
+            "description": "Environment preset type",
+            "default": "complete",
+            "enum": ["clean", "office", "complete", "development"]
+          },
+          "env_bitness": {
+            "type": "integer",
+            "description": "OS bitness (32 or 64)",
+            "default": 64,
+            "enum": [32, 64]
+          },
+          "env_version": {
+            "type": "string",
+            "description": "OS version",
+            "default": "10"
+          },
+          "env_locale": {
+            "type": "string",
+            "description": "OS locale",
+            "default": "en-US"
+          },
+          "browser": {
+            "type": "string",
+            "description": "Browser to use for URL analysis",
+            "default": "Microsoft Edge"
+          },
+          "opt_network_connect": {
+            "type": "boolean",
+            "description": "Enable network connectivity in sandbox",
+            "default": true
+          },
+          "opt_privacy_type": {
+            "type": "string",
+            "description": "Analysis privacy setting",
+            "default": "bylink",
+            "enum": ["public", "bylink", "owner", "byteam"]
+          },
+          "opt_timeout": {
+            "type": "integer",
+            "description": "Analysis timeout in seconds",
+            "default": 120
+          },
+          "user_tags": {
+            "type": "string",
+            "description": "Comma-separated tags for the analysis",
+            "default": "analysi-sandbox"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Submit a file for interactive sandbox analysis",
+      "categories": [
+        "sandbox",
+        "analysis"
+      ],
+      "cy_name": "detonate_file",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_content": {
+            "type": "string",
+            "description": "Base64-encoded file content"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename with extension"
+          },
+          "os_type": {
+            "type": "string",
+            "description": "Operating system: windows, linux, or android",
+            "default": "windows",
+            "enum": ["windows", "linux", "android"]
+          },
+          "env_type": {
+            "type": "string",
+            "description": "Environment preset type",
+            "default": "complete",
+            "enum": ["clean", "office", "complete"]
+          },
+          "env_bitness": {
+            "type": "integer",
+            "description": "OS bitness (32 or 64)",
+            "default": 64,
+            "enum": [32, 64]
+          },
+          "env_version": {
+            "type": "string",
+            "description": "OS version",
+            "default": "10"
+          },
+          "env_locale": {
+            "type": "string",
+            "description": "OS locale",
+            "default": "en-US"
+          },
+          "opt_network_connect": {
+            "type": "boolean",
+            "description": "Enable network connectivity in sandbox",
+            "default": true
+          },
+          "opt_privacy_type": {
+            "type": "string",
+            "description": "Analysis privacy setting",
+            "default": "bylink",
+            "enum": ["public", "bylink", "owner", "byteam"]
+          },
+          "opt_timeout": {
+            "type": "integer",
+            "description": "Analysis timeout in seconds",
+            "default": 120
+          },
+          "user_tags": {
+            "type": "string",
+            "description": "Comma-separated tags for the analysis",
+            "default": "analysi-sandbox"
+          }
+        },
+        "required": ["file_content", "filename"]
+      }
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve detailed analysis report by analysis ID",
+      "categories": [
+        "sandbox",
+        "investigation"
+      ],
+      "cy_name": "get_report",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "description": "ANY.RUN analysis UUID"
+          }
+        },
+        "required": ["analysis_id"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "id": "freshservice",
+  "app": "freshservice",
+  "name": "Freshservice",
+  "version": "1.0.0",
+  "description": "Freshservice ITSM integration for creating, updating, and managing service desk tickets",
+  "archetypes": [
+    "TicketingSystem"
+  ],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "freshservice-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "freshservice-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Freshservice integration instance"
+  },
+
+  "archetype_mappings": {
+    "TicketingSystem": {
+      "create_ticket": "create_ticket",
+      "update_ticket": "update_ticket",
+      "get_ticket_status": "get_ticket",
+      "add_comment": "add_note",
+      "close_ticket": "update_ticket"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Freshservice API key (used as HTTP Basic Auth username with 'X' as password)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "domain": {
+        "type": "string",
+        "display_name": "Domain",
+        "description": "Freshservice subdomain (e.g., 'mycompany' for mycompany.freshservice.com)",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify Freshservice API connectivity and credentials",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new Freshservice ticket (incident/service request)",
+      "categories": ["ticketing", "incident_response"],
+      "cy_name": "create_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Subject of the ticket"
+          },
+          "description": {
+            "type": "string",
+            "description": "HTML description of the ticket"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority (1=Low, 2=Medium, 3=High, 4=Urgent)",
+            "default": 1
+          },
+          "status": {
+            "type": "integer",
+            "description": "Status (2=Open, 3=Pending, 4=Resolved, 5=Closed)",
+            "default": 2
+          },
+          "requester_id": {
+            "type": "integer",
+            "description": "ID of the requester (required if email not provided)"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email of the requester (required if requester_id not provided)"
+          },
+          "group_id": {
+            "type": "integer",
+            "description": "ID of the agent group to assign"
+          },
+          "responder_id": {
+            "type": "integer",
+            "description": "ID of the agent to assign"
+          },
+          "type": {
+            "type": "string",
+            "description": "Ticket type (e.g., 'Incident', 'Service Request')"
+          },
+          "category": {
+            "type": "string",
+            "description": "Ticket category"
+          },
+          "sub_category": {
+            "type": "string",
+            "description": "Ticket sub-category"
+          },
+          "item_category": {
+            "type": "string",
+            "description": "Ticket item category"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Custom fields as key-value pairs"
+          }
+        },
+        "required": ["subject", "description"]
+      }
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get Freshservice ticket details by ID",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "get_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Freshservice ticket ID"
+          }
+        },
+        "required": ["ticket_id"]
+      }
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update Freshservice ticket fields (status, priority, assignment, etc.)",
+      "categories": ["ticketing", "incident_response"],
+      "cy_name": "update_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Freshservice ticket ID"
+          },
+          "status": {
+            "type": "integer",
+            "description": "Updated status (2=Open, 3=Pending, 4=Resolved, 5=Closed)"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Updated priority (1=Low, 2=Medium, 3=High, 4=Urgent)"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Updated subject"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated description"
+          },
+          "group_id": {
+            "type": "integer",
+            "description": "Updated group assignment"
+          },
+          "responder_id": {
+            "type": "integer",
+            "description": "Updated agent assignment"
+          },
+          "category": {
+            "type": "string",
+            "description": "Updated category"
+          },
+          "sub_category": {
+            "type": "string",
+            "description": "Updated sub-category"
+          },
+          "item_category": {
+            "type": "string",
+            "description": "Updated item category"
+          },
+          "type": {
+            "type": "string",
+            "description": "Updated ticket type"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Custom fields to update as key-value pairs"
+          }
+        },
+        "required": ["ticket_id"]
+      }
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note (comment) to a Freshservice ticket",
+      "categories": ["ticketing", "communication"],
+      "cy_name": "add_note",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Freshservice ticket ID"
+          },
+          "body": {
+            "type": "string",
+            "description": "Note body in HTML format"
+          },
+          "private": {
+            "type": "boolean",
+            "description": "Whether the note is private (default: true)",
+            "default": true
+          }
+        },
+        "required": ["ticket_id", "body"]
+      }
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List Freshservice tickets with optional filters",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "list_tickets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Predefined filter (e.g., 'new_and_my_open', 'watching', 'spam', 'deleted')"
+          },
+          "per_page": {
+            "type": "integer",
+            "description": "Results per page (default: 30, max: 100)",
+            "default": 30
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number (default: 1)",
+            "default": 1
+          },
+          "order_by": {
+            "type": "string",
+            "description": "Field to order by (e.g., 'created_at', 'updated_at', 'due_by')"
+          },
+          "order_type": {
+            "type": "string",
+            "description": "Order direction ('asc' or 'desc')"
+          },
+          "requester_id": {
+            "type": "integer",
+            "description": "Filter by requester ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Filter by requester email"
+          },
+          "updated_since": {
+            "type": "string",
+            "description": "Filter tickets updated since (ISO 8601 datetime)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

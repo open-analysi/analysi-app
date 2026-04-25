@@ -1,0 +1,14 @@
+{
+  "name": "Hello World",
+  "cy_name": "hello_world",
+  "description": "A simple example task that demonstrates Cy script basics",
+  "script_file": "hello_world.cy",
+  "function": "action",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": ["Examples", "Getting Started"],
+  "tags": ["example", "hello-world"]
+}

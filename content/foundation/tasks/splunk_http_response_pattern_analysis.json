@@ -1,0 +1,136 @@
+{
+  "name": "Splunk: HTTP Response Pattern Analysis",
+  "cy_name": "splunk_http_response_pattern_analysis",
+  "description": "Queries Splunk for HTTP response patterns from firewall and proxy logs for a source IP extracted from the alert. Aggregates status code distributions (2xx successes, 4xx/5xx errors, blocked/denied actions) over a 30-minute window centred on the triggering event. Uses resolve_sourcetypes for runtime CIM-based sourcetype discovery (never hardcoded), with a tstats Web datamodel fallback when CIM mappings are unavailable. LLM determines whether exploitation attempts were successful or blocked and assigns a risk level.",
+  "script_file": "splunk_http_response_pattern_analysis.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "authored_by": "system",
+  "app": "Splunk",
+  "categories": [
+    "Foundation",
+    "firewall",
+    "web_attacks",
+    "exploitation_detection"
+  ],
+  "directive": "You are a senior security analyst specializing in network and web application attack investigation. Your role is to interpret HTTP response patterns from firewall and proxy logs to determine whether exploitation attempts against internal assets were successful or blocked. You reason from evidence: high 2xx rates to suspicious URIs indicate successful exploitation, while predominantly 4xx/5xx or blocked responses indicate defensive controls held. When log data is absent, you report insufficient data rather than speculate.",
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 500
+  },
+  "data_samples": [
+    {
+      "name": "Firewall alert — IP from observable, CIM resolution succeeds",
+      "description": "Happy path: source_category=Firewall resolves via CIM. IP comes from primary observable.",
+      "input": {
+        "triggering_event_time": "2025-12-11T03:30:42Z",
+        "severity": "high",
+        "enrichments": {},
+        "title": "Suspicious Outbound HTTP from Firewall",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound HTTP from Firewall",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Firewall Exploitation Attempt Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "Firewall Exploitation Attempt Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "185.220.101.45"
+            },
+            "connection_info": {
+              "protocol_name": "tcp"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IDS alert — IP from evidences src_endpoint, CIM resolution fails (tstats fallback)",
+      "description": "Fallback path: source_category=IDS_IPS has no CIM mappings, resolve_sourcetypes throws, tstats Web datamodel fallback executes. IP extracted from evidences[].src_endpoint.ip because observables is empty.",
+      "input": {
+        "triggering_event_time": "2025-12-11T03:30:42Z",
+        "severity": "high",
+        "enrichments": {
+          "alert_context_generation": {
+            "ai_analysis": "IDS detected multiple HTTP exploit signatures from external IP 203.0.113.77 targeting internal web server 192.168.1.100 on port 80. Patterns suggest SQL injection and directory traversal attempts."
+          }
+        },
+        "title": "Suspicious HTTP Traffic Detected",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious HTTP Traffic Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "IDS HTTP Exploit Attempt",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "IDS HTTP Exploit Attempt",
+        "metadata": {
+          "labels": [
+            "source_category:IDS_IPS"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.77"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Alert with no extractable IP — early return",
+      "description": "Edge case: both observables and evidences src_endpoint are absent. Task returns immediately with status=skipped, no Splunk call is made.",
+      "input": {
+        "triggering_event_time": "2025-12-11T03:30:42Z",
+        "severity": "medium",
+        "enrichments": {},
+        "title": "Web Application Attack Detected",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Web Application Attack Detected",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "WAF Rule Triggered",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "rule_name": "WAF Rule Triggered",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": []
+      }
+    }
+  ]
+}

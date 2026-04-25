@@ -1,0 +1,187 @@
+{
+  "id": "ciscowebex",
+  "app": "ciscowebex",
+  "name": "Cisco Webex",
+  "version": "1.0.0",
+  "description": "Integrate with Cisco Webex to send messages, manage rooms (spaces), and look up users",
+  "archetypes": [
+    "Communication"
+  ],
+  "priority": 55,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "bot_token": {
+        "type": "string",
+        "description": "Webex Bot Access Token (Bearer token for API authentication)",
+        "format": "password"
+      }
+    },
+    "required": [
+      "bot_token"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30
+      }
+    },
+    "required": []
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Cisco Webex by verifying bot credentials",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a Webex room (space) or direct to a user by email",
+      "categories": [
+        "notification"
+      ],
+      "cy_name": "send_message",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "room_id": {
+            "type": "string",
+            "description": "Room (space) ID to send message to. Required if to_person_email is not set."
+          },
+          "to_person_email": {
+            "type": "string",
+            "description": "Email address to send a direct message to. Required if room_id is not set."
+          },
+          "text": {
+            "type": "string",
+            "description": "Plain text message. Required if markdown is not set."
+          },
+          "markdown": {
+            "type": "string",
+            "description": "Markdown-formatted message. Required if text is not set."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_rooms",
+      "name": "List Rooms",
+      "description": "List Webex rooms (spaces) the bot is a member of",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_rooms",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of rooms to return (default 100)"
+          },
+          "room_type": {
+            "type": "string",
+            "description": "Filter by room type",
+            "enum": [
+              "direct",
+              "group"
+            ]
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "create_room",
+      "name": "Create Room",
+      "description": "Create a new Webex room (space)",
+      "categories": [
+        "generic"
+      ],
+      "cy_name": "create_room",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the new room"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get details for a Webex user by ID or email",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_user",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "person_id": {
+            "type": "string",
+            "description": "Webex person ID. Required if email is not set."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address to look up. Required if person_id is not set."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List Webex users in the organization, optionally filtered by email or display name",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "list_users",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Filter by exact email address"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Filter by display name (prefix match)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of users to return (default 100)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "Communication": {
+      "send_message": "send_message",
+      "post_to_channel": "send_message",
+      "create_channel": "create_room"
+    }
+  }
+}

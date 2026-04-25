@@ -1,0 +1,321 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Background
+
+# Summary
+
+AI Agents perform **Tasks** — such as transforming data, explaining complex information, or making decisions. Each Task has one or more inputs and produces one or more outputs. To perform these Tasks, Agents rely on **Knowledge Units (KUs)** — reusable components of information or capability.
+
+There are three types of Knowledge Units:
+
+* **Directives** – Short text blocks that encode advice, instructions, or contextual information needed during task execution.  
+* **Tables** – Structured lists of information (e.g., allow-listed software, known bad actors). Tables may support semantic search through a vector database.  
+* **Documents** \- These are unstructured documents (imported from PDF, copy pasted text, etc.) that are referenced during a Task.   
+* **Tools** – External interfaces that fetch or compute information dynamically (e.g., querying a database or performing a web search). Tools are often accessed via MCP (Model Context Protocol) APIs.
+
+Tasks **consume** Knowledge Units, and Knowledge Units may **reference or build on each other** — for example, a Directive might incorporate another Directive or use entries from a Table. For better re-usability, KUs can be combined together into Knowledge Modules making it easier for them to be re-used together.  
+
+All these relationships — between Tasks, Tools, Directives, and Tables — are captured in a **Knowledge Graph**, enabling traceability, visualization, and advanced analysis.
+
+## Key Terms
+
+* **Task**: An action performed by an AI agent. Tasks have inputs and outputs (like functions) and may depend on KUs.  
+* **Task Graphs**: Tasks may be chained together to achieve more complicated tasks. These form Task Graphs.   
+  * We will expand on this in future design docs.   
+* **Directive**: A textual knowledge unit representing advice, rules, or guidance used during task execution.  
+* **Document**: Context used while executing a task. The document can be referenced in its entirety or can be split into chunks searchable via vector similarity using a vector database (think RAG).    
+* **Table**: A structured dataset used for lookup or reasoning. May support semantic search via vector indexing.  
+* **Tool**: An external callable interface used to retrieve or compute dynamic knowledge at runtime.  
+* **Knowledge Unit (KU)**: A reusable unit of knowledge (Directive, Table, or Tool) consumed by Tasks.  
+* **Knowledge Module (KM)**: A group of KUs that can be used as a group to facilitate re-usability.   
+* **Knowledge Graph**: The network capturing dependencies and relationships between Tasks and Knowledge Units.
+
+# Main Concepts
+
+## Tasks 
+
+In its simplest form, a task is performed as a unit of work performed by an AI agent. It has inputs and outputs related to the task and makes use of KUs or KMs to achieve said task. (Tasks technically depend on individual Knowledge Units. Knowledge Modules exist as reusable groupings of KUs, which are expanded into their constituent units during execution or dependency resolution.)
+
+The majority of the Tasks are going to be provided by the system. Users can independently test and modify tasks (see Interacting with Tasks subsection below) as well as build new tasks.
+
+In the future, tasks may also be scheduled (say run once a day, etc.), but for now we park this idea to simplify our MVP. 
+
+### Organizing Task 
+
+Here we explain how tasks are organized into different sub-categories.
+
+#### Task Function
+
+Tasks can serve different functions:
+
+* **Summarization**: A complex piece of information (e.g., a large JSON document) is summarized to its fundamentals.   
+* **Data Conversion:** Convert from one representation of the data to another.    
+* **Extraction**: Extract information from a larger corpus.   
+* **Decision Making**: When information is combined to make a decision, such as when deciding if an IP is malicious based on a set of observations.   
+* **Planning**: When a bigger problem is decomposed into a smaller set of sub-tasks.   
+  * While Tasks are currently executed explicitly, future versions may introduce Agent Planning layers that dynamically select and sequence tasks based on goals.  
+  * Only a small subset of tasks today may generate a Graph of Tasks that need to be executed  
+* **Visualization**:  When a piece of information is converted from Text to Visual.   
+* **Search:** Given a vector table, find the most relevant entries.
+
+Generic Tasks offer ways for our users to provide feedback on a particular task.
+
+#### Task Scope
+
+Tasks have a Scope that describe where in the processing pipeline they are applied. 
+
+* **Input Tasks**: Deal with how we import data into the system.  
+  * Example: Convert ingested data to our internal representation  
+* **Output Tasks**: Deal with how we export/sync information out of the system  
+  * Example: Sync Disposition to Splunk Task  
+* **Processing Tasks**: How we process information internally   
+  * Example: Select the best Runbook for this particular Alert
+
+### Example Tasks
+
+* Convert Splunk Notable to our internal Alert Representation  
+  * Scope: Input  
+  * Function: Data Conversion   
+* Summarize a Palo Alto THREAT Event  
+  * Scope: Processing  
+  * Function: Summarize  
+* Summarize a VirusTotal report  
+  * Scope: Processing  
+  * Function: Summarize  
+* Select the proper Runbook to use for  investigating a particular Alert  
+  * Scope: Processing  
+  * Function: Search  
+* Find Alerts that are similar to the current Alert  
+  * Scope: Processing  
+  * Function: Search  
+* Extract Artifacts from a Palo Alto Traffic event  
+  * Scope: Processing  
+  * Function: Extraction  
+* Map our Disposition to the Disposition used by a customer  
+  * Scope: Output  
+  * Function: Data Conversion
+
+### Task Execution Runs 
+
+Captures I/O examples for all tasks for audit, experimentation, and transparency. 
+
+Fields
+
+* id (PK)  
+* task\_id (FK)  
+* input  
+* output  
+* duration  
+* start Time  
+* end Time  
+* status: {running, completed, failed, stopped}  
+* feedback  
+  * thumbs up/down  
+  * Comments
+
+### Fields
+
+Simple Fields
+
+* id (PK)  
+* name  
+* description  
+* function: summarization, planning, etc.  
+* scope: input, processing, output (1 to many)  
+* status: active, deprecated, experimental  
+* owner: system or a user that created it  
+* authored\_by: (system vs. user-generated)  
+* usage\_stats: number of times used, last used  
+* visible: If the task should be visible to the users or only be used by the system  
+* example executions of the task: Show the corresponding inputs and outputs (through FK)  
+  * Show the best examples (thumbs up)  
+  * Show problematic examples (thumbs down)  
+* Dependencies (through FK)  
+  * KUs or KMs  
+  * KUs (Tools, Directives, Tables)  
+* Embedding to make it searchable (on description)
+
+### Manually Interacting with Tasks (Workbench Functionality)
+
+* Test Mode  
+  * Create an input for the tasks and see what’s the corresponding output  
+* Modify Dependencies  
+  * Change which directives are used
+
+### Knowledge Modules
+
+Often tasks can form hierarchies based on how specific they are. Let’s show this with an example:
+
+Text Summarizer   
+	→ Log Event Summarizer   
+		→ Palo Alto Event Summarizer   
+			→ Palo Alto THREAT Event Summarizer  
+			→ Palo Alto TRAFFIC Event Summarizer  
+		→ Cisco Event Summarizer  
+	→ Report Summarizer  
+	…
+
+* **Text Summarizer:** This is the highest-level task, responsible for general text summarization.  
+* **Log Event Summarizer:** This is a more specific type of summarization focusing on summarizing log events.  
+* **Palo Alto Event Summarizer:** This further narrows down to summarizing events from Palo Alto systems.  
+* **Palo Alto THREAT Event Summarizer:** This is the most specific task, focused on summarizing THREAT events from Palo Alto.
+
+To better facilitate re-use, we can make use of Knowledge Modules. A KM for Text Summarization can be used by all types of summarization tasks. Note that the relationships between Tasks is just used here for illustration purposes. Tasks depend only on KUs. And KUs may build upon each other.
+
+### Relationships
+
+* Many-to-many with KUs and KMs
+
+## Knowledge Units (KUs)
+
+This is the base class essentially for the different types of Knowledge Units (KUs) that we will expand next. 
+
+#### Common Components of a Knowledge Unit (KU)
+
+| Field | Description |
+| :---- | :---- |
+| `id` | Unique identifier (UUID or auto-incremented ID) |
+| `name` | Human-readable name |
+| `description` | Short summary of the KU's purpose or use case |
+| `type` | Enum: `directive`, `table`, `tool` — used for filtering and icons |
+| `authored_by` | `system` or `user-generated` — indicates origin |
+| `owner` | User or system entity that created or owns this KU |
+| `created_at` | Timestamp of creation |
+| `updated_at` | Timestamp of last update |
+| `usage_stats` | Number of times used, last used timestamp |
+| `visibility` | Public/private/internal — for tenanting or scoping |
+| `tags` | Optional labels or categories (e.g., `threat-intel`, `network`) |
+| `dependencies` | List of other KU IDs it references (self-referential) |
+| `embedding_vector` | (Optional) Vector for semantic search on description/content |
+| `source_document_id` | (Optional) ID for provenance, if extracted from a doc or system integration |
+| `version` | As we make updates it’s good to be able to go back and view and compare earlier versions |
+
+#### Optional UI-Related Fields
+
+| Field | Description |
+| :---- | :---- |
+| `status` | Enum: `active`, `deprecated`, `experimental` — for filtering and status badges |
+| `editable` | Boolean — whether this KU is editable by the current user |
+
+## Tables
+
+Tabulated lists of information that can be referenced to by directives and used by tasks. Some examples of tables include: 
+
+* List of admins  
+* List of crown jewels  
+* Domain controllers  
+* Internal IP ranges  
+* Departing employees  
+* Allowed listed software
+
+List can only include Vector information to be searchable via embedding similarity. Examples are: 
+
+* Runbooks  
+* Historical Alerts  
+* Task Specific Examples
+
+### Fields
+
+* id (PK)  
+* name  
+* description  
+* data\_type (tabular vs vector-based)  
+* embedding\_metadata (optional if vector)  
+* source\_document\_id to track provenance for tables auto-generated from a doc (good for audit/logging).  
+* authored\_by (system vs. user-generated)  
+* Embedding to make it searchable (on description)  
+* Embedding on content (periodically updated, good for infrequent updates)
+
+### Relationships
+
+* many-to-many with Task  
+* many-to-many with Directive
+
+## Directives
+
+These are short paragraphs that represent advice, an instruction, a suggestion, or information to be used while executing a task. Directives can reference other directives and Tables. 
+
+Example: 
+
+* “When using Threat Intelligence, always give higher priority to inputs from VirusTotal that have at least 10 VTs matching”   
+* “If the user is part of the following list, it’s ok for them to access our Internal Database as long as it's part of the allowed list of Databases. 
+
+  List of allowed user:  
+  ${admin\_users\_table}
+
+  List of allowed databases:  
+  ${database\_ips\_table}  
+  ” 
+
+### Fields
+
+* id (PK)  
+* name  
+* description  
+* content (text)  
+* dependencies to other KUs  
+* authored\_by (system vs. user-generated)  
+* source\_document\_id to track provenance for tables auto-generated from a doc (good for audit/logging)  
+* Embedding to make it searchable  
+* Embedding on content (periodically updated, good for infrequent updates)
+
+### Relationships
+
+* many-to-many with Task  
+* self-referencing many-to-many for directive chaining  
+* many-to-many with Table
+
+## Tools
+
+Tasks can use tools to achieve their goals. All tools are defined using the Model Context Protocol (MCP) standard. Users can define new Tools and allow tasks to use them.  New tools need to be explicitly added to tasks in order to be usable by them. 
+
+### Type-Specific Metadata (for Tool KUs)
+
+- `mcp_endpoint`  
+- `integration_id` (optional, for audit/inventory)
+
+### Fields
+
+* id (PK)  
+* name  
+* Description  
+* Mcp\_endpoint  
+* authored\_by (system vs. user-generated)  
+* source\_document\_id to track provenance for tables auto-generated from a doc (good for audit/logging)  
+  * This is typically via an Integration
+
+### Relationships
+
+* many-to-many with Task  
+* Open question: Should directives rely on Tools?   
+  * Thought: Avoid letting Directives directly depend on Tools. Tools imply execution. Directives should remain declarative and static. If a Directive must reference dynamic data, it should do so indirectly via a Task that calls a Tool.
+
+## Documents
+
+Documents are unstructured text-based resources (e.g., PDFs, pasted text, extracted web content) that can be referenced by Tasks or Directives. They are primarily used to provide supporting information, such as policy documents, playbooks, or vendor manuals. Documents may be retrieved in full or chunked into segments and stored in a vector database for semantic retrieval (RAG workflows).
+
+While Directives typically express concise logic or instructions, Documents serve as broader, referenceable sources of contextual knowledge.
+
+### Fields
+
+* id (PK)  
+* name  
+* description  
+* document\_type: pdf, markdown, html, plaintext  
+* content\_source: upload, API, integration  
+* authored\_by: system vs. user-generated  
+* source\_url (optional)  
+* embedding\_metadata (e.g., chunking strategy)  
+* vectorized: boolean  
+* embedding\_on\_content: generated for semantic search  
+* created\_at / updated\_at  
+* visibility: public/private/internal
+
+### Relationships
+
+* many-to-many with Task  
+* many-to-many with Directive  
+* Referenced by other KUs (e.g., through `${document_name}` placeholders)

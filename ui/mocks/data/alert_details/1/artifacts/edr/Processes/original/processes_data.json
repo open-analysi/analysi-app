@@ -1,0 +1,44 @@
+[
+  {
+    "eventTime": "No Event Time",
+    "MD5": "E9CABAAACF0E50A55DF49698C0800D4B",
+    "Size": "1.72 MB",
+    "Path": "c:/program files (x86)/google/chrome/application/chrome.exe",
+    "Image Path": "c:/program files (x86)/google/chrome/application/chrome.exe",
+    "processName": "Chrome.exe",
+    "commandLine": "c:/program files (x86)/google/chrome/application/chrome.exe"
+  },
+  {
+    "eventTime": "No Event Time",
+    "MD5": "aba0a9709e6c11bc0b6ee21de36743e3",
+    "Path": "c:/program files (x86)/symantec/symantec endpoint protection/14/bin/ccsvchst.exe",
+    "Image Path": "c:/program files (x86)/symantec/symantec endpoint protection/14/bin/ccsvchst.exe",
+    "Size": "142.45 KB",
+    "processName": "ccsvchst.exe",
+    "commandLine": "c:/program files (x86)/symantec/symantec endpoint protection/14/bin/ccsvchst.exe"
+  },
+  {
+    "eventTime": "No Event Time",
+    "MD5": "FC2EA5BD5307D2CFA5AAA38E0C0DDCE9",
+    "Size": "216 KB",
+    "Path": "c:/windows/system32/notepad.exe",
+    "Image Path": "c:/windows/system32/notepad.exe",
+    "processName": "notepad.exe",
+    "commandLine": "c:/windows/system32/notepad.exe"
+  },
+  {
+    "eventTime": "No Event Time",
+    "MD5": "7353f60b1739074eb17c5f4dddefe239",
+    "processName": "powershell.exe",
+    "commandLine": "Get-ChildItem Desktop"
+  },
+  {
+    "eventTime": "20.09.2020 14:51",
+    "MD5": "357b03e0b8d0c30713f2c41ce60583c5",
+    "Path": "c:/program files (x86)/adobe/acrobat reader dc/reader/acrord32.exe",
+    "Image Path": "c:/program files (x86)/adobe/acrobat reader dc/reader/acrord32.exe",
+    "Start Time": "20.09.2020 14:51",
+    "processName": "AcroRd32.exe",
+    "commandLine": "c:/program files (x86)/adobe/acrobat reader dc/reader/acrord32.exe"
+  }
+]

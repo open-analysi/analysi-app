@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "qrcode-integration",
+  "cy_name": "qrcode_integration",
+  "description": "Decode QR codes from images during quishing and phishing investigations using the Analysi QR Code integration. Use when triaging phishing alerts with QR codes, extracting URLs from embedded images, or building quishing investigation workflows."
+}

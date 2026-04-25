@@ -1,0 +1,204 @@
+{
+  "id": "virustotal",
+  "app": "virustotal",
+  "name": "VirusTotal",
+  "version": "1.0.0",
+  "description": "VirusTotal threat intelligence integration for IP, domain, URL, and file hash reputation checks",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 80,
+  "integration_id_config": {
+    "default": "virustotal-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "virustotal-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this integration"
+  },
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "ip_reputation",
+      "lookup_domain": "domain_reputation",
+      "lookup_file_hash": "file_reputation",
+      "lookup_url": "url_reputation"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "VirusTotal API key",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Check connectivity to VirusTotal API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Get reputation information for an IP address",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "ip_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to check (IPv4 or IPv6)"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get reputation information for a domain",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "domain_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Get reputation information for a URL",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "url_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to check"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Get reputation information for a file hash (MD5, SHA1, or SHA256)",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "file_reputation",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "File hash to check (MD5, SHA1, or SHA256)"
+          }
+        },
+        "required": [
+          "file_hash"
+        ]
+      }
+    },
+    {
+      "id": "submit_url_analysis",
+      "name": "Submit URL Analysis",
+      "description": "Submit a URL for analysis",
+      "categories": [
+        "threat_intel",
+        "analysis"
+      ],
+      "cy_name": "submit_url_analysis",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to submit for analysis"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "id": "get_analysis_report",
+      "name": "Get Analysis Report",
+      "description": "Get the analysis report for a submitted URL",
+      "categories": [
+        "threat_intel",
+        "analysis"
+      ],
+      "cy_name": "get_analysis_report",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "description": "Analysis ID returned from submit_url_analysis"
+          }
+        },
+        "required": [
+          "analysis_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

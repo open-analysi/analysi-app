@@ -1,0 +1,100 @@
+# Production Full: All managed services (RDS, S3, ElastiCache, external Vault)
+# Usage: helm install analysi . -f values/prod-full.yaml
+
+global:
+  environment: production
+
+  database:
+    host: analysi-db.xxxx.us-east-1.rds.amazonaws.com
+    port: 5432
+    name: analysi
+    user: analysiuser
+    # Override via ExternalSecret/--set at deploy time. The placeholder keeps
+    # `helm template` valid; deploys without override are obviously broken.
+    password: OVERRIDE_AT_DEPLOY_TIME
+
+  valkey:
+    # ElastiCache endpoint
+    host: analysi-cache.xxxx.cache.amazonaws.com
+    port: 6379
+    password: OVERRIDE_AT_DEPLOY_TIME  # via ExternalSecret
+
+  minio:
+    endpoint: s3.us-east-1.amazonaws.com
+    bucket: analysi-production
+    artifactsBucket: analysi-artifacts-production
+    accessKey: OVERRIDE_AT_DEPLOY_TIME  # via IRSA
+    secretKey: OVERRIDE_AT_DEPLOY_TIME
+
+  vault:
+    host: vault.internal.example.com
+    port: 8200
+    token: OVERRIDE_AT_DEPLOY_TIME  # via Vault Agent injector
+
+  auth:
+    mode: oidc
+    jwksUri: https://auth.example.com/realms/analysi/protocol/openid-connect/certs
+    issuer: https://auth.example.com/realms/analysi
+    audience: analysi-app
+    systemApiKey: OVERRIDE_AT_DEPLOY_TIME
+
+api:
+  replicaCount: 3
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+    hosts:
+      - host: api.analysi.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: analysi-tls
+        hosts:
+          - api.analysi.example.com
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+alertsWorker:
+  replicaCount: 4
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+integrationsWorker:
+  replicaCount: 2
+
+# All infrastructure is external — disable all sub-charts
+postgresql:
+  enabled: false
+  partitioning:
+    enabled: true
+    retention:
+      # Production retention defaults (must match or override the baseline migration)
+      task_runs: "90 days"
+      artifacts: "90 days"
+      alerts: "180 days"
+      alert_analyses: "180 days"
+      workflow_runs: "90 days"
+      workflow_node_instances: "90 days"
+      workflow_edge_instances: "90 days"
+      activity_audit_trails: "365 days"
+      control_events: "90 days"
+valkey:
+  enabled: false
+minio:
+  enabled: false
+vault:
+  enabled: false

@@ -1,0 +1,501 @@
+{
+  "id": "thehive",
+  "app": "thehive",
+  "name": "TheHive",
+  "version": "1.0.0",
+  "description": "Open-source incident response platform for managing cases, alerts, tasks, and observables in security investigations",
+  "archetypes": ["TicketingSystem"],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "thehive-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "thehive-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this TheHive integration instance"
+  },
+
+  "archetype_mappings": {
+    "TicketingSystem": {
+      "create_ticket": "create_ticket",
+      "get_ticket_status": "get_ticket",
+      "update_ticket": "update_ticket",
+      "add_comment": "create_task_log"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "TheHive API key for authentication (used as Bearer token)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "TheHive server URL including port (e.g. https://thehive.example.com:9000)",
+        "placeholder": "https://thehive.example.com:9000"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL",
+        "description": "Verify SSL certificates for API connections",
+        "default": false
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to TheHive API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new case (ticket) in TheHive",
+      "categories": ["ticketing"],
+      "cy_name": "create_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the case"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the case"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Severity level (Low, Medium, High)",
+            "enum": ["Low", "Medium", "High"],
+            "default": "Medium"
+          },
+          "tlp": {
+            "type": "string",
+            "description": "Traffic Light Protocol level",
+            "enum": ["White", "Green", "Amber", "Red"],
+            "default": "Amber"
+          },
+          "owner": {
+            "type": "string",
+            "description": "User to assign the case to"
+          },
+          "fields": {
+            "type": "string",
+            "description": "JSON string containing additional field values"
+          }
+        },
+        "required": ["title", "description"]
+      }
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get case (ticket) details by ID",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "get_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "TheHive ticket ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update an existing case (ticket)",
+      "categories": ["ticketing"],
+      "cy_name": "update_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "TheHive ticket ID"
+          },
+          "fields": {
+            "type": "string",
+            "description": "JSON string containing field values to update"
+          }
+        },
+        "required": ["id", "fields"]
+      }
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List all cases (tickets)",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "list_tickets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "search_ticket",
+      "name": "Search Ticket",
+      "description": "Search for cases using a JSON query",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "search_ticket",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search_ticket": {
+            "type": "string",
+            "description": "JSON string containing search query"
+          }
+        },
+        "required": ["search_ticket"]
+      }
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create a new alert in TheHive",
+      "categories": ["ticketing"],
+      "cy_name": "create_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the alert"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the alert"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the alert"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the alert"
+          },
+          "source_ref": {
+            "type": "string",
+            "description": "Source reference identifier"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Severity level (Low, Medium, High)",
+            "enum": ["Low", "Medium", "High"],
+            "default": "Medium"
+          },
+          "tlp": {
+            "type": "string",
+            "description": "Traffic Light Protocol level",
+            "enum": ["White", "Green", "Amber", "Red"],
+            "default": "Amber"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags"
+          },
+          "artifacts": {
+            "type": "string",
+            "description": "JSON list of artifact objects"
+          },
+          "case_template": {
+            "type": "string",
+            "description": "Case template to use when promoting to case"
+          }
+        },
+        "required": ["title", "description", "type", "source", "source_ref"]
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get alert details by ID",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "TheHive alert ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all alerts",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "list_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "create_task",
+      "name": "Create Task",
+      "description": "Create a task within a case",
+      "categories": ["ticketing"],
+      "cy_name": "create_task",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Case ID to create the task in"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the task"
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status",
+            "enum": ["Waiting", "InProgress", "Completed", "Cancel"]
+          }
+        },
+        "required": ["id", "title", "status"]
+      }
+    },
+    {
+      "id": "update_task",
+      "name": "Update Task",
+      "description": "Update an existing task",
+      "categories": ["ticketing"],
+      "cy_name": "update_task",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "description": "Task ID to update"
+          },
+          "task_title": {
+            "type": "string",
+            "description": "New title for the task"
+          },
+          "task_owner": {
+            "type": "string",
+            "description": "New owner for the task"
+          },
+          "task_status": {
+            "type": "string",
+            "description": "New status for the task",
+            "enum": ["Waiting", "InProgress", "Completed", "Cancel"]
+          },
+          "task_description": {
+            "type": "string",
+            "description": "New description for the task"
+          }
+        },
+        "required": ["task_id"]
+      }
+    },
+    {
+      "id": "search_task",
+      "name": "Search Task",
+      "description": "Search for tasks using a JSON query",
+      "categories": ["ticketing", "investigation"],
+      "cy_name": "search_task",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "search_task": {
+            "type": "string",
+            "description": "JSON string containing search query"
+          }
+        },
+        "required": ["search_task"]
+      }
+    },
+    {
+      "id": "create_task_log",
+      "name": "Create Task Log",
+      "description": "Create a log entry for a task",
+      "categories": ["ticketing"],
+      "cy_name": "create_task_log",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "description": "Task ID to add log to"
+          },
+          "message": {
+            "type": "string",
+            "description": "Log message content"
+          }
+        },
+        "required": ["task_id", "message"]
+      }
+    },
+    {
+      "id": "get_observables",
+      "name": "Get Observables",
+      "description": "Get observables for a case, optionally filtered by data type",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_observables",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "Case ID to get observables from"
+          },
+          "data_type": {
+            "type": "string",
+            "description": "Filter by observable data type (e.g. ip, domain, hash)"
+          }
+        },
+        "required": ["ticket_id"]
+      }
+    },
+    {
+      "id": "create_observable",
+      "name": "Create Observable",
+      "description": "Create an observable (artifact) in a case or alert",
+      "categories": ["ticketing", "enrichment"],
+      "cy_name": "create_observable",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Case or alert ID"
+          },
+          "data_type": {
+            "type": "string",
+            "description": "Observable data type (e.g. ip, domain, url, hash)"
+          },
+          "data": {
+            "type": "string",
+            "description": "Observable value"
+          },
+          "tlp": {
+            "type": "string",
+            "description": "Traffic Light Protocol level",
+            "enum": ["White", "Green", "Amber", "Red"],
+            "default": "Amber"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the observable"
+          },
+          "ticket_type": {
+            "type": "string",
+            "description": "Whether this belongs to a Ticket or Alert",
+            "enum": ["Ticket", "Alert"],
+            "default": "Ticket"
+          },
+          "ioc": {
+            "type": "boolean",
+            "description": "Mark as IOC",
+            "default": false
+          },
+          "sighted": {
+            "type": "boolean",
+            "description": "Mark as sighted",
+            "default": false
+          },
+          "ignore_similarity": {
+            "type": "boolean",
+            "description": "Ignore similarity",
+            "default": false
+          }
+        },
+        "required": ["id", "data_type", "data"]
+      }
+    },
+    {
+      "id": "add_ttp",
+      "name": "Add TTP",
+      "description": "Add a MITRE ATT&CK TTP (procedure) to a case",
+      "categories": ["ticketing", "enrichment"],
+      "cy_name": "add_ttp",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Case ID to add the TTP to"
+          },
+          "pattern_id": {
+            "type": "string",
+            "description": "MITRE ATT&CK pattern ID (e.g. T1059)"
+          },
+          "tactic": {
+            "type": "string",
+            "description": "MITRE ATT&CK tactic name (e.g. execution, persistence)"
+          },
+          "occur_date": {
+            "type": "integer",
+            "description": "Occurrence date as epoch milliseconds"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the procedure"
+          }
+        },
+        "required": ["id", "pattern_id", "tactic"]
+      }
+    }
+  ]
+}

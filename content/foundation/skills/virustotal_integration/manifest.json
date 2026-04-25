@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "virustotal-integration",
+  "cy_name": "virustotal_integration",
+  "description": "VirusTotal threat intelligence lookups for SOC alert triage via Analysi. Use when checking IP, domain, URL, or file hash reputation, investigating malware indicators, correlating threat data across detection engines, or enriching alerts with crowd-sourced detection results."
+}

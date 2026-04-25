@@ -1,0 +1,239 @@
+{
+  "id": "jamf",
+  "app": "jamf",
+  "name": "Jamf Pro",
+  "version": "1.0.0",
+  "description": "Jamf Pro MDM integration for Apple device management, endpoint security, and mobile device management",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 60,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "jamf-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "jamf-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Jamf Pro integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "get_host_details": "get_device",
+      "isolate_host": "lock_device"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "Jamf Pro username (LDAP or local account)",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "Jamf Pro password",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Jamf Pro instance URL (e.g., https://yourcompany.jamfcloud.com)",
+        "placeholder": "https://yourcompany.jamfcloud.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity and authentication with the Jamf Pro instance",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device",
+      "description": "Get detailed information about a managed computer/device by ID",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Computer ID in Jamf Pro"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List or search managed computers in Jamf Pro",
+      "categories": [
+        "investigation",
+        "discovery"
+      ],
+      "cy_name": "list_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Optional search/match string to filter computers"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_mobile_device",
+      "name": "Get Mobile Device",
+      "description": "Get detailed information about a managed mobile device by ID",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_mobile_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Mobile device ID in Jamf Pro"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "list_mobile_devices",
+      "name": "List Mobile Devices",
+      "description": "List managed mobile devices in Jamf Pro",
+      "categories": [
+        "investigation",
+        "discovery"
+      ],
+      "cy_name": "list_mobile_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lock_device",
+      "name": "Lock Device",
+      "description": "Send a remote lock command to a managed computer",
+      "categories": [
+        "response",
+        "containment"
+      ],
+      "cy_name": "lock_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Computer ID to lock"
+          },
+          "passcode": {
+            "type": "string",
+            "description": "Lock passcode (6-digit string, defaults to 000000)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "wipe_device",
+      "name": "Wipe Device",
+      "description": "Send a remote wipe (erase) command to a managed computer",
+      "categories": [
+        "response"
+      ],
+      "cy_name": "wipe_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Computer ID to wipe"
+          },
+          "passcode": {
+            "type": "string",
+            "description": "Wipe passcode (6-digit string, defaults to 000000)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get information about a Jamf Pro user by username",
+      "categories": [
+        "investigation"
+      ],
+      "cy_name": "get_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username to look up"
+          }
+        },
+        "required": [
+          "username"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "id": "carbonblack",
+  "app": "carbonblack",
+  "name": "Carbon Black Cloud",
+  "version": "1.0.0",
+  "description": "Carbon Black Cloud EDR integration for endpoint security, device management, alert investigation, and threat response",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "carbonblack-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "carbonblack-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Carbon Black Cloud integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "quarantine_device",
+      "release_host": "unquarantine_device",
+      "get_host_details": "get_device",
+      "quarantine_file": "ban_hash"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Secret Key",
+        "description": "Carbon Black Cloud API Secret Key",
+        "format": "password",
+        "required": true
+      },
+      "api_id": {
+        "type": "string",
+        "display_name": "API ID",
+        "description": "Carbon Black Cloud API ID",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "org_key": {
+        "type": "string",
+        "display_name": "Organization Key",
+        "description": "Carbon Black Cloud Organization Key",
+        "required": true
+      },
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Carbon Black Cloud instance URL",
+        "default": "https://defense.conferdeploy.net",
+        "placeholder": "https://defense.conferdeploy.net"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity and authentication with Carbon Black Cloud API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device",
+      "description": "Get device/endpoint details by device ID",
+      "categories": ["investigation"],
+      "cy_name": "get_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Carbon Black Cloud device ID"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "search_devices",
+      "name": "Search Devices",
+      "description": "Search for devices/endpoints by query or criteria",
+      "categories": ["investigation", "discovery"],
+      "cy_name": "search_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query string"
+          },
+          "criteria": {
+            "type": "object",
+            "description": "Structured search criteria (e.g., {\"os\": [\"WINDOWS\"]})"
+          },
+          "rows": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 50
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting offset for pagination",
+            "default": 0
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Isolate/quarantine a device to prevent lateral movement",
+      "categories": ["response", "containment"],
+      "cy_name": "quarantine_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID to quarantine"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Release a device from quarantine/isolation",
+      "categories": ["response", "containment"],
+      "cy_name": "unquarantine_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "Device ID to unquarantine"
+          }
+        },
+        "required": ["device_id"]
+      }
+    },
+    {
+      "id": "search_processes",
+      "name": "Search Processes",
+      "description": "Search process events across endpoints",
+      "categories": ["investigation", "threat_hunting"],
+      "cy_name": "search_processes",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Process search query string"
+          },
+          "criteria": {
+            "type": "object",
+            "description": "Structured search criteria"
+          },
+          "rows": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 50
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting offset",
+            "default": 0
+          },
+          "time_range": {
+            "type": "object",
+            "description": "Time range filter (e.g., {\"window\": \"-1d\"})"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get alert details by alert ID",
+      "categories": ["investigation"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Carbon Black Cloud alert ID"
+          }
+        },
+        "required": ["alert_id"]
+      }
+    },
+    {
+      "id": "search_alerts",
+      "name": "Search Alerts",
+      "description": "Search alerts by query or criteria",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "search_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Alert search query string"
+          },
+          "criteria": {
+            "type": "object",
+            "description": "Structured search criteria (e.g., {\"minimum_severity\": 5})"
+          },
+          "rows": {
+            "type": "integer",
+            "description": "Maximum number of results",
+            "default": 50
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting offset",
+            "default": 0
+          },
+          "sort": {
+            "type": ["string", "array"],
+            "description": "Sort field(s) (e.g., {\"field\": \"severity\", \"order\": \"DESC\"})"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "ban_hash",
+      "name": "Ban Hash",
+      "description": "Ban a SHA-256 hash by adding it to the organization's banned list",
+      "categories": ["response", "containment"],
+      "cy_name": "ban_hash",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256_hash": {
+            "type": "string",
+            "description": "SHA-256 hash to ban"
+          },
+          "description": {
+            "type": "string",
+            "description": "Reason for banning",
+            "default": "Banned via Analysi"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename (if known)",
+            "default": "Unknown"
+          }
+        },
+        "required": ["sha256_hash"]
+      }
+    },
+    {
+      "id": "unban_hash",
+      "name": "Unban Hash",
+      "description": "Remove a SHA-256 hash from the organization's banned list",
+      "categories": ["response", "containment"],
+      "cy_name": "unban_hash",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256_hash": {
+            "type": "string",
+            "description": "SHA-256 hash to unban"
+          }
+        },
+        "required": ["sha256_hash"]
+      }
+    },
+    {
+      "id": "get_binary",
+      "name": "Get Binary",
+      "description": "Get binary/file metadata by SHA-256 hash from the Unified Binary Store",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "get_binary",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256_hash": {
+            "type": "string",
+            "description": "SHA-256 hash of the binary"
+          }
+        },
+        "required": ["sha256_hash"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

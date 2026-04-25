@@ -1,0 +1,209 @@
+{
+  "id": "rapid7",
+  "app": "rapid7",
+  "name": "Rapid7 InsightVM",
+  "version": "1.0.0",
+  "description": "Rapid7 InsightVM vulnerability management integration for asset discovery, vulnerability assessment, and scan management",
+  "archetypes": [
+    "VulnerabilityManagement"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "rapid7-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "rapid7-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Rapid7 InsightVM integration instance"
+  },
+
+  "archetype_mappings": {
+    "VulnerabilityManagement": {
+      "get_vulnerabilities": "get_vulnerabilities",
+      "get_asset_vulnerabilities": "get_vulnerabilities",
+      "scan_assets": "search_assets"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Rapid7 InsightVM API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Rapid7 InsightVM API base URL (region-specific)",
+        "default": "https://us.api.insight.rapid7.com/vm"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity to Rapid7 InsightVM API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset",
+      "description": "Get asset details by asset ID",
+      "categories": ["investigation", "asset_management"],
+      "cy_name": "get_asset",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "integer",
+            "description": "The numeric ID of the asset to retrieve"
+          }
+        },
+        "required": ["asset_id"]
+      }
+    },
+    {
+      "id": "search_assets",
+      "name": "Search Assets",
+      "description": "Search assets by IP address, hostname, or custom filters",
+      "categories": ["investigation", "asset_management"],
+      "cy_name": "search_assets",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to search for"
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Hostname to search for (contains match)"
+          },
+          "filters": {
+            "type": "string",
+            "description": "JSON array of filter objects (e.g. [{\"field\": \"risk-score\", \"operator\": \"is-less-than\", \"value\": 200000}])"
+          },
+          "match": {
+            "type": "string",
+            "description": "Filter match operator: 'all' (AND) or 'any' (OR)",
+            "default": "all",
+            "enum": ["all", "any"]
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_vulnerabilities",
+      "name": "Get Asset Vulnerabilities",
+      "description": "Retrieve all vulnerability findings for an asset",
+      "categories": ["investigation", "vulnerability_management"],
+      "cy_name": "get_vulnerabilities",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "integer",
+            "description": "The numeric ID of the asset"
+          }
+        },
+        "required": ["asset_id"]
+      }
+    },
+    {
+      "id": "get_vulnerability",
+      "name": "Get Vulnerability Details",
+      "description": "Get detailed information about a specific vulnerability by its ID",
+      "categories": ["investigation", "vulnerability_management"],
+      "cy_name": "get_vulnerability",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "vulnerability_id": {
+            "type": "string",
+            "description": "Vulnerability identifier (e.g. 'apache-httpd-cve-2021-44228')"
+          }
+        },
+        "required": ["vulnerability_id"]
+      }
+    },
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "List recent vulnerability scans",
+      "categories": ["investigation", "vulnerability_management"],
+      "cy_name": "list_scans",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Filter by scan status (e.g. 'finished', 'running')"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of scans to return"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_scan",
+      "name": "Get Scan Details",
+      "description": "Get details and results for a specific scan",
+      "categories": ["investigation", "vulnerability_management"],
+      "cy_name": "get_scan",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_id": {
+            "type": "integer",
+            "description": "The numeric ID of the scan"
+          }
+        },
+        "required": ["scan_id"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

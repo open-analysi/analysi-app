@@ -1,0 +1,297 @@
+# Nightly Integration Tests — runs once per day if main had activity
+# Catches integration test regressions without slowing down PR CI
+name: Nightly Integration Tests
+
+on:
+  schedule:
+    # Run at 03:17 UTC (staggered to avoid GH Actions congestion at :00)
+    - cron: "17 3 * * *"
+  workflow_dispatch:  # Manual trigger — use "Use workflow from" to pick a branch
+    inputs:
+      skip_unit:
+        description: "Skip unit tests (go straight to integration)"
+        type: boolean
+        default: false
+      force_run:
+        description: "Run even if no recent commits (bypass 24h activity check)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: nightly-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  # Namespace suffix for artifacts — prevents collisions when running on multiple branches
+  # Slashes in branch names (e.g. feature/foo) must be sanitized because
+  # upload-artifact rejects '/' in artifact names.
+  # We sanitize REF_SLUG in each job that uploads artifacts.
+  RUN_ID: ${{ github.run_id }}
+
+jobs:
+  # ── Gate: skip if no commits to main in the last 24 hours ──
+  check-activity:
+    name: Check for recent changes
+    # Prevent forks from running scheduled jobs (they lack secrets and waste minutes)
+    if: github.repository == 'open-analysi/analysi-app' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Check for commits in the last 24 hours
+        id: check
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            const isScheduled = context.eventName === 'schedule';
+            const forceRun = '${{ inputs.force_run }}' === 'true';
+
+            // Manual + force_run: skip the API call entirely
+            if (!isScheduled && forceRun) {
+              core.setOutput('has_changes', 'true');
+              core.info('force_run=true — bypassing activity check');
+              return;
+            }
+
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data: commits } = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: 'main',
+              since: yesterday,
+              per_page: 1,
+            });
+            const hasChanges = commits.length > 0;
+            core.setOutput('has_changes', hasChanges.toString());
+            core.info(hasChanges
+              ? `Found commit(s) since ${yesterday} — running integration tests`
+              : `No commits since ${yesterday} — skipping integration tests`
+            );
+
+  # ── Unit Tests first — fail fast before the heavier integration suite ──
+  unit-tests:
+    name: Unit Tests
+    needs: [check-activity]
+    if: |
+      needs.check-activity.outputs.has_changes == 'true'
+      && inputs.skip_unit != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: analysi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry deps
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: poetry-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Run unit tests
+        env:
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+        run: poetry run pytest tests/unit/ -q --tb=short --junitxml=test-results/unit-junit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        if: always()
+        with:
+          name: unit-test-results-${{ env.RUN_ID }}
+          path: test-results/
+
+  # ── Integration Tests (PostgreSQL + Flyway migrations) ──
+  integration-tests:
+    name: Integration Tests
+    needs: [check-activity, unit-tests]
+    # Run if: (a) activity gate passed, AND (b) unit tests passed or were skipped
+    if: |
+      always()
+      && needs.check-activity.outputs.has_changes == 'true'
+      && (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry deps
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: poetry-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Start dependencies and run migrations
+        # Reuses the same docker compose setup as local dev (deps.yml + core.yml).
+        # Starts postgres (custom image with pg_partman), valkey, minio, and
+        # runs flyway-test to migrate analysi_test.
+        run: |
+          cp .env.nightly .env
+          DC="docker compose --env-file .env -f deployments/compose/core.yml -f deployments/compose/deps.yml"
+          $DC up -d postgres valkey minio
+          $DC run --rm minio-init
+          $DC run --rm flyway-test
+
+      - name: Run integration tests
+        env:
+          # Database — must match POSTGRES_EXTERNAL_PORT / creds in .env.nightly
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: "5434"
+          TEST_DB_USER: dev
+          TEST_DB_PASSWORD: devpassword
+          TEST_DB_NAME: analysi_test
+          DATABASE_URL: postgresql+asyncpg://dev:devpassword@localhost:5434/analysi_test
+          USE_POSTGRES_TESTS: "true"
+          # Valkey — must match VALKEY_EXTERNAL_PORT / password in .env.nightly
+          REDIS_HOST: localhost
+          REDIS_PORT: "6380"
+          REDIS_DB: "100"
+          VALKEY_PASSWORD: nightly-valkey-password
+          # MinIO — must match MINIO_EXTERNAL_PORT / creds in .env.nightly
+          MINIO_ENDPOINT: localhost:9000
+          MINIO_ACCESS_KEY: nightly-minio-user
+          MINIO_SECRET_KEY: nightly-minio-password
+          MINIO_BUCKET: analysi-storage-test
+          ARTIFACTS_BUCKET: analysi-storage-test
+          # Disable real LLM calls
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+          # Worker config
+          DISABLE_INTEGRATION_WORKER: "true"
+          ALERT_WORKER_TIMEOUT: "900"
+        run: |
+          poetry run pytest tests/integration/ \
+            -m "integration and not integration_llm and not kind_ci and not requires_api and not requires_vault and not requires_splunk" \
+            -v \
+            --tb=short \
+            --junitxml=test-results/integration-junit.xml \
+            -x \
+            2>&1 | tee test-output.log
+          # Capture exit code from pytest (not tee)
+          exit ${PIPESTATUS[0]}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
+        if: always()
+        with:
+          name: integration-test-results-${{ env.RUN_ID }}
+          path: |
+            test-results/
+            test-output.log
+
+      - name: Post failure summary
+        if: failure()
+        run: |
+          echo "## ❌ Nightly Integration Tests Failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** \`${{ github.ref_name }}\` | **SHA:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Failed tests:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -E "^FAILED" test-output.log | head -20 >> "$GITHUB_STEP_SUMMARY" || echo "See full log for details" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post success summary
+        if: success()
+        run: |
+          echo "## ✅ Nightly Integration Tests Passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** \`${{ github.ref_name }}\` | **SHA:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "All integration tests passed." >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Create GitHub issue on failure for visibility ──
+  notify-failure:
+    name: Notify on failure
+    needs: [integration-tests]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create or update GitHub issue
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            const title = '🔴 Nightly integration tests failing';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const branch = context.ref.replace('refs/heads/', '');
+            const sha = context.sha.substring(0, 8);
+            const body = [
+              `**Nightly integration tests failed** on ${new Date().toISOString().split('T')[0]}`,
+              `**Branch:** \`${branch}\` | **SHA:** \`${sha}\``,
+              '',
+              `[View workflow run](${runUrl})`,
+              '',
+              'This issue is auto-created by the nightly CI and will be updated on subsequent failures.',
+              'Close it once the tests are green again.',
+            ].join('\n');
+
+            // Check for existing open issue with same title
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci-nightly',
+              per_page: 5,
+            });
+            const existing = issues.find(i => i.title === title);
+
+            if (existing) {
+              // Add a comment to existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Still failing as of ${new Date().toISOString().split('T')[0]}: [run](${runUrl})`,
+              });
+              core.info(`Updated existing issue #${existing.number}`);
+            } else {
+              // Create new issue
+              const { data: issue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ci-nightly'],
+              });
+              core.info(`Created issue #${issue.number}`);
+            }

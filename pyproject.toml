@@ -1,0 +1,294 @@
+[tool.poetry]
+name = "analysi"
+version = "0.3.0"
+description = "AI Agent Platform for Cybersecurity - FastAPI microservice for managing AI Tasks and Knowledge Units"
+authors = ["System"]
+readme = "README.md"
+requires-poetry = ">=2.2"
+license = "AGPL-3.0-or-later"
+packages = [{include = "analysi", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.131.0"
+uvicorn = {extras = ["standard"], version = "^0.41.0"}
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.35"}
+asyncpg = "^0.31.0"
+greenlet = "^3.1.1"
+pydantic = "^2.10.0"
+pydantic-settings = "^2.6.0"
+python-multipart = "^0.0.26"
+httpx = "^0.28.0"
+python-dotenv = "^1.0.1"
+structlog = "^25.4.0"
+aioboto3 = "^15.1.0"
+jsonschema = "^4.25.1"
+# LLM dependencies for cy-language (matching cy-language project versions)
+langchain-openai = ">=1.1.14,<2"
+tenacity = "^9.1.2"
+cy-language = {path = "dist/cy_language-0.47.1-py3-none-any.whl"}
+# Alert Analysis Service dependencies
+arq = "^0.27.0"
+redis = "5.2.1"
+glom = "^24.11.0"
+splunk-sdk = "^2.1.1"
+hvac = "^2.3.0"
+python-dateutil = "^2.9.0.post0"
+mcp = "^1.16.0"
+validators = "^0.35.0"
+langgraph = "^1.0.3"
+ldap3 = "^2.9.1"
+google-api-python-client = "^2.184.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth = "^2.41.1"
+lxml = "^6.0.2"
+xmltodict = "^1.0.2"
+databricks-sdk = "^0.67.0"
+google-cloud-bigquery = "^3.38.0"
+dnspython = "^2.8.0"
+langchain-core = "^1.1.0"
+claude-agent-sdk = "^0.1.12"
+langchain-anthropic = "^1.3.1"
+langchain-google-genai = "^4.2.1"
+pyjwt = "^2.11.0"
+cryptography = "^46.0.5"
+fastapi-problem-details = "^0.1.4"
+opentelemetry-api = "^1.40.0"
+opentelemetry-sdk = "^1.40.0"
+opentelemetry-exporter-otlp-proto-grpc = "^1.40.0"
+opentelemetry-instrumentation-fastapi = "^0.61b0"
+pydantic-ai-slim = {extras = ["anthropic", "openai"], version = "^1.69.0"}
+pgvector = "^0.4.2"
+prometheus-fastapi-instrumentator = "^7.1.0"
+py-ocsf-models = {version = ">=0.8.1,<0.9.0", python = ">=3.11,<3.15"}
+ipwhois = "^1.3.0"
+opencv-python-headless = ">=4.8.0"
+numpy = "^2.4.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.0"
+pytest-asyncio = "^1.1.0"
+pytest-cov = "^6.0.0"
+pytest-mock = "^3.14.0"
+pytest-httpx = "^0.36.0"
+mypy = "^1.13.0"
+pre-commit = "^4.0.0"
+ruff = "^0.15.0"
+python-dotenv = "^1.1.1"
+docker = "^7.1.0"
+graphviz = "^0.21"
+bandit = "^1.9.4"
+pip-audit = "^2.10.0"
+types-python-dateutil = "^2.9.0.20260305"
+types-pyyaml = "^6.0.12.20250915"
+psycopg2-binary = "^2.9.10"
+deptry = "^0.25.1"
+fakeredis = "^2.35.1"
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.7.6"
+mkdocs-mermaid2-plugin = "^1.2.3"
+pymdown-extensions = "^10.21.2"
+
+[tool.poetry.scripts]
+start = "analysi.main:start"
+dev = "analysi.main:dev"
+test = "analysi.tests.runner:run_unit_tests"
+lint = "analysi.tools.linting:run_linters"
+typecheck = "analysi.tools.linting:run_typecheck"
+validate-manifest = "analysi.integrations.framework.cli:validate_manifest"
+validate-integration = "analysi.integrations.framework.cli:validate_integration"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = ["migrations/"]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# SQLAlchemy models: Column[T] vs T assignment noise from SQLAlchemy mypy plugin
+[[tool.mypy.overrides]]
+module = "analysi.models.*"
+disable_error_code = ["assignment", "var-annotated", "call-arg", "has-type", "valid-type"]
+
+# Repositories: SQLAlchemy Column attribute access patterns
+[[tool.mypy.overrides]]
+module = "analysi.repositories.*"
+disable_error_code = ["assignment", "attr-defined", "return-value", "call-arg", "var-annotated", "arg-type", "dict-item", "index", "operator", "union-attr", "misc"]
+
+# Services: heavy SQLAlchemy Column[T] interactions
+[[tool.mypy.overrides]]
+module = "analysi.services.*"
+disable_error_code = ["arg-type", "assignment", "union-attr", "attr-defined", "return-value", "call-arg", "dict-item", "var-annotated", "operator", "index", "misc", "has-type", "valid-type"]
+
+# Routers: SQLAlchemy model attribute access in request handlers
+[[tool.mypy.overrides]]
+module = "analysi.routers.*"
+disable_error_code = ["arg-type", "assignment", "union-attr", "attr-defined", "return-value", "call-arg", "dict-item", "operator"]
+
+# Third-party integration actions: formulaic code with complex external API types
+[[tool.mypy.overrides]]
+module = "analysi.integrations.*"
+disable_error_code = ["arg-type", "assignment", "union-attr", "attr-defined", "return-value", "call-arg", "override", "dict-item", "var-annotated", "operator", "index"]
+
+# Alert analysis jobs: heavy SQLAlchemy + complex async patterns
+[[tool.mypy.overrides]]
+module = "analysi.alert_analysis.*"
+disable_error_code = ["arg-type", "assignment", "union-attr", "attr-defined", "return-value", "call-arg", "index", "operator"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = [
+    "migrations",
+    ".git",
+    "__pycache__",
+    ".venv",
+    "build",
+    "dist",
+    ".claude/skills/**",  # Claude Code skills - external content, do not lint
+    "skills/**",  # Local skill sources - portable content, do not lint
+    "content/**",  # Content packs - portable content, do not lint (Project Delos)
+]
+force-exclude = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort (replaces standalone isort)
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "C901", # McCabe complexity
+    "SIM",  # flake8-simplify
+    "RET",  # flake8-return
+    "DTZ",  # flake8-datetimez (enforce timezone-aware datetimes)
+    "T20",  # flake8-print (no print() in production code)
+    "PT",   # flake8-pytest-style
+    "G004", # flake8-logging-format: no f-strings in log calls (use structured kwargs)
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # function call in default arg (FastAPI Depends pattern)
+    "B904",   # raise from (too noisy to fix now)
+    "RET504", # unnecessary assignment before return (reduces readability)
+    "PT011",  # pytest.raises too broad (we often catch broad exceptions intentionally)
+    "PT012",  # pytest.raises body too complex (common in integration tests)
+    "SIM117", # nested with statements (Python 3.10+ syntax, often less readable)
+    "RUF059", # unused unpacked variable (common in tuple unpacking patterns)
+    "RUF043", # regex metacharacters in match= (pytest.raises match patterns are fine)
+    "RUF013", # implicit Optional (stylistic, will fix incrementally)
+    "RUF003", # ambiguous unicode characters (false positives on comments)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.isort]
+known-first-party = ["analysi"]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow print() in CLI tools, scripts, and worker entry points
+"src/analysi/tools/*" = ["T20"]
+"src/analysi/alert_worker.py" = ["T20"]
+"src/analysi/integrations_worker.py" = ["T20"]
+"scripts/*" = ["T20"]
+"src/alert_normalizer/*" = ["T20"]
+# Allow print() and f-string logging in tests (used for debugging and test output)
+"tests/*" = ["T20", "G004"]
+# Allow higher complexity in validation/reconciliation (inherently branchy)
+"src/analysi/integrations/framework/validators.py" = ["C901"]
+"src/analysi/alert_analysis/jobs/reconciliation.py" = ["C901"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "integration_llm: marks tests as integration tests that require LLM API calls (expensive, slow)",
+    "slow: marks tests as slow",
+    "eval: marks tests as eval tests (expensive LLM tests, require ANTHROPIC_API_KEY, run with: pytest -m eval tests/eval/)",
+    "kind_ci: marks integration tests to run against Kind cluster in CI (budget: ~1 min local, ~5 min CI)",
+    "requires_api: marks tests that need a running API server (localhost:8001) OR an external third-party API (e.g. AbuseIPDB, NIST NVD) with credentials in .env.test",
+    "requires_vault: marks tests that need a running Vault instance (localhost:8200)",
+    "requires_splunk: marks tests that need a running Splunk instance (localhost:8089)",
+    "requires_echo_edr: marks tests that need the Echo EDR lab container (brought up via analysi-demo-loader `make lab-up`)",
+    "requires_full_stack: marks tests that need Vault, Valkey, MinIO, or other services beyond PostgreSQL",
+    "arq_worker: start an in-process ARQ worker for this test so enqueued jobs (task_run, workflow_run, …) actually execute",
+]
+addopts = "-ra -q --strict-markers"
+filterwarnings = [
+    # External library internal deprecation (botocore using datetime.utcnow internally)
+    "ignore:datetime.datetime.utcnow.*:DeprecationWarning:botocore.*",
+    # Filter coroutine warnings from external libraries (aioboto3/aiobotocore timing issues)
+    # These only appear in specific test combinations, not when our storage code runs in isolation
+    # We've verified our code properly closes S3 response bodies and handles resources correctly
+    "ignore:coroutine.*was never awaited:RuntimeWarning",
+    # Filter connection cleanup warnings from Cy language runtime during test teardown
+    "ignore:Exception ignored in.*Connection._cancel.*:pytest.PytestUnraisableExceptionWarning",
+    # Filter pyasn1 deprecation warnings from Splunk SDK and ldap3 (tagMap/typeMap deprecated in pyasn1)
+    "ignore:.*is deprecated.*:DeprecationWarning:pyasn1.*",
+    "ignore:.*is deprecated.*:DeprecationWarning:ldap3.*",
+    # Pydantic v2 limitation: alias with union types (dict | None) triggers this warning
+    # even when using Annotated. Functionality works correctly, warning is cosmetic.
+    "ignore:The 'alias' attribute.*:pydantic.warnings.UnsupportedFieldAttributeWarning",
+    # fastapi-problem-details uses deprecated HTTP_422_UNPROCESSABLE_ENTITY constant
+    "ignore:'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated.*:DeprecationWarning:fastapi_problem_details.*",
+]
+
+[tool.deptry]
+
+[tool.deptry.per_rule_ignores]
+# DEP002: Runtime deps loaded indirectly (drivers, framework requirements)
+#   asyncpg            — SQLAlchemy async driver, loaded via connection string
+#   greenlet           — Required by SQLAlchemy for async context switching
+#   python-multipart   — Required by FastAPI for file/form uploads
+#   python-dotenv      — Required by pydantic-settings for env_file support
+#   google-auth-httplib2 — Required at runtime by googleapiclient.http
+#   cryptography       — Required by pyjwt for RS256 JWT verification
+DEP002 = ["asyncpg", "greenlet", "python-multipart", "python-dotenv", "google-auth-httplib2", "cryptography"]
+# DEP003: Transitive deps used directly — stable re-exports from our direct deps
+#   starlette         — FastAPI re-exports (Request, Response, middleware)
+#   typing_extensions — stdlib backports, always available
+#   yaml (pyyaml)     — pulled by langchain-core, used for skill/config parsing
+#   genson            — pulled by cy-language, used for JSON schema generation
+#   defusedxml        — pulled by splunk-sdk, used for safe XML parsing
+#   websockets        — pulled by MCP, used for Slack Socket Mode
+DEP003 = ["starlette", "typing_extensions", "yaml", "genson", "defusedxml", "websockets"]
+# DEP004: Dev deps imported in non-dev code (pytest in test runner script)
+DEP004 = ["pytest"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false

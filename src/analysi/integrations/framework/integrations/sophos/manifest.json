@@ -1,0 +1,291 @@
+{
+  "id": "sophos",
+  "app": "sophos",
+  "name": "Sophos Central",
+  "version": "1.0.0",
+  "description": "Sophos Central EDR integration for endpoint security, threat detection, and incident response",
+  "archetypes": [
+    "EDR"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "sophos-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "sophos-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Sophos Central integration instance"
+  },
+
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "isolate_endpoint",
+      "release_host": "unisolate_endpoint",
+      "scan_host": "scan_endpoint",
+      "get_host_details": "get_endpoint",
+      "quarantine_file": "block_item"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "OAuth2 Client ID from Sophos Central API Credentials",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "OAuth2 Client Secret from Sophos Central API Credentials",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Sophos Central API base URL (auto-discovered via whoami, override only if needed)",
+        "default": "https://api.central.sophos.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity and authentication with Sophos Central API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Endpoint",
+      "description": "Get details for a specific endpoint by ID",
+      "categories": ["investigation"],
+      "cy_name": "get_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Sophos endpoint ID"
+          }
+        },
+        "required": ["endpoint_id"]
+      }
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all endpoints/sensors configured in Sophos Central",
+      "categories": ["investigation", "discovery"],
+      "cy_name": "list_endpoints",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "page_size": {
+            "type": "integer",
+            "description": "Number of items per page",
+            "default": 50
+          },
+          "health_status": {
+            "type": "string",
+            "description": "Filter by health status (bad, good, suspicious, unknown)"
+          },
+          "type": {
+            "type": "string",
+            "description": "Filter by endpoint type (computer, server, securityVm)"
+          },
+          "search": {
+            "type": "string",
+            "description": "Search query for hostname or associated person"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sort field and direction"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Network-isolate one or more endpoints to prevent lateral movement",
+      "categories": ["response", "containment"],
+      "cy_name": "isolate_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": ["string", "array"],
+            "description": "Endpoint ID(s) to isolate (comma-separated string or array)",
+            "items": {"type": "string"}
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for isolation"
+          }
+        },
+        "required": ["ids"]
+      }
+    },
+    {
+      "id": "unisolate_endpoint",
+      "name": "Unisolate Endpoint",
+      "description": "Remove network isolation from one or more endpoints",
+      "categories": ["response", "containment"],
+      "cy_name": "unisolate_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": ["string", "array"],
+            "description": "Endpoint ID(s) to unisolate (comma-separated string or array)",
+            "items": {"type": "string"}
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for removing isolation"
+          }
+        },
+        "required": ["ids"]
+      }
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Trigger a scan on the specified endpoint",
+      "categories": ["response", "investigation"],
+      "cy_name": "scan_endpoint",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to scan"
+          }
+        },
+        "required": ["endpoint_id"]
+      }
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts from Sophos Central",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "list_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of alerts to return",
+            "default": 100
+          },
+          "category": {
+            "type": "string",
+            "description": "Alert category filter"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Alert severity filter"
+          },
+          "from_date": {
+            "type": "string",
+            "description": "Start date for alerts (ISO 8601 format)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get details for a specific security alert",
+      "categories": ["investigation"],
+      "cy_name": "get_alert",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "description": "Sophos alert ID"
+          }
+        },
+        "required": ["alert_id"]
+      }
+    },
+    {
+      "id": "block_item",
+      "name": "Block Item",
+      "description": "Add a SHA256 hash to the blocked items list",
+      "categories": ["response", "containment"],
+      "cy_name": "block_item",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "description": "SHA256 hash to block"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Reason for blocking"
+          }
+        },
+        "required": ["sha256"]
+      }
+    },
+    {
+      "id": "unblock_item",
+      "name": "Unblock Item",
+      "description": "Remove an item from the blocked items list",
+      "categories": ["response"],
+      "cy_name": "unblock_item",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Blocked item ID to remove"
+          }
+        },
+        "required": ["item_id"]
+      }
+    }
+  ]
+}

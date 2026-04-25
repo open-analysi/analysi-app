@@ -1,0 +1,13 @@
+{
+  "confidence": "VERY HIGH",
+  "score": 170,
+  "decision": "matched",
+  "matched_runbook": "runbooks-repository/sql-injection-detection.md",
+  "alert": {
+    "detection_rule": "Possible SQL Injection Payload Detected",
+    "alert_type": "Web Attack",
+    "subcategory": "SQL Injection",
+    "source_category": "WAF"
+  },
+  "timestamp": "2026-04-26T00:00:00Z"
+}

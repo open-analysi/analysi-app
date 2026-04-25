@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a defect in Analysi
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out the
+        sections below so we can reproduce and fix the issue.
+
+        **Do not report security vulnerabilities here.** See [SECURITY.md](../../SECURITY.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, concise description of the bug.
+      placeholder: When I run X, I expected Y but got Z.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal, deterministic steps. Include any commands, configs, or sample inputs.
+      placeholder: |
+        1. Run `make k8s-up`
+        2. Execute `analysi tasks run ...`
+        3. Observe the error in the worker logs
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error messages, stack traces, or relevant log excerpts. Use code fences.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Analysi version / commit
+      description: Output of `git rev-parse --short HEAD` or release tag.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment mode
+      options:
+        - Docker Compose (local)
+        - Kind / Kubernetes (worktree)
+        - Helm on production cluster
+        - Other (describe in environment)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, Postgres version, browser (for UI bugs), and anything else relevant.
+      placeholder: |
+        - OS: macOS 14.6
+        - Python: 3.13.1
+        - Postgres: 15 (analysi-postgres image)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, related issues, hypotheses, or workarounds you've tried.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched existing issues and confirmed this is not a duplicate.
+          required: true
+        - label: I have read the [Code of Conduct](../../CODE_OF_CONDUCT.md).
+          required: true

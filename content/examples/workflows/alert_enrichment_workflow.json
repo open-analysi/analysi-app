@@ -1,0 +1,325 @@
+{
+  "name": "Alert Analysis Workflow",
+  "description": "Comprehensive alert enrichment: Context → VirusTotal → Detailed Analysis → [Summary + Disposition] → Merge",
+  "is_dynamic": false,
+  "io_schema": {
+    "input": {
+      "$schema": "http://json-schema.org/schema#",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "raw_alert": {
+          "type": "string"
+        },
+        "rule_name": {
+          "type": "string"
+        },
+        "alert_type": {
+          "type": "string"
+        },
+        "network_info": {
+          "type": "object",
+          "properties": {
+            "dst_ip": {
+              "type": "string"
+            },
+            "src_ip": {
+              "type": "string"
+            },
+            "dst_port": {
+              "type": "integer"
+            },
+            "protocol": {
+              "type": "string"
+            },
+            "bytes_sent": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "protocol"
+          ]
+        },
+        "device_action": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "source_vendor": {
+          "type": "string"
+        },
+        "source_product": {
+          "type": "string"
+        },
+        "source_category": {
+          "type": "string"
+        },
+        "primary_ioc_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_ioc_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "triggering_event_time": {
+          "type": "string"
+        },
+        "primary_risk_entity_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_risk_entity_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "triggering_event_time",
+        "severity",
+        "raw_alert"
+      ]
+    },
+    "output": {
+      "type": "object"
+    }
+  },
+  "data_samples": [
+    {
+      "name": "Exchange CVE Exploitation - Critical Severity",
+      "input": {
+        "source_product": "Exchange IIS",
+        "severity": "critical",
+        "source_vendor": "Microsoft",
+        "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+        "triggering_event_time": "2025-10-23T07:19:00Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+          "analytic": {
+            "name": "PowerShell_in_URL_Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack - CVE Exploitation"
+          ]
+        },
+        "rule_name": "PowerShell_in_URL_Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "91.234.56.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "91.234.56.6"
+            },
+            "dst_endpoint": {
+              "ip": "10.10.30.8",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "10.10.30.8"
+        },
+        "raw_data": "{\"url\": \"/autodiscover/autodiscover.json?@attacker.example/owa/&Email=autodiscover/autodiscover.json%3f@attacker.example&Protocol=XYZ&FooProtocol=Powershell\"}"
+      },
+      "description": "High-severity web attack against Exchange server with PowerShell payload blocked by firewall"
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "context_gen",
+      "kind": "task",
+      "name": "Alert Context Generation",
+      "is_start_node": true,
+      "task_cy_name": "alert_context_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "vt_ip",
+      "kind": "task",
+      "name": "VirusTotal IP Reputation",
+      "task_cy_name": "virustotal_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "abuse_ip",
+      "kind": "task",
+      "name": "AbuseIPDB IP Reputation",
+      "task_cy_name": "abuseipdb_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge1",
+      "kind": "transformation",
+      "name": "Merge Threat Intel",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "detailed",
+      "kind": "task",
+      "name": "Detailed Analysis",
+      "task_cy_name": "alert_detailed_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "summary",
+      "kind": "task",
+      "name": "Summary Generation",
+      "task_cy_name": "alert_summary_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "disposition",
+      "kind": "task",
+      "name": "Disposition Determination",
+      "task_cy_name": "alert_disposition_determination",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge2",
+      "kind": "transformation",
+      "name": "Final Merge",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1",
+      "from_node_id": "context_gen",
+      "to_node_id": "vt_ip"
+    },
+    {
+      "edge_id": "e2",
+      "from_node_id": "context_gen",
+      "to_node_id": "abuse_ip"
+    },
+    {
+      "edge_id": "e3",
+      "from_node_id": "vt_ip",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e4",
+      "from_node_id": "abuse_ip",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e5",
+      "from_node_id": "merge1",
+      "to_node_id": "detailed"
+    },
+    {
+      "edge_id": "e6",
+      "from_node_id": "detailed",
+      "to_node_id": "summary"
+    },
+    {
+      "edge_id": "e7",
+      "from_node_id": "detailed",
+      "to_node_id": "disposition"
+    },
+    {
+      "edge_id": "e8",
+      "from_node_id": "summary",
+      "to_node_id": "merge2"
+    },
+    {
+      "edge_id": "e9",
+      "from_node_id": "disposition",
+      "to_node_id": "merge2"
+    }
+  ],
+  "categories": [
+    "Examples"
+  ]
+}

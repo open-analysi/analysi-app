@@ -1,0 +1,34 @@
+{
+  "name": "ProxyNotShell Payload Decoder and Analyzer",
+  "cy_name": "proxynotshell_payload_decoder_and_analyzer",
+  "description": "Decodes URL-encoded payloads and identifies ProxyNotShell attack patterns (CVE-2022-41040 SSRF and CVE-2022-41082 PowerShell RCE). Analyzes request URLs from web_info or Splunk enrichments, detects SSRF indicators (@ parameter manipulation), PowerShell protocol parameters, external domain references, and scanner signatures. Returns structured analysis with decoded payload, CVE mappings, and investigation decision points.",
+  "app": "default",
+  "directive": "You are a security analyst specializing in URL payload analysis for Exchange attacks. Decode URL-encoded payloads and identify ProxyNotShell patterns including CVE-2022-41040 SSRF and CVE-2022-41082 PowerShell RCE indicators. Distinguish scanner signatures from targeted exploitation.",
+  "script_file": "proxynotshell_payload_decoder_and_analyzer.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Examples",
+    "ProxyNotShell",
+    "Exchange",
+    "Payload Analysis",
+    "URL Decoding"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 800
+  },
+  "authored_by": "system",
+  "tags": [
+    "proxynotshell",
+    "cve-2022-41040",
+    "cve-2022-41082",
+    "payload",
+    "url-decode"
+  ]
+}

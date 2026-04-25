@@ -1,0 +1,184 @@
+{
+  "name": "Splunk: Triggering Event Retrieval with SPL Generation and LLM Summarization",
+  "cy_name": "splunk_triggering_event_retrieval",
+  "description": "Alert enrichment task that retrieves triggering events from Splunk using auto-generated SPL queries and adds LLM-analyzed event context to alert['enrichments']['splunk_triggering_events']. Designed for workflow composition.",
+  "app": "Splunk",
+  "directive": "You are a security analyst with Splunk expertise. Analyze triggering events retrieved from Splunk and provide concise security assessments that help investigators understand alert context.",
+  "script_file": "splunk_triggering_event_retrieval.cy",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Splunk",
+    "SPL",
+    "Event Retrieval",
+    "AI",
+    "Investigation",
+    "Enrichment",
+    "Alert Enrichment"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 256
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "High Severity Firewall Alert with Events",
+      "description": "Palo Alto firewall alert for suspicious PowerShell activity - events should be found",
+      "input": {
+        "triggering_event_time": "2025-09-24T14:30:00Z",
+        "severity": "high",
+        "source_product": "Firewall",
+        "title": "Suspicious PowerShell Activity Detected",
+        "source_vendor": "Palo Alto",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious PowerShell Activity Detected",
+          "uid": "sample-001",
+          "types": [
+            "vulnerability_exploit"
+          ],
+          "analytic": {
+            "name": "Suspicious PowerShell Activity Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "91.234.56.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "91.234.56.6"
+            },
+            "connection_info": {
+              "protocol_name": "TCP"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "10.10.30.8"
+        },
+        "raw_data": "{\"threat_name\": \"Autodiscover-Exploit-Block\", \"action\": \"block\"}"
+      }
+    },
+    {
+      "name": "Legacy Alert with No Events",
+      "description": "Old alert from legacy system - likely no events in Splunk",
+      "input": {
+        "triggering_event_time": "2026-04-26T10:00:00Z",
+        "severity": "low",
+        "source_product": "Old Scanner",
+        "title": "Legacy Security Alert",
+        "source_vendor": "Legacy System",
+        "severity_id": 2,
+        "finding_info": {
+          "title": "Legacy Security Alert",
+          "uid": "sample-002",
+          "types": [
+            "scan_result"
+          ],
+          "analytic": {
+            "name": "Legacy Security Alert",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Vulnerability"
+          ]
+        },
+        "observables": [],
+        "raw_data": "{\"old_system\": true}"
+      }
+    },
+    {
+      "name": "Critical Malware Alert",
+      "description": "Critical severity malware detection - should have detailed event trail",
+      "input": {
+        "triggering_event_time": "2025-09-24T15:45:00Z",
+        "severity": "critical",
+        "source_product": "Falcon",
+        "title": "Critical: Malware Execution Detected",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Critical: Malware Execution Detected",
+          "uid": "sample-003",
+          "types": [
+            "malware_detected"
+          ],
+          "analytic": {
+            "name": "Critical: Malware Execution Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "malware.exe",
+              "file": {
+                "path": "C:\\Users\\john.doe\\Downloads\\malware.exe"
+              },
+              "cmd_line": "malware.exe --stealth",
+              "parent_process": {
+                "name": "explorer.exe"
+              }
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "john.doe"
+          }
+        },
+        "raw_data": "{\"malware_family\": \"Emotet\", \"action\": \"quarantine\"}"
+      }
+    }
+  ],
+  "tags": [
+    "splunk",
+    "spl",
+    "event-retrieval",
+    "llm",
+    "investigation",
+    "triggering-events",
+    "enrichment",
+    "nas-alert",
+    "workflow"
+  ]
+}

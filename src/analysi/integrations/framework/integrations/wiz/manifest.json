@@ -1,0 +1,315 @@
+{
+  "id": "wiz",
+  "app": "wiz",
+  "name": "Wiz",
+  "version": "1.0.0",
+  "description": "Wiz cloud security (CNAPP) integration for cloud posture management, vulnerability detection, and resource inventory",
+  "archetypes": [
+    "CloudProvider"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+  "integration_id_config": {
+    "default": "wiz-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "wiz-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Wiz integration instance"
+  },
+  "archetype_mappings": {
+    "CloudProvider": {
+      "get_host_details": "get_resource",
+      "scan_assets": "search_resources"
+    }
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "display_name": "Client ID",
+        "description": "Wiz Service Account Client ID",
+        "required": true
+      },
+      "client_secret": {
+        "type": "string",
+        "display_name": "Client Secret",
+        "description": "Wiz Service Account Client Secret",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "api_url": {
+        "type": "string",
+        "display_name": "API URL",
+        "description": "Wiz GraphQL API endpoint URL",
+        "default": "https://api.us20.app.wiz.io/graphql",
+        "placeholder": "https://api.us20.app.wiz.io/graphql"
+      },
+      "auth_url": {
+        "type": "string",
+        "display_name": "Auth URL",
+        "description": "Wiz OAuth2 token endpoint URL",
+        "default": "https://auth.app.wiz.io/oauth/token",
+        "placeholder": "https://auth.app.wiz.io/oauth/token"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify connectivity and authentication with the Wiz API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "List security issues with optional severity, status, and resource type filters",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "list_issues",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "description": "Filter by severity (INFORMATIONAL, LOW, MEDIUM, HIGH, CRITICAL)",
+            "enum": [
+              "INFORMATIONAL",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by status (OPEN, IN_PROGRESS, RESOLVED, REJECTED)",
+            "enum": [
+              "OPEN",
+              "IN_PROGRESS",
+              "RESOLVED",
+              "REJECTED"
+            ]
+          },
+          "resource_type": {
+            "type": "string",
+            "description": "Filter by cloud resource type"
+          },
+          "first": {
+            "type": "integer",
+            "description": "Number of results to return (max 500)",
+            "default": 50
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor for next page"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_issue",
+      "name": "Get Issue",
+      "description": "Get detailed information about a specific security issue",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "get_issue",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "description": "Wiz issue ID"
+          }
+        },
+        "required": [
+          "issue_id"
+        ]
+      }
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "List vulnerability findings with optional severity and exploit filters",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "list_vulnerabilities",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "description": "Filter by CVSS severity (INFORMATIONAL, LOW, MEDIUM, HIGH, CRITICAL)"
+          },
+          "has_exploit": {
+            "type": "boolean",
+            "description": "Filter for vulnerabilities with known exploits"
+          },
+          "has_cisa_kev": {
+            "type": "boolean",
+            "description": "Filter for CISA Known Exploited Vulnerabilities"
+          },
+          "first": {
+            "type": "integer",
+            "description": "Number of results to return (max 500)",
+            "default": 50
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor for next page"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_resource",
+      "name": "Get Resource",
+      "description": "Get details of a cloud resource by its graph entity ID",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "get_resource",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "description": "Wiz graph entity ID"
+          }
+        },
+        "required": [
+          "resource_id"
+        ]
+      }
+    },
+    {
+      "id": "search_resources",
+      "name": "Search Resources",
+      "description": "Search cloud resources by type and platform (VMs, containers, etc.)",
+      "categories": [
+        "investigation",
+        "discovery",
+        "cloud_security"
+      ],
+      "cy_name": "search_resources",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "resource_type": {
+            "type": "string",
+            "description": "Type of resource to search (e.g., VirtualMachine, Container, Bucket)"
+          },
+          "cloud_platform": {
+            "type": "string",
+            "description": "Cloud platform filter (AWS, Azure, GCP)"
+          },
+          "first": {
+            "type": "integer",
+            "description": "Number of results to return (max 500)",
+            "default": 50
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor for next page"
+          }
+        },
+        "required": [
+          "resource_type"
+        ]
+      }
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List Wiz projects with owners and risk profiles",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "list_projects",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "integer",
+            "description": "Number of results to return (max 500)",
+            "default": 50
+          },
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor for next page"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_configuration_finding",
+      "name": "Get Configuration Finding",
+      "description": "Get details of a misconfiguration finding including remediation instructions",
+      "categories": [
+        "investigation",
+        "cloud_security"
+      ],
+      "cy_name": "get_configuration_finding",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "description": "Wiz configuration finding ID"
+          }
+        },
+        "required": [
+          "finding_id"
+        ]
+      }
+    }
+  ],
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

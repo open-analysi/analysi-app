@@ -1,0 +1,136 @@
+{
+  "id": "ciscoumbrella",
+  "app": "ciscoumbrella",
+  "name": "Cisco Umbrella",
+  "version": "1.0.0",
+  "description": "Cisco Umbrella (formerly OpenDNS) DNS-layer security integration for blocking and unblocking domains at the DNS resolver level",
+  "archetypes": [
+    "NetworkSecurity"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ciscoumbrella-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ciscoumbrella-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco Umbrella instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_url": "block_domain",
+      "unblock_ip": "unblock_domain"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "customer_key": {
+        "type": "string",
+        "display_name": "Customer Key",
+        "description": "Cisco Umbrella customer key for S-Platform API authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 60
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Cisco Umbrella by fetching a single domain entry",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Block a domain at the DNS layer by submitting an enforcement event to Cisco Umbrella",
+      "categories": ["containment", "remediation"],
+      "cy_name": "block_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to block"
+          },
+          "disable_safeguards": {
+            "type": "boolean",
+            "description": "Bypass Cisco safeguards that prevent blocking well-known domains (e.g., google.com). Use with caution.",
+            "default": false
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "unblock_domain",
+      "name": "Unblock Domain",
+      "description": "Remove a domain from the Cisco Umbrella block list",
+      "categories": ["remediation"],
+      "cy_name": "unblock_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to unblock"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "list_blocked_domains",
+      "name": "List Blocked Domains",
+      "description": "List domains currently on the Cisco Umbrella block list with optional limit",
+      "categories": ["investigation"],
+      "cy_name": "list_blocked_domains",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of domains to return (0 or omit for all)",
+            "default": 0
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,452 @@
+{
+  "id": "qradar",
+  "app": "qradar",
+  "name": "IBM QRadar",
+  "version": "1.0.0",
+  "description": "IBM QRadar SIEM integration for offense management, event/flow queries, and AQL execution",
+  "archetypes": ["SIEM", "AlertSource"],
+  "priority": 85,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "qradar-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "qradar-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this QRadar integration instance"
+  },
+
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "get_events",
+      "get_alerts": "list_offenses",
+      "get_alert_details": "offense_details",
+      "update_alert_status": "close_offense",
+      "run_saved_search": "run_query",
+      "add_threat_intel": "add_to_reference_set"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "auth_token": {
+        "type": "string",
+        "display_name": "Auth Token",
+        "description": "SEC token for QRadar REST API authentication (preferred over username/password)",
+        "format": "password",
+        "required": false
+      },
+      "username": {
+        "type": "string",
+        "display_name": "Username",
+        "description": "QRadar username (used with password for Basic auth)",
+        "required": false
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Password",
+        "description": "QRadar password (used with username for Basic auth)",
+        "format": "password",
+        "required": false
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "server": {
+        "type": "string",
+        "display_name": "Server IP/Hostname",
+        "description": "QRadar server hostname or IP address",
+        "placeholder": "qradar.example.com"
+      },
+      "verify_ssl": {
+        "type": "boolean",
+        "display_name": "Verify SSL Certificate",
+        "description": "Verify server SSL certificate",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to QRadar by querying the ariel databases endpoint",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_offenses",
+      "name": "List Offenses",
+      "description": "Get a list of offenses, optionally filtered by time range or offense IDs",
+      "categories": ["investigation", "siem"],
+      "cy_name": "list_offenses",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "integer",
+            "description": "Start of time range in epoch milliseconds"
+          },
+          "end_time": {
+            "type": "integer",
+            "description": "End of time range in epoch milliseconds"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Maximum number of offenses to retrieve",
+            "default": 100
+          },
+          "offense_id": {
+            "type": "string",
+            "description": "Comma-separated list of offense IDs to fetch"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "offense_details",
+      "name": "Offense Details",
+      "description": "Get full details for a specific offense",
+      "categories": ["investigation", "siem"],
+      "cy_name": "offense_details",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "string",
+            "description": "ID of the offense to retrieve"
+          }
+        },
+        "required": ["offense_id"]
+      }
+    },
+    {
+      "id": "close_offense",
+      "name": "Close Offense",
+      "description": "Close an offense with a closing reason",
+      "categories": ["response", "siem"],
+      "cy_name": "close_offense",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "string",
+            "description": "ID of the offense to close"
+          },
+          "closing_reason_id": {
+            "type": "integer",
+            "description": "ID of the closing reason"
+          }
+        },
+        "required": ["offense_id", "closing_reason_id"]
+      }
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note to an offense",
+      "categories": ["response", "siem"],
+      "cy_name": "add_note",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "string",
+            "description": "ID of the offense"
+          },
+          "note_text": {
+            "type": "string",
+            "description": "Text of the note to add"
+          }
+        },
+        "required": ["offense_id", "note_text"]
+      }
+    },
+    {
+      "id": "assign_user",
+      "name": "Assign User",
+      "description": "Assign a user to an offense",
+      "categories": ["response", "siem"],
+      "cy_name": "assign_user",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "string",
+            "description": "ID of the offense"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Username to assign the offense to"
+          }
+        },
+        "required": ["offense_id", "assignee"]
+      }
+    },
+    {
+      "id": "list_closing_reasons",
+      "name": "List Closing Reasons",
+      "description": "Get a list of offense closing reasons",
+      "categories": ["investigation", "siem"],
+      "cy_name": "list_closing_reasons",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "include_reserved": {
+            "type": "boolean",
+            "description": "Include reserved closing reasons",
+            "default": false
+          },
+          "include_deleted": {
+            "type": "boolean",
+            "description": "Include deleted closing reasons",
+            "default": false
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Get events belonging to an offense via AQL query",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_events",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "integer",
+            "description": "Offense ID to get events for"
+          },
+          "start_time": {
+            "type": "integer",
+            "description": "Start of time range in epoch milliseconds"
+          },
+          "end_time": {
+            "type": "integer",
+            "description": "End of time range in epoch milliseconds"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of events to retrieve",
+            "default": 100
+          },
+          "fields_filter": {
+            "type": "string",
+            "description": "AQL filter on event field values"
+          },
+          "interval_days": {
+            "type": "integer",
+            "description": "Interval days for time range",
+            "default": 5
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_flows",
+      "name": "Get Flows",
+      "description": "Get network flows for an offense or IP via AQL query",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_flows",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "offense_id": {
+            "type": "integer",
+            "description": "Offense ID to get flows for"
+          },
+          "ip": {
+            "type": "string",
+            "description": "IP address to get flows for"
+          },
+          "start_time": {
+            "type": "integer",
+            "description": "Start of time range in epoch milliseconds"
+          },
+          "end_time": {
+            "type": "integer",
+            "description": "End of time range in epoch milliseconds"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of flows to retrieve",
+            "default": 100
+          },
+          "fields_filter": {
+            "type": "string",
+            "description": "AQL filter on flow field values"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run an arbitrary AQL (Ariel Query Language) query",
+      "categories": ["query", "siem"],
+      "cy_name": "run_query",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The AQL query to execute"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "id": "get_rule_info",
+      "name": "Get Rule Info",
+      "description": "Get details of a specific QRadar analytics rule",
+      "categories": ["investigation", "siem"],
+      "cy_name": "get_rule_info",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "ID of the rule to retrieve"
+          }
+        },
+        "required": ["rule_id"]
+      }
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List QRadar analytics rules",
+      "categories": ["investigation", "siem"],
+      "cy_name": "list_rules",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Maximum number of rules to retrieve",
+            "default": 1000
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "add_to_reference_set",
+      "name": "Add to Reference Set",
+      "description": "Add a value to a QRadar reference set (e.g., blocklist IPs)",
+      "categories": ["response", "siem"],
+      "cy_name": "add_to_reference_set",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "reference_set_name": {
+            "type": "string",
+            "description": "Name of the reference set"
+          },
+          "reference_set_value": {
+            "type": "string",
+            "description": "Value to add to the reference set"
+          }
+        },
+        "required": ["reference_set_name", "reference_set_value"]
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull offenses from QRadar as raw alerts for the AlertSource pipeline",
+      "categories": ["alert_source", "siem"],
+      "cy_name": "pull_alerts",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start of time range (ISO 8601 or datetime)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End of time range (ISO 8601 or datetime)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of offenses to return",
+            "default": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF",
+      "description": "Normalize raw QRadar offenses to OCSF Detection Finding v1.8.0",
+      "categories": ["alert_source", "normalization"],
+      "cy_name": "alerts_to_ocsf",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw QRadar offense dicts to normalize"
+          }
+        },
+        "required": ["raw_alerts"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+{
+  "tables": [
+    {
+      "name": "Splunk: CIM Datamodel to Sourcetypes Mapping",
+      "cy_name": "splunk_cim_datamodel_sourcetypes_mapping",
+      "description": "Pivot mapping showing each CIM data model and its associated sourcetypes",
+      "app": "Splunk",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "cim_datamodel": {
+            "type": "string"
+          },
+          "sourcetypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourcetype_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "content": [
+        {
+          "cim_datamodel": "Alerts",
+          "sourcetypes": [
+            "WinEventLog:*",
+            "XmlWinEventLog:Security",
+            "box:events",
+            "cisco:esa:amp",
+            "crowdstrike:incident:*",
+            "m365:defender:incident",
+            "mdatp:alert",
+            "meraki:securityappliances",
+            "servicenow:event"
+          ],
+          "sourcetype_count": 9
+        },
+        {
+          "cim_datamodel": "Authentication",
+          "sourcetypes": [
+            "WinEventLog:*",
+            "XmlWinEventLog:Security",
+            "aws:cloudtrail",
+            "box:events",
+            "cisco:asa",
+            "cisco:esa:authentication",
+            "cisco:ios",
+            "cisco:ios-xe",
+            "cisco:iosxr",
+            "cisco:ise:syslog",
+            "cisco:nxos",
+            "cisco:wlc",
+            "citrix:netscaler:*",
+            "crowdstrike:audit:*",
+            "cyberark:*",
+            "cyberark:epm:*",
+            "f5:bigip:syslog",
+            "fgt:*",
+            "gcp:*",
+            "gws:reports:login",
+            "infoblox:audit",
+            "juniper",
+            "juniper:*",
+            "m365:defender:incident",
+            "meraki:securityappliances",
+            "netskope:*",
+            "o365:management:activity",
+            "okta:im2:system",
+            "oracle:audit",
+            "oracle:listener",
+            "pan:system",
+            "salesforce:elogfile",
+            "zpa:*",
+            "zscalernss:*"
+          ],
+          "sourcetype_count": 34
+        },
+        {
+          "cim_datamodel": "Change",
+          "sourcetypes": [
+            "WinEventLog:*",
+            "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+            "XmlWinEventLog:Security",
+            "aws:cloudtrail",
+            "box:events",
+            "cisco:esa:http",
+            "cisco:ios",
+            "cisco:ios-xe",
+            "cisco:iosxr",
+            "cisco:ise:syslog",
+            "cisco:nxos",
+            "cisco:wlc",
+            "cisco:wsa:syslog",
+            "crowdstrike:audit:*",
+            "cyberark:*",
+            "cyberark:epm:*",
+            "gcp:*",
+            "gws:reports:drive",
+            "infoblox:audit",
+            "meraki:securityappliances",
+            "o365:management:activity",
+            "okta:im2:system",
+            "oracle:audit",
+            "pan:system",
+            "salesforce:elogfile",
+            "salesforce:object",
+            "servicenow:change"
+          ],
+          "sourcetype_count": 27
+        },
+        {
+          "cim_datamodel": "Compliance",
+          "sourcetypes": [
+            "tenable:sc:*"
+          ],
+          "sourcetype_count": 1
+        },
+        {
+          "cim_datamodel": "Data Access",
+          "sourcetypes": [
+            "box:events",
+            "box:files",
+            "gws:reports:drive"
+          ],
+          "sourcetype_count": 3
+        },
+        {
+          "cim_datamodel": "Data Loss Prevention",
+          "sourcetypes": [
+            "netskope:*",
+            "symantec:dlp:incident"
+          ],
+          "sourcetype_count": 2
+        },
+        {
+          "cim_datamodel": "Databases",
+          "sourcetypes": [
+            "oracle:alertlog",
+            "oracle:audit",
+            "oracle:listener"
+          ],
+          "sourcetype_count": 3
+        },
+        {
+          "cim_datamodel": "Email",
+          "sourcetypes": [
+            "gws:reports:drive",
+            "o365:management:activity",
+            "proofpoint:pod:maillog",
+            "proofpoint:pod:message"
+          ],
+          "sourcetype_count": 4
+        },
+        {
+          "cim_datamodel": "Endpoint",
+          "sourcetypes": [
+            "WinEventLog:*",
+            "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+            "XmlWinEventLog:Security",
+            "cisco:ise:syslog",
+            "crowdstrike:events:*",
+            "crowdstrike:fdr:*",
+            "cyberark:epm:*",
+            "m365:defender:incident",
+            "mdatp:alert",
+            "sysmon:linux"
+          ],
+          "sourcetype_count": 10
+        },
+        {
+          "cim_datamodel": "Intrusion Detection",
+          "sourcetypes": [
+            "akamaisiem",
+            "cisco:asa",
+            "crowdstrike:events:*",
+            "crowdstrike:fdr:*",
+            "crowdstrike:incident:*",
+            "f5:bigip:asm:syslog",
+            "fgt:*",
+            "juniper",
+            "juniper:*",
+            "m365:defender:incident",
+            "mcafee:epo:syslog",
+            "mdatp:alert",
+            "pan:threat",
+            "qualys:*",
+            "suricata:eve.json",
+            "suricata:json",
+            "zeek:*",
+            "zscalernss-web"
+          ],
+          "sourcetype_count": 18
+        },
+        {
+          "cim_datamodel": "Inventory",
+          "sourcetypes": [
+            "*_metric",
+            "WinEventLog:*",
+            "XmlWinEventLog:Security",
+            "box:metadata",
+            "cpu",
+            "ps",
+            "qualys:*",
+            "salesforce:object",
+            "servicenow:cmdb",
+            "servicenow:user",
+            "tenable:io:*",
+            "tenable:ot:*",
+            "tenable:sc:*",
+            "vmware:*",
+            "vmware:esx:syslog:*"
+          ],
+          "sourcetype_count": 15
+        },
+        {
+          "cim_datamodel": "Malware",
+          "sourcetypes": [
+            "box:events",
+            "cisco:esa:amp",
+            "crowdstrike:fdr:*",
+            "mcafee:epo:syslog",
+            "symantec:ep:risk:file"
+          ],
+          "sourcetype_count": 5
+        },
+        {
+          "cim_datamodel": "Network Resolution (DNS)",
+          "sourcetypes": [
+            "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+            "bro:dns",
+            "infoblox:dns",
+            "zeek:*"
+          ],
+          "sourcetype_count": 4
+        },
+        {
+          "cim_datamodel": "Network Sessions",
+          "sourcetypes": [
+            "cisco:esa:http",
+            "infoblox:dhcp",
+            "meraki:securityappliances"
+          ],
+          "sourcetype_count": 3
+        },
+        {
+          "cim_datamodel": "Network Traffic",
+          "sourcetypes": [
+            "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+            "aws:cloudwatchlogs:vpcflow",
+            "bro:conn",
+            "cisco:asa",
+            "cisco:ios",
+            "cisco:ios-xe",
+            "cisco:iosxr",
+            "cisco:ise:syslog",
+            "cisco:nxos",
+            "cisco:wlc",
+            "citrix:netscaler:*",
+            "f5:bigip:syslog",
+            "fgt:*",
+            "gcp:*",
+            "juniper",
+            "juniper:*",
+            "pan:decryption",
+            "pan:threat",
+            "pan:traffic",
+            "suricata:eve.json",
+            "suricata:json",
+            "zeek:*",
+            "zpa:*",
+            "zscalernss-web",
+            "zscalernss:*"
+          ],
+          "sourcetype_count": 25
+        },
+        {
+          "cim_datamodel": "Operations/Performance",
+          "sourcetypes": [
+            "vmware:esx:syslog:*"
+          ],
+          "sourcetype_count": 1
+        },
+        {
+          "cim_datamodel": "Performance",
+          "sourcetypes": [
+            "*_metric",
+            "cpu",
+            "iostat",
+            "ps",
+            "vmstat",
+            "vmware:*",
+            "vmware:perf:*"
+          ],
+          "sourcetype_count": 7
+        },
+        {
+          "cim_datamodel": "Ticket Management",
+          "sourcetypes": [
+            "servicenow:change",
+            "servicenow:incident"
+          ],
+          "sourcetype_count": 2
+        },
+        {
+          "cim_datamodel": "Vulnerabilities",
+          "sourcetypes": [
+            "qualys:*",
+            "tenable:io:*",
+            "tenable:ot:*",
+            "tenable:sc:*"
+          ],
+          "sourcetype_count": 4
+        },
+        {
+          "cim_datamodel": "Web",
+          "sourcetypes": [
+            "akamai-datastream",
+            "akamaisiem",
+            "cisco:esa:http",
+            "cisco:wsa:syslog",
+            "citrix:netscaler:*",
+            "gws:reports:drive",
+            "ms:iis:auto",
+            "ms:iis:default",
+            "netskope:*",
+            "o365:management:activity",
+            "pan:url",
+            "salesforce:elogfile",
+            "zeek:*",
+            "zpa:*",
+            "zscalernss-web",
+            "zscalernss:*"
+          ],
+          "sourcetype_count": 16
+        }
+      ],
+      "row_count": 20,
+      "column_count": 3,
+      "tags": [
+        "splunk",
+        "cim",
+        "datamodels",
+        "sourcetypes",
+        "pivot"
+      ]
+    }
+  ],
+  "documents": [],
+  "indexes": [],
+  "categories": [
+    "Foundation"
+  ]
+}

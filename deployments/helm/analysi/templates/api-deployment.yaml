@@ -1,0 +1,86 @@
+{{- $component := "api" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "analysi.componentName" (dict "Release" .Release "Chart" .Chart "component" $component) }}
+  labels:
+    {{- include "analysi.labels" (dict "Root" . "layer" "core") | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "analysi.selectorLabels" (dict "Chart" .Chart "Release" .Release "component" $component) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.api.initContainers.waitForDb }}
+      initContainers:
+        - name: wait-for-db
+          image: "{{ .Values.global.utilityImage.repository }}:{{ .Values.global.utilityImage.tag }}"
+          command: ['sh', '-c', 'until nc -z {{ .Values.global.database.host }} {{ .Values.global.database.port }}; do sleep 2; done']
+      {{- end }}
+      containers:
+        - name: api
+          image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            {{- include "analysi.commonEnv" . | nindent 12 }}
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: PORT
+              value: "8000"
+            - name: ANALYSI_AUTH_MODE
+              value: {{ .Values.global.auth.mode | quote }}
+            - name: ANALYSI_AUTH_JWKS_URI
+              value: {{ .Values.global.auth.jwksUri | quote }}
+            - name: ANALYSI_AUTH_ISSUER
+              value: {{ .Values.global.auth.issuer | quote }}
+            - name: ANALYSI_AUTH_AUDIENCE
+              value: {{ .Values.global.auth.audience | quote }}
+            - name: TASK_EXECUTOR_WORKERS
+              value: {{ .Values.api.taskExecutor.workers | quote }}
+            - name: TASK_EXECUTOR_TIMEOUT
+              value: {{ .Values.api.taskExecutor.timeout | quote }}
+            - name: ENABLED_EXECUTORS
+              value: {{ .Values.api.taskExecutor.enabledExecutors | quote }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.api.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.api.readinessProbe.failureThreshold }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}

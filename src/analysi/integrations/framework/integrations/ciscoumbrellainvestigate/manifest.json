@@ -1,0 +1,166 @@
+{
+  "id": "ciscoumbrellainvestigate",
+  "app": "ciscoumbrellainvestigate",
+  "name": "Cisco Umbrella Investigate",
+  "version": "1.0.0",
+  "description": "Domain and IP threat intelligence lookups via the Cisco Umbrella Investigate API including categorization, WHOIS, security scores, risk scores, and DNS history",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ciscoumbrellainvestigate-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ciscoumbrellainvestigate-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco Umbrella Investigate instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_domain": "lookup_domain",
+      "lookup_ip": "lookup_ip"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "display_name": "API Access Token",
+        "description": "Cisco Umbrella Investigate API access token (Bearer token)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Cisco Umbrella Investigate by categorizing a known domain",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Comprehensive domain reputation lookup including categorization, co-occurrences, related domains, security scores, timeline tagging, and risk score",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to look up"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Query IP reputation by finding the latest domains hosted on the IP address",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to look up"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "domain_whois",
+      "name": "Domain WHOIS",
+      "description": "Run a WHOIS query for a domain to get registrant and contact information",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "domain_whois",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain or URL to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "domain_security_info",
+      "name": "Domain Security Info",
+      "description": "Get security-specific scores for a domain including DGA score, ASN score, perplexity, entropy, pagerank, and geodiversity",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "domain_security_info",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "dns_history",
+      "name": "DNS History",
+      "description": "Get DNS timeline and historical threat tagging for a domain including threat types, attack categories, and time periods",
+      "categories": ["enrichment", "investigation"],
+      "cy_name": "dns_history",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to query"
+          }
+        },
+        "required": ["domain"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}

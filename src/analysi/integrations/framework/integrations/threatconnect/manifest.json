@@ -1,0 +1,247 @@
+{
+  "id": "threatconnect",
+  "app": "threatconnect",
+  "name": "ThreatConnect",
+  "version": "1.0.0",
+  "description": "Threat intelligence platform for indicator lookup, creation, and owner management. Uses HMAC-SHA256 signed requests.",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 75,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "threatconnect-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "threatconnect-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this ThreatConnect instance"
+  },
+
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "lookup_ip",
+      "lookup_domain": "lookup_domain",
+      "lookup_file_hash": "lookup_hash",
+      "lookup_url": "lookup_url",
+      "lookup_email": "lookup_email",
+      "submit_ioc": "create_indicator"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "access_id": {
+        "type": "string",
+        "display_name": "Access ID",
+        "description": "ThreatConnect API access ID",
+        "required": true
+      },
+      "secret_key": {
+        "type": "string",
+        "display_name": "Secret Key",
+        "description": "ThreatConnect API secret key for HMAC signing",
+        "format": "password",
+        "required": true
+      }
+    },
+    "required": ["access_id", "secret_key"]
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "ThreatConnect instance URL (e.g., https://api.threatconnect.com or https://companyabc.threatconnect.com/api)",
+        "default": "https://api.threatconnect.com"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify ThreatConnect API connectivity by listing owners",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Look up an IP address indicator in ThreatConnect",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_ip",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to look up"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Filter by owner name (comma-separated for multiple)"
+          }
+        },
+        "required": ["ip"]
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Look up a domain/host indicator in ThreatConnect",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_domain",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain or hostname to look up"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Filter by owner name"
+          }
+        },
+        "required": ["domain"]
+      }
+    },
+    {
+      "id": "lookup_hash",
+      "name": "Lookup Hash",
+      "description": "Look up a file hash indicator (MD5, SHA1, SHA256) in ThreatConnect",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_hash",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "File hash (MD5, SHA1, or SHA256)"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Filter by owner name"
+          }
+        },
+        "required": ["hash"]
+      }
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL",
+      "description": "Look up a URL indicator in ThreatConnect",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to look up"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Filter by owner name"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "lookup_email",
+      "name": "Lookup Email",
+      "description": "Look up an email address indicator in ThreatConnect",
+      "categories": ["threat_intel", "enrichment"],
+      "cy_name": "lookup_email",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to look up"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Filter by owner name"
+          }
+        },
+        "required": ["email"]
+      }
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create a new indicator in ThreatConnect",
+      "categories": ["threat_intel", "response"],
+      "cy_name": "create_indicator",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "indicator_value": {
+            "type": "string",
+            "description": "Indicator value (IP, domain, hash, URL, or email)"
+          },
+          "indicator_type": {
+            "type": "string",
+            "description": "Indicator type: ip, domain, hash, url, or email",
+            "enum": ["ip", "domain", "hash", "url", "email"]
+          },
+          "rating": {
+            "type": "number",
+            "description": "Indicator rating (0 to 5)"
+          },
+          "confidence": {
+            "type": "integer",
+            "description": "Analytic confidence (0 to 100)"
+          }
+        },
+        "required": ["indicator_value", "indicator_type"]
+      }
+    },
+    {
+      "id": "list_owners",
+      "name": "List Owners",
+      "description": "List ThreatConnect owners/organizations visible to the configured credentials",
+      "categories": ["investigation"],
+      "cy_name": "list_owners",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/6m",
+      "enabled": true
+    }
+  ]
+}

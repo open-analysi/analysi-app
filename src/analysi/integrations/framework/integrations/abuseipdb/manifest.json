@@ -1,0 +1,202 @@
+{
+  "id": "abuseipdb",
+  "app": "abuseipdb",
+  "name": "AbuseIPDB",
+  "version": "1.0.0",
+  "description": "IP reputation and abuse reporting service",
+  "archetypes": [
+    "ThreatIntel"
+  ],
+  "priority": 70,
+  "integration_id_config": {
+    "default": "abuseipdb",
+    "pattern": "^[a-z0-9_-]+$",
+    "placeholder": "abuseipdb-prod"
+  },
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "AbuseIPDB API Key",
+        "format": "password"
+      }
+    },
+    "required": [
+      "api_key"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "default": "https://api.abuseipdb.com/api/v2",
+        "description": "API base URL"
+      },
+      "default_max_age_days": {
+        "type": "integer",
+        "default": 30,
+        "description": "Default lookback period for IP reports"
+      },
+      "timeout": {
+        "type": "integer",
+        "default": 30,
+        "description": "Request timeout in seconds"
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Validate API connectivity",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "method": "HealthCheckAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP",
+      "description": "Query IP reputation and abuse reports",
+      "categories": [
+        "threat_intel",
+        "enrichment"
+      ],
+      "cy_name": "lookup_ip",
+      "method": "LookupIpAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address to check"
+          },
+          "days": {
+            "type": "integer",
+            "default": 10,
+            "description": "Check for reports within this number of days"
+          }
+        },
+        "required": [
+          "ip"
+        ]
+      }
+    },
+    {
+      "id": "report_ip",
+      "name": "Report IP",
+      "description": "Report an IP address for abusive behavior",
+      "categories": [
+        "threat_intel",
+        "response"
+      ],
+      "cy_name": "report_ip",
+      "method": "ReportIpAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address to report"
+          },
+          "categories": {
+            "type": "string",
+            "description": "Comma-separated category IDs (e.g., '4,18,22')"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional comment describing the abuse"
+          }
+        },
+        "required": [
+          "ip",
+          "categories"
+        ]
+      }
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain (Not Supported)",
+      "description": "Domain lookups are not supported by AbuseIPDB",
+      "categories": [
+        "threat_intel"
+      ],
+      "cy_name": "lookup_domain",
+      "method": "LookupDomainAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain (not supported)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_file_hash",
+      "name": "Lookup File Hash (Not Supported)",
+      "description": "File hash lookups are not supported by AbuseIPDB",
+      "categories": [
+        "threat_intel"
+      ],
+      "cy_name": "lookup_file_hash",
+      "method": "LookupFileHashAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "File hash (not supported)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL (Not Supported)",
+      "description": "URL lookups are not supported by AbuseIPDB",
+      "categories": [
+        "threat_intel"
+      ],
+      "cy_name": "lookup_url",
+      "method": "LookupUrlAction",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL (not supported)"
+          }
+        },
+        "required": []
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "ThreatIntel": {
+      "lookup_ip": "lookup_ip",
+      "lookup_domain": "lookup_domain",
+      "lookup_file_hash": "lookup_file_hash",
+      "lookup_url": "lookup_url",
+      "submit_ioc": "report_ip"
+    }
+  },
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/6m",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,595 @@
+{
+  "id": "cortex_xdr",
+  "app": "cortex_xdr",
+  "name": "Palo Alto Cortex XDR",
+  "version": "1.0.0",
+  "description": "Palo Alto Cortex XDR integration for extended detection and response (XDR) providing endpoint management, incident investigation, threat response, and IOC management",
+  "archetypes": [
+    "EDR",
+    "AlertSource"
+  ],
+  "priority": 70,
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "API Key for authentication",
+        "required": true,
+        "sensitive": true,
+        "format": "password"
+      },
+      "api_key_id": {
+        "type": "string",
+        "description": "API Key ID",
+        "required": true
+      }
+    },
+    "required": [
+      "api_key",
+      "api_key_id"
+    ]
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "fqdn": {
+        "type": "string",
+        "description": "FQDN of Cortex XDR server (e.g., acme.xdr.us.paloaltonetworks.com)",
+        "required": true
+      },
+      "advanced": {
+        "type": "boolean",
+        "description": "Use advanced authentication (with nonce and timestamp hashing)",
+        "default": false
+      },
+      "timeout": {
+        "type": "integer",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 10,
+        "maximum": 300
+      },
+      "default_lookback_minutes": {
+        "type": "integer",
+        "display_name": "Default Lookback (minutes)",
+        "description": "How far back to search when no checkpoint exists",
+        "default": 5,
+        "minimum": 1
+      }
+    }
+  },
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Cortex XDR API",
+      "categories": [
+        "health_monitoring"
+      ],
+      "cy_name": "health_check",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all endpoints/sensors configured on Cortex XDR",
+      "categories": [
+        "investigation",
+        "endpoint_security"
+      ],
+      "cy_name": "list_endpoints",
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Policy",
+      "description": "Get the policy name for a specific endpoint",
+      "categories": [
+        "investigation",
+        "endpoint_security"
+      ],
+      "cy_name": "get_policy",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to get the policy name for"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "id": "get_action_status",
+      "name": "Get Action Status",
+      "description": "Retrieve the status of requested actions according to the action ID",
+      "categories": [
+        "investigation",
+        "monitoring"
+      ],
+      "cy_name": "get_action_status",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "action_id": {
+            "type": "integer",
+            "description": "Action ID to be queried"
+          }
+        },
+        "required": [
+          "action_id"
+        ]
+      }
+    },
+    {
+      "id": "retrieve_file",
+      "name": "Retrieve File",
+      "description": "Retrieve files from a specified endpoint",
+      "categories": [
+        "investigation",
+        "forensics"
+      ],
+      "cy_name": "retrieve_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to retrieve the files for"
+          },
+          "windows_path": {
+            "type": "string",
+            "description": "File path in Windows"
+          },
+          "linux_path": {
+            "type": "string",
+            "description": "File path in Linux"
+          },
+          "macos_path": {
+            "type": "string",
+            "description": "File path in Mac OS"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "id": "retrieve_file_details",
+      "name": "Retrieve File Details",
+      "description": "View the file retrieved by the Retrieve File action according to the action ID",
+      "categories": [
+        "investigation",
+        "forensics"
+      ],
+      "cy_name": "retrieve_file_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "action_id": {
+            "type": "integer",
+            "description": "Action ID of the file retrieval action"
+          }
+        },
+        "required": [
+          "action_id"
+        ]
+      }
+    },
+    {
+      "id": "quarantine_file",
+      "name": "Quarantine File",
+      "description": "Quarantine file on a specified endpoint",
+      "categories": [
+        "containment",
+        "threat_response"
+      ],
+      "cy_name": "quarantine_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID where the file is present"
+          },
+          "file_path": {
+            "type": "string",
+            "description": "Path of the file you want to quarantine"
+          },
+          "file_hash": {
+            "type": "string",
+            "description": "SHA256 hash of the file you want to quarantine"
+          }
+        },
+        "required": [
+          "endpoint_id",
+          "file_path",
+          "file_hash"
+        ]
+      }
+    },
+    {
+      "id": "unquarantine_file",
+      "name": "Unquarantine File",
+      "description": "Restore a quarantined file on a specified endpoint",
+      "categories": [
+        "remediation",
+        "threat_response"
+      ],
+      "cy_name": "unquarantine_file",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "SHA256 hash of the file you want to restore"
+          },
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to restore the file"
+          }
+        },
+        "required": [
+          "file_hash",
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Add a hash that does not exist in the allow or block list to a block list",
+      "categories": [
+        "containment",
+        "ioc_management"
+      ],
+      "cy_name": "block_hash",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "File hash in SHA256 to be added to the block list"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Additional information regarding this action"
+          },
+          "incident_id": {
+            "type": "integer",
+            "description": "Incident ID related to the file hash"
+          }
+        },
+        "required": [
+          "file_hash"
+        ]
+      }
+    },
+    {
+      "id": "allow_hash",
+      "name": "Allow Hash",
+      "description": "Add files that do not exist in the allow or block list to an allow list",
+      "categories": [
+        "remediation",
+        "ioc_management"
+      ],
+      "cy_name": "allow_hash",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "description": "File hash in SHA256 to be added to the allow list"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Additional information regarding this action"
+          },
+          "incident_id": {
+            "type": "integer",
+            "description": "Incident ID related to the file hash"
+          }
+        },
+        "required": [
+          "file_hash"
+        ]
+      }
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Isolate a specified endpoint from the network",
+      "categories": [
+        "containment",
+        "incident_response"
+      ],
+      "cy_name": "quarantine_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to be isolated"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Release a specified endpoint from isolation",
+      "categories": [
+        "remediation",
+        "incident_response"
+      ],
+      "cy_name": "unquarantine_device",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to be unisolated"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Run a scan on selected endpoints",
+      "categories": [
+        "investigation",
+        "threat_hunting"
+      ],
+      "cy_name": "scan_endpoint",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_all": {
+            "type": "boolean",
+            "description": "Scan all endpoints",
+            "default": false
+          },
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to scan"
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Name of host to scan"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "cancel_scan_endpoint",
+      "name": "Cancel Scan Endpoint",
+      "description": "Cancel the scan of selected endpoints",
+      "categories": [
+        "endpoint_management"
+      ],
+      "cy_name": "cancel_scan_endpoint",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "scan_all": {
+            "type": "boolean",
+            "description": "Cancel all endpoints",
+            "default": false
+          },
+          "endpoint_id": {
+            "type": "string",
+            "description": "Endpoint ID to cancel the scan"
+          },
+          "hostname": {
+            "type": "string",
+            "description": "Name of host to cancel scan"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Get a list of incidents filtered by incident IDs, modification time, or creation time",
+      "categories": [
+        "investigation",
+        "incident_management"
+      ],
+      "cy_name": "get_incidents",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "modification_time": {
+            "type": "integer",
+            "description": "Modification time of the incident in timestamp epoch milliseconds"
+          },
+          "creation_time": {
+            "type": "integer",
+            "description": "Creation time of the incident in timestamp epoch milliseconds"
+          },
+          "incident_id": {
+            "type": "integer",
+            "description": "Incident ID to be searched"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the incident",
+            "enum": [
+              "new",
+              "under_investigation",
+              "resolved_threat_handled",
+              "resolved_known_issue",
+              "resolved_false_positive",
+              "resolved_other",
+              "resolved_auto"
+            ]
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Get extra data fields of a specific incident including alerts and key artifacts",
+      "categories": [
+        "investigation",
+        "incident_management"
+      ],
+      "cy_name": "get_incident_details",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "integer",
+            "description": "Incident ID to be investigated"
+          },
+          "alerts_limit": {
+            "type": "integer",
+            "description": "The maximum number of related alerts to be returned"
+          }
+        },
+        "required": [
+          "incident_id"
+        ]
+      }
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Get a list of alerts with multiple events",
+      "categories": [
+        "investigation",
+        "alert_management"
+      ],
+      "cy_name": "get_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "integer",
+            "description": "Alert ID to be searched"
+          },
+          "alert_source": {
+            "type": "string",
+            "description": "The source which detected the alert"
+          },
+          "severity": {
+            "type": "string",
+            "description": "The severity of the alert",
+            "enum": [
+              "info",
+              "low",
+              "medium",
+              "high",
+              "unknown"
+            ]
+          },
+          "creation_time": {
+            "type": "integer",
+            "description": "Creation time of the alert in timestamp epoch milliseconds"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "pull_alerts",
+      "name": "Pull Alerts",
+      "description": "Pull security alerts from Cortex XDR detection engine",
+      "categories": [
+        "alert_source",
+        "investigation"
+      ],
+      "cy_name": "pull_alerts",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "description": "Start time (ISO 8601)"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "End time (ISO 8601)"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum alerts to return",
+            "default": 1000
+          }
+        }
+      }
+    },
+    {
+      "id": "alerts_to_ocsf",
+      "name": "Normalize Alerts to OCSF",
+      "description": "Normalize raw Cortex XDR alerts to OCSF Detection Finding v1.8.0",
+      "categories": [
+        "alert_source",
+        "normalization"
+      ],
+      "cy_name": "alerts_to_ocsf",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "raw_alerts": {
+            "type": "array",
+            "description": "List of raw Cortex XDR alert documents"
+          }
+        },
+        "required": [
+          "raw_alerts"
+        ]
+      }
+    }
+  ],
+  "archetype_mappings": {
+    "EDR": {
+      "isolate_host": "quarantine_device",
+      "release_host": "unquarantine_device",
+      "scan_host": "scan_endpoint",
+      "get_host_details": "list_endpoints",
+      "quarantine_file": "quarantine_file",
+      "collect_forensics": "retrieve_file"
+    },
+    "AlertSource": {
+      "pull_alerts": "pull_alerts",
+      "alerts_to_ocsf": "alerts_to_ocsf"
+    }
+  },
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    },
+    {
+      "action_id": "pull_alerts",
+      "schedule": "every/1m",
+      "enabled": true
+    }
+  ]
+}

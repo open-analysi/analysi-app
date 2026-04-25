@@ -1,0 +1,175 @@
+{
+  "name": "VirusTotal: File Hash Reputation Analysis",
+  "cy_name": "virustotal_file_hash_reputation_analysis",
+  "description": "Enriches alerts with VirusTotal file hash reputation analysis. Validates primary IOC is a file hash (MD5, SHA1, SHA256), performs reputation lookup, calculates risk scores, and adds structured enrichment data plus AI security assessment to the alert.",
+  "app": "VirusTotal",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "directive": "You are a malware analysis specialist with expertise in threat intelligence. Analyze file hash reputation data from VirusTotal and provide comprehensive security assessments with actionable recommendations. Focus on detection ratios, vendor consensus, file metadata, and contextual risk factors to deliver clear, decisive guidance for security teams.",
+  "script_file": "virustotal_file_hash_reputation_analysis.cy",
+  "categories": [
+    "Foundation",
+    "Threat Intelligence",
+    "File Analysis",
+    "Alert Enrichment",
+    "VirusTotal",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1500
+  },
+  "authored_by": "system",
+  "tags": [
+    "security",
+    "malware-analysis",
+    "file-reputation",
+    "threat-intel",
+    "automated-analysis",
+    "enrichment"
+  ],
+  "data_samples": [
+    {
+      "name": "Malicious File - EDR Quarantine",
+      "description": "Critical severity EDR alert for malicious file detected (65/68 engines flagged as malicious)",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:22:10Z",
+        "severity": "critical",
+        "source_product": "Falcon EDR",
+        "title": "Malicious File Detected on Endpoint",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Malicious File Detected on Endpoint",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Malware Detection - Ransomware Behavior",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malware"
+          ]
+        },
+        "rule_name": "Malware Detection - Ransomware Behavior",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "44d88612fea8a8f36de82e1278abb02f"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "invoice.exe",
+              "cmd_line": "C:\\Users\\jdoe\\Downloads\\invoice.exe"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "laptop-finance-12.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"EDR-DEMO-14221\", \"severity\": \"critical\", \"file_hash\": \"44d88612fea8a8f36de82e1278abb02f\", \"action\": \"quarantined\"}"
+      }
+    },
+    {
+      "name": "Suspicious File - DLP Alert",
+      "description": "High severity DLP alert for potentially suspicious file (3/72 engines flagged)",
+      "input": {
+        "triggering_event_time": "2025-10-23T15:30:45Z",
+        "severity": "high",
+        "source_product": "Data Loss Prevention",
+        "title": "Unauthorized File Transfer Attempt",
+        "source_vendor": "Symantec",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Unauthorized File Transfer Attempt",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Sensitive Data Exfiltration - USB Device",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Data Exfiltration"
+          ]
+        },
+        "rule_name": "Sensitive Data Exfiltration - USB Device",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:DLP"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "5d41402abc4b2a76b9719d911017c592"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "explorer.exe"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jsmith@corp.local"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"DLP-DEMO-15304\", \"severity\": \"high\", \"file_hash\": \"5d41402abc4b2a76b9719d911017c592\", \"action\": \"blocked\"}"
+      }
+    },
+    {
+      "name": "Non-FileHash IOC - IP Alert",
+      "description": "Alert with IP IOC should be returned unchanged (no file hash enrichment)",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:45:30Z",
+        "severity": "high",
+        "source_product": "Next-Generation Firewall",
+        "title": "Suspicious Outbound Connection to Known Malicious IP",
+        "source_vendor": "Palo Alto Networks",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Outbound Connection to Known Malicious IP",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Suspicious Outbound Connection to Known Malicious IP",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "185.220.101.45"
+          }
+        ],
+        "raw_data": "{\"alert_id\": \"FW-DEMO-16453\", \"dst_ip\": \"185.220.101.45\"}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "id": "ciscomeraki",
+  "app": "ciscomeraki",
+  "name": "Cisco Meraki",
+  "version": "1.0.0",
+  "description": "Cisco Meraki cloud-managed network security integration for device management, client visibility, and network access control",
+  "archetypes": ["NetworkSecurity"],
+  "priority": 65,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "ciscomeraki-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "ciscomeraki-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Cisco Meraki integration instance"
+  },
+
+  "archetype_mappings": {
+    "NetworkSecurity": {
+      "block_ip": "block_client",
+      "unblock_ip": "unblock_client",
+      "get_traffic_logs": "get_clients"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "display_name": "API Key",
+        "description": "Meraki Dashboard API key for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Meraki Dashboard API base URL",
+        "default": "https://api.meraki.com",
+        "placeholder": "https://api.meraki.com",
+        "required": true
+      },
+      "organization_id": {
+        "type": "string",
+        "display_name": "Organization ID",
+        "description": "Default Meraki organization ID (can be overridden per action)",
+        "placeholder": "123456789"
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify Cisco Meraki API connectivity by listing accessible organizations",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "list_networks",
+      "name": "List Networks",
+      "description": "List all networks in a Meraki organization",
+      "categories": ["investigation"],
+      "cy_name": "list_networks",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "description": "Organization ID (uses default from settings if not provided)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List all devices in a Meraki network",
+      "categories": ["investigation"],
+      "cy_name": "list_devices",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "network_id": {
+            "type": "string",
+            "description": "Network ID to list devices from"
+          }
+        },
+        "required": ["network_id"]
+      }
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device",
+      "description": "Get details for a specific device by serial number",
+      "categories": ["investigation"],
+      "cy_name": "get_device",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "network_id": {
+            "type": "string",
+            "description": "Network ID the device belongs to"
+          },
+          "serial": {
+            "type": "string",
+            "description": "Device serial number"
+          }
+        },
+        "required": ["network_id", "serial"]
+      }
+    },
+    {
+      "id": "get_clients",
+      "name": "Get Clients",
+      "description": "List clients connected to a specific device",
+      "categories": ["investigation"],
+      "cy_name": "get_clients",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "serial": {
+            "type": "string",
+            "description": "Device serial number"
+          },
+          "timespan": {
+            "type": "integer",
+            "description": "Timespan in seconds (300-2592000) to look back for clients",
+            "minimum": 300,
+            "maximum": 2592000
+          }
+        },
+        "required": ["serial"]
+      }
+    },
+    {
+      "id": "block_client",
+      "name": "Block Client",
+      "description": "Block a client on a Meraki network by setting its policy to Blocked",
+      "categories": ["containment"],
+      "cy_name": "block_client",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "network_id": {
+            "type": "string",
+            "description": "Network ID where the client is connected"
+          },
+          "client_id": {
+            "type": "string",
+            "description": "Client ID (MAC address) to block"
+          }
+        },
+        "required": ["network_id", "client_id"]
+      }
+    },
+    {
+      "id": "unblock_client",
+      "name": "Unblock Client",
+      "description": "Unblock a client on a Meraki network by setting its policy to Normal",
+      "categories": ["containment"],
+      "cy_name": "unblock_client",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "network_id": {
+            "type": "string",
+            "description": "Network ID where the client is connected"
+          },
+          "client_id": {
+            "type": "string",
+            "description": "Client ID (MAC address) to unblock"
+          }
+        },
+        "required": ["network_id", "client_id"]
+      }
+    }
+  ]
+}

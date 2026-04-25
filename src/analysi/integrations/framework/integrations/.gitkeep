@@ -1,0 +1,2 @@
+# This directory will contain integration implementations
+# Each integration will have its own folder with manifest.json and actions.py

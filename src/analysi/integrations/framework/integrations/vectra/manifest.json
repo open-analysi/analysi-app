@@ -1,0 +1,304 @@
+{
+  "id": "vectra",
+  "app": "vectra",
+  "name": "Vectra AI",
+  "version": "1.0.0",
+  "description": "Vectra AI NDR integration for network detection and response, entity investigation, and analyst assignment management",
+  "archetypes": ["SIEM"],
+  "priority": 70,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "vectra-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "vectra-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Vectra AI integration instance"
+  },
+
+  "archetype_mappings": {
+    "SIEM": {
+      "query_events": "list_detections",
+      "get_alert_details": "get_detection",
+      "update_alert_status": "mark_detection"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "display_name": "API Token",
+        "description": "Vectra API token for authentication",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "base_url": {
+        "type": "string",
+        "display_name": "Base URL",
+        "description": "Vectra Brain base URL (e.g., https://brain.vectra.example.com)",
+        "placeholder": "https://brain.vectra.example.com",
+        "required": true
+      },
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30,
+        "minimum": 5,
+        "maximum": 300
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Verify API connectivity to Vectra Brain",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_entity",
+      "name": "Get Entity",
+      "description": "Get details of a host or account entity",
+      "categories": ["investigation"],
+      "cy_name": "get_entity",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "description": "Type of entity (host or account)",
+            "enum": ["host", "account"]
+          },
+          "entity_id": {
+            "type": "integer",
+            "description": "Entity ID"
+          }
+        },
+        "required": ["entity_type", "entity_id"]
+      }
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "List detections for an entity with optional filters",
+      "categories": ["investigation", "threat_intel"],
+      "cy_name": "list_detections",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "description": "Type of entity (host or account)",
+            "enum": ["host", "account"]
+          },
+          "entity_id": {
+            "type": "integer",
+            "description": "Entity ID to list detections for"
+          }
+        },
+        "required": ["entity_type", "entity_id"]
+      }
+    },
+    {
+      "id": "get_detection",
+      "name": "Get Detection",
+      "description": "Get detection details by detection ID",
+      "categories": ["investigation"],
+      "cy_name": "get_detection",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detection_id": {
+            "type": "integer",
+            "description": "Detection ID"
+          }
+        },
+        "required": ["detection_id"]
+      }
+    },
+    {
+      "id": "mark_detection",
+      "name": "Mark Detection",
+      "description": "Mark a detection as fixed",
+      "categories": ["response"],
+      "cy_name": "mark_detection",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detection_id": {
+            "type": "integer",
+            "description": "Detection ID to mark as fixed"
+          }
+        },
+        "required": ["detection_id"]
+      }
+    },
+    {
+      "id": "unmark_detection",
+      "name": "Unmark Detection",
+      "description": "Unmark a detection (remove fixed status)",
+      "categories": ["response"],
+      "cy_name": "unmark_detection",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "detection_id": {
+            "type": "integer",
+            "description": "Detection ID to unmark"
+          }
+        },
+        "required": ["detection_id"]
+      }
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note to an entity or detection",
+      "categories": ["response"],
+      "cy_name": "add_note",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "object_type": {
+            "type": "string",
+            "description": "Type of object (host, account, or detection)",
+            "enum": ["host", "account", "detection"]
+          },
+          "object_id": {
+            "type": "integer",
+            "description": "Object ID"
+          },
+          "note": {
+            "type": "string",
+            "description": "Note text to add"
+          }
+        },
+        "required": ["object_type", "object_id", "note"]
+      }
+    },
+    {
+      "id": "list_assignments",
+      "name": "List Assignments",
+      "description": "List analyst assignments",
+      "categories": ["investigation"],
+      "cy_name": "list_assignments",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "resolve_assignment",
+      "name": "Resolve Assignment",
+      "description": "Resolve an analyst assignment with outcome and optional note",
+      "categories": ["response"],
+      "cy_name": "resolve_assignment",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "assignment_id": {
+            "type": "integer",
+            "description": "Assignment ID to resolve"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "Resolution outcome title"
+          },
+          "note": {
+            "type": "string",
+            "description": "Resolution note",
+            "default": "Resolved via Analysi"
+          },
+          "triage_as": {
+            "type": "string",
+            "description": "Triage classification"
+          },
+          "detection_ids": {
+            "type": "string",
+            "description": "Comma-separated detection IDs"
+          }
+        },
+        "required": ["assignment_id", "outcome"]
+      }
+    },
+    {
+      "id": "add_tags",
+      "name": "Add Tags",
+      "description": "Add tags to an entity",
+      "categories": ["response"],
+      "cy_name": "add_tags",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "description": "Type of entity (host or account)",
+            "enum": ["host", "account"]
+          },
+          "entity_id": {
+            "type": "integer",
+            "description": "Entity ID"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated list of tags to add"
+          }
+        },
+        "required": ["entity_type", "entity_id", "tags"]
+      }
+    },
+    {
+      "id": "remove_tags",
+      "name": "Remove Tags",
+      "description": "Remove tags from an entity",
+      "categories": ["response"],
+      "cy_name": "remove_tags",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "description": "Type of entity (host or account)",
+            "enum": ["host", "account"]
+          },
+          "entity_id": {
+            "type": "integer",
+            "description": "Entity ID"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated list of tags to remove"
+          }
+        },
+        "required": ["entity_type", "entity_id", "tags"]
+      }
+    }
+  ]
+}

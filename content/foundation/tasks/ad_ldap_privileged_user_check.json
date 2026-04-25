@@ -1,0 +1,178 @@
+{
+  "name": "AD LDAP: Privileged User Group Membership Check",
+  "cy_name": "ad_ldap_privileged_user_check",
+  "description": "Enriches alerts with Active Directory group membership analysis to identify privileged users and assess security risk level. Critical for alert triage - users with elevated privileges (Domain Admins, Enterprise Admins, etc.) significantly increase threat severity and require immediate attention. Only processes alerts where the primary entity type is 'user' (via actor.user).",
+  "app": "IdentityProvider",
+  "directive": "You are a senior security analyst specializing in identity and access management. Analyze Active Directory group memberships to identify privileged users and assess security risk in the context of security alerts. Focus on: 1) Identifying highly privileged groups (Domain Admins, Enterprise Admins, Schema Admins), 2) Calculating risk scores based on privilege level, 3) Explaining how elevated privileges affect THIS SPECIFIC ALERT's severity and investigation priority, 4) Recommending specific monitoring and response actions for privileged user activities in the alert context.",
+  "script_file": "ad_ldap_privileged_user_check.cy",
+  "function": "reasoning",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "categories": [
+    "Foundation",
+    "Identity Management",
+    "Active Directory",
+    "Privileged Access",
+    "Risk Assessment",
+    "LDAP",
+    "Alert Triage",
+    "Alert Enrichment",
+    "AI"
+  ],
+  "llm_config": {
+    "default_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 800
+  },
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Privileged Admin User Alert",
+      "description": "Alert for privileged domain admin accessing sensitive system",
+      "input": {
+        "triggering_event_time": "2025-01-15T14:30:00Z",
+        "severity": "high",
+        "source_product": "Active Directory",
+        "enrichments": null,
+        "title": "Suspicious Login from Domain Admin Account",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Login from Domain Admin Account",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Suspicious Login from Domain Admin Account",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "admin.user"
+          }
+        },
+        "raw_data": "{\"EventID\": 4624, \"LogonType\": 10, \"User\": \"admin.user\"}"
+      }
+    },
+    {
+      "name": "Regular User Alert",
+      "description": "Alert for regular user with no privileged access",
+      "input": {
+        "triggering_event_time": "2025-01-15T09:15:00Z",
+        "severity": "medium",
+        "source_product": "Active Directory",
+        "enrichments": null,
+        "title": "Failed Login Attempt Detected",
+        "source_vendor": "Microsoft",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Failed Login Attempt Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Failed Login Attempt Detected",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "alice.johnson"
+          }
+        },
+        "raw_data": "{\"EventID\": 4625, \"FailureReason\": \"Bad password\", \"User\": \"alice.johnson\"}"
+      }
+    },
+    {
+      "name": "Non-User Entity Alert (Skip)",
+      "description": "Alert with device entity - should be returned unchanged",
+      "input": {
+        "triggering_event_time": "2025-01-15T11:45:00Z",
+        "severity": "critical",
+        "source_product": "Falcon EDR",
+        "enrichments": null,
+        "title": "Malware Detected on Workstation",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Malware Detected on Workstation",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Malware Detected on Workstation",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "device": {
+          "hostname": "WORKSTATION-001"
+        },
+        "raw_data": "{\"DetectionName\": \"Trojan.Generic\", \"Hostname\": \"WORKSTATION-001\"}"
+      }
+    },
+    {
+      "name": "Unknown User Alert",
+      "description": "Alert for user not found in Active Directory",
+      "input": {
+        "triggering_event_time": "2025-01-15T16:00:00Z",
+        "severity": "medium",
+        "source_product": "Azure AD",
+        "enrichments": null,
+        "title": "Authentication Attempt from Unknown Source",
+        "source_vendor": "Microsoft",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Authentication Attempt from Unknown Source",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Authentication Attempt from Unknown Source",
+            "type": "Rule",
+            "type_id": 1
+          }
+        },
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "unknown_external_user"
+          }
+        },
+        "raw_data": "{\"EventType\": \"SignInAttempt\", \"User\": \"unknown_external_user\", \"Result\": \"Failed\"}"
+      }
+    }
+  ],
+  "tags": [
+    "identity",
+    "active-directory",
+    "ldap",
+    "privileged-access",
+    "risk-assessment",
+    "alert-triage",
+    "alert-enrichment",
+    "security-context",
+    "threat-analysis"
+  ]
+}

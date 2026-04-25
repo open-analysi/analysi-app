@@ -1,0 +1,289 @@
+{
+  "name": "AD LDAP: Find Users in Same Groups",
+  "cy_name": "ad_ldap_find_users_in_same_groups",
+  "description": "Enriches alerts with related users who share group memberships with the alert's risk entity. Validates the primary entity type is 'user' (via actor.user), queries Active Directory for group memberships, and adds comprehensive user relationship data to alert enrichments. Useful for lateral movement analysis, identifying users with similar permissions, and security investigations.",
+  "app": "IdentityProvider",
+  "function": "enrichment",
+  "scope": "processing",
+  "mode": "saved",
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "script_file": "ad_ldap_find_users_in_same_groups.cy",
+  "categories": [
+    "Foundation",
+    "Identity Management",
+    "Active Directory",
+    "Security Investigation",
+    "LDAP",
+    "Group Management",
+    "Lateral Movement Analysis",
+    "Alert Enrichment"
+  ],
+  "authored_by": "system",
+  "data_samples": [
+    {
+      "name": "Suspicious Login - User Alert",
+      "description": "High severity alert for suspicious login from compromised user - should enrich with related users in same groups",
+      "input": {
+        "triggering_event_time": "2025-10-23T09:15:32Z",
+        "severity": "high",
+        "source_product": "Azure AD",
+        "enrichments": null,
+        "title": "Suspicious Login from Unusual Location",
+        "source_vendor": "Microsoft",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Suspicious Login from Unusual Location",
+          "uid": "sample-001",
+          "analytic": {
+            "name": "Impossible Travel Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Compromised Credentials"
+          ]
+        },
+        "rule_name": "Impossible Travel Detection",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "203.0.113.45"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "203.0.113.45"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "jsmith"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"AAD-DEMO-09153\", \"user\": \"jsmith\", \"source_ip\": \"203.0.113.45\", \"anomaly\": \"impossible_travel\"}"
+      }
+    },
+    {
+      "name": "Privilege Escalation Attempt - User Alert",
+      "description": "Critical severity alert for privilege escalation - enrich with users having similar high-privilege group memberships",
+      "input": {
+        "triggering_event_time": "2025-10-23T14:22:18Z",
+        "severity": "critical",
+        "source_product": "Falcon EDR",
+        "enrichments": null,
+        "title": "Unauthorized Privilege Escalation Detected",
+        "source_vendor": "CrowdStrike",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Unauthorized Privilege Escalation Detected",
+          "uid": "sample-002",
+          "analytic": {
+            "name": "Privilege Escalation via Token Manipulation",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Privilege Escalation"
+          ]
+        },
+        "rule_name": "Privilege Escalation via Token Manipulation",
+        "disposition_id": 15,
+        "disposition": "Detected",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "process": {
+              "name": "powershell.exe",
+              "file": {
+                "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+              },
+              "cmd_line": "powershell.exe -enc JABhAGQAbQBpAG4A...",
+              "parent_process": {
+                "name": "cmd.exe"
+              }
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "admin_backup"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"CSFALCON-DEMO-14221\", \"severity\": \"critical\", \"technique\": \"T1134.001\", \"user\": \"admin_backup\"}"
+      }
+    },
+    {
+      "name": "Malware Execution - Device Alert (Non-User)",
+      "description": "Alert with device as primary risk entity - should return unchanged (not a user alert)",
+      "input": {
+        "triggering_event_time": "2025-10-23T11:45:09Z",
+        "severity": "high",
+        "source_product": "Endpoint Protection",
+        "enrichments": null,
+        "title": "Malware Detected on Endpoint",
+        "source_vendor": "Symantec",
+        "severity_id": 4,
+        "finding_info": {
+          "title": "Malware Detected on Endpoint",
+          "uid": "sample-003",
+          "analytic": {
+            "name": "Trojan Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Malware"
+          ]
+        },
+        "rule_name": "Trojan Detection",
+        "disposition_id": 3,
+        "disposition": "Quarantined",
+        "metadata": {
+          "labels": [
+            "source_category:EDR"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 8,
+            "type": "Hash",
+            "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "evidences": [
+          {
+            "process": {
+              "name": "malicious.exe",
+              "file": {
+                "path": "C:\\Users\\Public\\Downloads\\malicious.exe"
+              }
+            }
+          }
+        ],
+        "device": {
+          "hostname": "WORKSTATION-042.corp.local"
+        },
+        "raw_data": "{\"alert_id\": \"SEP-DEMO-11450\", \"device\": \"WORKSTATION-042\", \"malware\": \"Trojan.GenericKD.123456\"}"
+      }
+    },
+    {
+      "name": "Account Lockout - User Not Found in AD",
+      "description": "Alert for user account that doesn't exist in Active Directory - should enrich with 'user not found' message",
+      "input": {
+        "triggering_event_time": "2025-10-23T16:30:55Z",
+        "severity": "medium",
+        "source_product": "Windows Event Log",
+        "enrichments": null,
+        "title": "Excessive Failed Login Attempts",
+        "source_vendor": "Microsoft",
+        "severity_id": 3,
+        "finding_info": {
+          "title": "Excessive Failed Login Attempts",
+          "uid": "sample-004",
+          "analytic": {
+            "name": "Account Lockout Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Brute Force"
+          ]
+        },
+        "rule_name": "Account Lockout Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Identity"
+          ]
+        },
+        "observables": [],
+        "actor": {
+          "user": {
+            "name": "nonexistent_user"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"WEL-DEMO-16305\", \"user\": \"nonexistent_user\", \"event_id\": 4740, \"failures\": 15}"
+      }
+    },
+    {
+      "name": "Insider Threat - High-Privilege User",
+      "description": "Alert for data exfiltration by privileged user - enrich to identify other users with similar high-level access",
+      "input": {
+        "triggering_event_time": "2025-10-23T18:12:44Z",
+        "severity": "critical",
+        "source_product": "DLP",
+        "enrichments": null,
+        "title": "Large Data Transfer to External Storage",
+        "source_vendor": "McAfee",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "Large Data Transfer to External Storage",
+          "uid": "sample-005",
+          "analytic": {
+            "name": "Sensitive Data Exfiltration",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Data Exfiltration"
+          ]
+        },
+        "rule_name": "Sensitive Data Exfiltration",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:DLP"
+          ]
+        },
+        "observables": [],
+        "evidences": [
+          {
+            "dst_endpoint": {
+              "ip": "198.51.100.88"
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "actor": {
+          "user": {
+            "name": "db_admin"
+          }
+        },
+        "raw_data": "{\"alert_id\": \"DLP-DEMO-18124\", \"user\": \"db_admin\", \"bytes\": 524288000, \"policy\": \"PII_PROTECTION\"}"
+      }
+    }
+  ],
+  "tags": [
+    "identity",
+    "active-directory",
+    "ldap",
+    "group-membership",
+    "security-investigation",
+    "lateral-movement",
+    "user-enumeration",
+    "permissions-analysis",
+    "enrichment",
+    "user-context"
+  ]
+}

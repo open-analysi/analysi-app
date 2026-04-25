@@ -1,0 +1,7 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "Sample tasks and workflows for learning and getting started",
+  "type": "built-in",
+  "depends_on": ["foundation"]
+}

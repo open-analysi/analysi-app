@@ -1,0 +1,452 @@
+{
+  "name": "ProxyNotShell CVE-2022-41082 Investigation Workflow",
+  "description": "Partial implementation of ProxyNotShell CVE-2022-41082 investigation workflow (10/12 tasks). Operational workflow with IP reputation analysis (VirusTotal & AbuseIPDB), SIEM evidence gathering, EDR behavioral analysis (processes & terminal history), and Mandatory Triad. Missing: CVE analysis, target profiling, and attack block verification tasks.",
+  "is_dynamic": false,
+  "io_schema": {
+    "input": {
+      "$schema": "http://json-schema.org/schema#",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "raw_alert": {
+          "type": "string"
+        },
+        "rule_name": {
+          "type": "string"
+        },
+        "alert_type": {
+          "type": "string"
+        },
+        "network_info": {
+          "type": "object",
+          "properties": {
+            "dst_ip": {
+              "type": "string"
+            },
+            "src_ip": {
+              "type": "string"
+            },
+            "dst_port": {
+              "type": "integer"
+            },
+            "protocol": {
+              "type": "string"
+            },
+            "bytes_sent": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "protocol"
+          ]
+        },
+        "device_action": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "source_vendor": {
+          "type": "string"
+        },
+        "source_product": {
+          "type": "string"
+        },
+        "source_category": {
+          "type": "string"
+        },
+        "primary_ioc_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_ioc_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "triggering_event_time": {
+          "type": "string"
+        },
+        "primary_risk_entity_type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "primary_risk_entity_value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "triggering_event_time",
+        "severity",
+        "raw_alert",
+        "source_vendor",
+        "source_product",
+        "source_category"
+      ]
+    },
+    "output": {
+      "type": "object"
+    }
+  },
+  "nodes": [
+    {
+      "node_id": "n1",
+      "kind": "task",
+      "name": "Alert Context Generation",
+      "is_start_node": true,
+      "task_cy_name": "alert_context_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n2",
+      "kind": "task",
+      "name": "VirusTotal IP Reputation Analysis",
+      "task_cy_name": "virustotal_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n3",
+      "kind": "task",
+      "name": "AbuseIPDB IP Reputation Analysis",
+      "task_cy_name": "abuseipdb_ip_reputation_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n4",
+      "kind": "task",
+      "name": "Splunk Triggering Event Retrieval",
+      "task_cy_name": "splunk_triggering_event_retrieval",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge1",
+      "kind": "transformation",
+      "name": "Merge Phase 2 Enrichments",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n5",
+      "kind": "task",
+      "name": "Splunk Supporting Evidence Search",
+      "task_cy_name": "splunk_supporting_evidence_search",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge2",
+      "kind": "transformation",
+      "name": "Merge Phase 3 Evidence",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n6",
+      "kind": "task",
+      "name": "Echo EDR Process Behavior Analysis",
+      "task_cy_name": "echo_edr_processes_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n7",
+      "kind": "task",
+      "name": "Echo EDR Terminal History Analysis",
+      "task_cy_name": "echo_edr_terminal_history_reasoning",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge3",
+      "kind": "transformation",
+      "name": "Merge Phase 4 EDR",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n8",
+      "kind": "task",
+      "name": "Alert Detailed Analysis",
+      "task_cy_name": "alert_detailed_analysis",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n9",
+      "kind": "task",
+      "name": "Alert Disposition Determination",
+      "task_cy_name": "alert_disposition_determination",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "n10",
+      "kind": "task",
+      "name": "Alert Summary Generation",
+      "task_cy_name": "alert_summary_generation",
+      "schemas": {
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "node_id": "merge4",
+      "kind": "transformation",
+      "name": "Final Merge",
+      "node_template_id": "00000000-0000-0000-0000-000000000002",
+      "schemas": {
+        "input": {
+          "type": "array"
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "e1",
+      "from_node_id": "n1",
+      "to_node_id": "n2"
+    },
+    {
+      "edge_id": "e2",
+      "from_node_id": "n1",
+      "to_node_id": "n3"
+    },
+    {
+      "edge_id": "e3",
+      "from_node_id": "n1",
+      "to_node_id": "n4"
+    },
+    {
+      "edge_id": "e4",
+      "from_node_id": "n2",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e5",
+      "from_node_id": "n3",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e6",
+      "from_node_id": "n4",
+      "to_node_id": "merge1"
+    },
+    {
+      "edge_id": "e7",
+      "from_node_id": "merge1",
+      "to_node_id": "n5"
+    },
+    {
+      "edge_id": "e8",
+      "from_node_id": "n5",
+      "to_node_id": "merge2"
+    },
+    {
+      "edge_id": "e9",
+      "from_node_id": "merge2",
+      "to_node_id": "n6"
+    },
+    {
+      "edge_id": "e10",
+      "from_node_id": "merge2",
+      "to_node_id": "n7"
+    },
+    {
+      "edge_id": "e11",
+      "from_node_id": "n6",
+      "to_node_id": "merge3"
+    },
+    {
+      "edge_id": "e12",
+      "from_node_id": "n7",
+      "to_node_id": "merge3"
+    },
+    {
+      "edge_id": "e13",
+      "from_node_id": "merge3",
+      "to_node_id": "n8"
+    },
+    {
+      "edge_id": "e14",
+      "from_node_id": "n8",
+      "to_node_id": "n9"
+    },
+    {
+      "edge_id": "e15",
+      "from_node_id": "n8",
+      "to_node_id": "n10"
+    },
+    {
+      "edge_id": "e16",
+      "from_node_id": "n9",
+      "to_node_id": "merge4"
+    },
+    {
+      "edge_id": "e17",
+      "from_node_id": "n10",
+      "to_node_id": "merge4"
+    }
+  ],
+  "data_samples": [
+    {
+      "name": "ProxyNotShell CVE-2022-41082 - Critical Exchange Exploitation",
+      "description": "Critical severity ProxyNotShell exploitation attempt against Exchange server with PowerShell payload",
+      "input": {
+        "source_product": "Exchange IIS",
+        "severity": "critical",
+        "source_vendor": "Microsoft",
+        "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+        "triggering_event_time": "2025-10-23T07:19:00Z",
+        "severity_id": 5,
+        "finding_info": {
+          "title": "PowerShell in URL - CVE-2022-41082 Exchange Exploitation",
+          "analytic": {
+            "name": "PowerShell_in_URL_Detection",
+            "type": "Rule",
+            "type_id": 1
+          },
+          "types": [
+            "Web Attack - CVE Exploitation"
+          ]
+        },
+        "rule_name": "PowerShell_in_URL_Detection",
+        "disposition_id": 2,
+        "disposition": "Blocked",
+        "metadata": {
+          "labels": [
+            "source_category:Firewall"
+          ]
+        },
+        "observables": [
+          {
+            "type_id": 2,
+            "type": "IP Address",
+            "value": "91.234.56.6"
+          }
+        ],
+        "evidences": [
+          {
+            "src_endpoint": {
+              "ip": "91.234.56.6"
+            },
+            "dst_endpoint": {
+              "ip": "10.10.30.8",
+              "port": 443
+            },
+            "connection_info": {
+              "protocol_name": "HTTPS"
+            }
+          }
+        ],
+        "device": {
+          "hostname": "10.10.30.8"
+        },
+        "raw_data": "{\"url\": \"/autodiscover/autodiscover.json?@attacker.example/owa/&Email=autodiscover/autodiscover.json%3f@attacker.example&Protocol=XYZ&FooProtocol=Powershell\"}"
+      }
+    }
+  ],
+  "categories": [
+    "Examples"
+  ]
+}

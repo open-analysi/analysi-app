@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    "security"
+  ],
+  "status": "enabled",
+  "visible": true,
+  "system_only": false,
+  "app": "default",
+  "extraction_eligible": true,
+  "root_document_path": "SKILL.md",
+  "config": {},
+  "name": "runbooks-manager",
+  "cy_name": "runbooks_manager",
+  "description": "Build, match, and manage security investigation runbooks. Create from analyst investigations or SOAR playbooks, match alerts to existing runbooks, or compose new ones from patterns. Self-contained skill for all runbook operations."
+}

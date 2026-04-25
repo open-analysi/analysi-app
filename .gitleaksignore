@@ -1,0 +1,14 @@
+# Pre-existing test fixtures with fake/dummy private keys for mocking.
+# Tests and legacy planning docs are now allowlisted via .gitleaks.toml paths,
+# but these fingerprints are kept for reference.
+tests/unit/third_party_integrations/bigquery/test_actions.py:private-key:33
+tests/unit/third_party_integrations/bigquery/test_actions.py:private-key:57
+tests/unit/third_party_integrations/bigquery/test_actions.py:private-key:81
+tests/unit/third_party_integrations/bigquery/test_actions.py:private-key:105
+tests/unit/third_party_integrations/google_gmail/test_actions.py:private-key:29
+tests/unit/third_party_integrations/chronicle/test_actions.py:private-key:32
+
+# False positives in source code (URL path fragment, Python kwarg, doc placeholder).
+src/analysi/agentic_orchestration/config.py:generic-api-key:110
+src/analysi/integrations/framework/integrations/ad_ldap/actions.py:generic-api-key:102
+src/analysi/integrations/framework/integrations/zscaler/README.md:generic-api-key:262

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r 'select((.tool_input.file_path // .tool_response.filePath // \"\") | test(\"/ui/\")) | .session_id' | { read -r sid && [ -n \"$sid\" ] && touch \"/tmp/claude-ui-touched-$sid\"; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sid=$(jq -r '.session_id // empty'); f=\"/tmp/claude-ui-touched-$sid\"; if [ -f \"$f\" ]; then rm -f \"$f\"; echo \"→ ui/ was edited this session; running ui unit tests...\"; make -C /Users/imarios/Projects/open-analysi/analysi-app/ui test-unit; fi",
+            "statusMessage": "Running UI tests",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

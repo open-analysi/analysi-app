@@ -1,0 +1,187 @@
+{
+  "id": "proofpoint",
+  "app": "proofpoint",
+  "name": "Proofpoint TAP",
+  "version": "1.0.0",
+  "description": "Proofpoint Targeted Attack Protection integration for campaign investigation, threat forensics, and URL decoding",
+  "archetypes": ["EmailSecurity"],
+  "priority": 80,
+  "requires_credentials": true,
+
+  "integration_id_config": {
+    "default": "proofpoint-main",
+    "pattern": "^[a-z0-9][a-z0-9-]*$",
+    "placeholder": "proofpoint-main",
+    "display_name": "Integration ID",
+    "description": "Unique identifier for this Proofpoint TAP integration instance"
+  },
+
+  "archetype_mappings": {
+    "EmailSecurity": {
+      "get_email_trace": "get_forensic_data_by_campaign"
+    }
+  },
+
+  "credential_schema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "display_name": "Service Principal",
+        "description": "Proofpoint TAP service principal (username)",
+        "required": true
+      },
+      "password": {
+        "type": "string",
+        "display_name": "Secret",
+        "description": "Proofpoint TAP secret (password)",
+        "format": "password",
+        "required": true
+      }
+    }
+  },
+
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "timeout": {
+        "type": "integer",
+        "display_name": "Request Timeout",
+        "description": "HTTP request timeout in seconds",
+        "default": 30
+      }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "health_check",
+      "name": "Health Check",
+      "description": "Test connectivity to Proofpoint TAP API",
+      "categories": ["health_monitoring"],
+      "cy_name": "health_check",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "id": "get_campaign_data",
+      "name": "Get Campaign Data",
+      "description": "Fetch detailed information for a given campaign (deprecated alias for get_campaign_details)",
+      "categories": ["investigation"],
+      "cy_name": "get_campaign_data",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "description": "Proofpoint campaign ID from other Proofpoint events"
+          }
+        },
+        "required": ["campaign_id"]
+      }
+    },
+    {
+      "id": "get_campaign_details",
+      "name": "Get Campaign Details",
+      "description": "Fetch detailed information for a given campaign",
+      "categories": ["investigation"],
+      "cy_name": "get_campaign_details",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "description": "Proofpoint campaign ID from other Proofpoint events"
+          }
+        },
+        "required": ["campaign_id"]
+      }
+    },
+    {
+      "id": "get_forensic_data",
+      "name": "Get Forensic Data",
+      "description": "Fetch forensic information for a given threat or campaign (deprecated alias)",
+      "categories": ["investigation", "forensics"],
+      "cy_name": "get_forensic_data",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "description": "Proofpoint campaign ID"
+          },
+          "threat_id": {
+            "type": "string",
+            "description": "Proofpoint threat ID"
+          },
+          "include_campaign_forensics": {
+            "type": "boolean",
+            "description": "Include full campaign forensic data for a threat (ignored for campaign queries)",
+            "default": false
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "get_forensic_data_by_campaign",
+      "name": "Get Forensic Data by Campaign",
+      "description": "Fetch forensic information for a given threat or campaign",
+      "categories": ["investigation", "forensics"],
+      "cy_name": "get_forensic_data_by_campaign",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "description": "Proofpoint campaign ID"
+          },
+          "threat_id": {
+            "type": "string",
+            "description": "Proofpoint threat ID"
+          },
+          "include_campaign_forensics": {
+            "type": "boolean",
+            "description": "Include full campaign forensic data for a threat (ignored for campaign queries)",
+            "default": false
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "id": "decode_url",
+      "name": "Decode URL",
+      "description": "Decode Proofpoint rewritten URL(s)",
+      "categories": ["investigation", "enrichment"],
+      "cy_name": "decode_url",
+      "enabled": true,
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "List of URL(s) to decode, comma separated"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ],
+
+  "default_schedules": [
+    {
+      "action_id": "health_check",
+      "schedule": "every/5m",
+      "enabled": true
+    }
+  ]
+}
