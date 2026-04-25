@@ -11,7 +11,7 @@ For background on the problem Analysi solves, see [docs/context/ai-soc-problem.m
 - [Architecture](#architecture)
   - [Concept](#concept) — one workflow per detection rule
   - [Alert lifecycle](#alert-lifecycle) — rule-driven path from ingest to reaction
-  - [Services](#services) — runtime processes and shared infra
+  - [Component architecture](#component-architecture) — runtime processes and shared infra
 - [Quick Start](#quick-start) — bring the stack up locally
 - [Development](#development)
   - [Testing](#testing)
@@ -31,7 +31,7 @@ For background on the problem Analysi solves, see [docs/context/ai-soc-problem.m
 
 Every alert in a SIEM/EDR is produced by a **detection rule** (e.g. Splunk's "Suspicious PowerShell Execution"). Analysi keys its investigation knowledge to the rule, not the individual alert — at most one agentic workflow per rule.
 
-The first time a rule fires, Analysi has no workflow for it and synthesizes one autonomously: slow, token-heavy, multi-tool reasoning. The result is saved against the rule. Every subsequent alert from that same rule reuses the saved workflow — cheap and fast. (The generated workflow itself may pause for an analyst at run time via HITL — that's a property of the workflow, not of the generation step.)
+The first time a rule fires, Analysi has no workflow for it and synthesizes one autonomously: slow, token-heavy, multi-tool reasoning. The result is saved against the rule. Every subsequent alert from that same rule reuses the saved workflow — cheap and fast.
 
 ```mermaid
 flowchart LR
@@ -62,10 +62,10 @@ The path an alert takes from ingestion to reaction is rule-driven on both ends. 
 - **Rectangle** — function / executable step
 
 ```mermaid
-flowchart LR
-    classDef data fill:#e0e7ff,stroke:#4338ca,color:#312e81
-    classDef logic fill:#fef3c7,stroke:#b45309,color:#78350f
-    classDef func fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+flowchart TB
+    classDef data fill:#86efac,stroke:#15803d,color:#052e16
+    classDef logic fill:#fcd34d,stroke:#b45309,color:#451a03
+    classDef func fill:#93c5fd,stroke:#1e40af,color:#172554
 
     Alert[/"Alert<br/>(OCSF)"/]:::data
     Routing{"Alert Routing<br/>Rules"}:::logic
@@ -100,10 +100,12 @@ ocsf.finding_info.analytic.name   →   Alert.rule_name
 
 If the lookup misses (no analysis group, or no routing rule yet), the alert is queued for workflow generation. Once generation completes successfully, both the analysis group and the routing rule exist, and every subsequent alert from the same detection rule takes the cheap path.
 
-The implementation behind the concept above:
+### Component architecture
+
+The runtime processes that implement the concept and lifecycle above, and the wires between them:
 
 ```mermaid
-flowchart LR
+flowchart TB
     classDef ext fill:#fef3c7,stroke:#b45309,color:#78350f
     classDef svc fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
     User(["Analyst"]):::ext
