@@ -34,7 +34,7 @@ Every alert in a SIEM/EDR is produced by a **detection rule** (e.g. Splunk's "Su
 The first time a rule fires, Analysi has no workflow for it and synthesizes one autonomously: slow, token-heavy, multi-tool reasoning. The result is saved against the rule. Every subsequent alert from that same rule reuses the saved workflow — cheap and fast.
 
 ```mermaid
-flowchart LR
+flowchart TB
     classDef known fill:#dcfce7,stroke:#15803d,color:#14532d
     classDef new fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
     classDef terminal fill:#e0e7ff,stroke:#4338ca,color:#312e81
