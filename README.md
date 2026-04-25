@@ -114,12 +114,16 @@ flowchart TB
     Tools["Threat intel · EDR<br/>IdP · Sandbox · etc."]:::ext
 
     UI["UI"]:::svc
+    CLI["CLI<br/>(analysi)"]:::svc
     API["API<br/>FastAPI · MCP"]:::svc
     IW["⏰ Integrations Worker<br/>cron · polls schedules"]:::svc
     AW["Alerts Worker<br/>Cy scripts + LLM"]:::svc
     NW["Notifications Worker<br/>Slack Socket Mode"]:::svc
 
-    User --> UI --> API
+    User --> UI
+    User --> CLI
+    UI --> API
+    CLI --> API
     IW -- enqueue jobs --> AW
     AW -->|pull_alerts| SIEM
     AW <-->|enrich| Tools
