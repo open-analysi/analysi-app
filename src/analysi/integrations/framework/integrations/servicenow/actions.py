@@ -39,6 +39,7 @@ from .constants import (
     TICKET_ENDPOINT,
 )
 
+
 class HealthCheckAction(IntegrationAction):
     """Test connectivity to ServiceNow instance"""
 

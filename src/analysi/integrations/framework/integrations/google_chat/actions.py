@@ -24,6 +24,7 @@ from .constants import (
     STATUS_SUCCESS,
 )
 
+
 class HealthCheckAction(IntegrationAction):
     """Test connectivity with Google Chat API"""
 
