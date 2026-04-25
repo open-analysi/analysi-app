@@ -31,6 +31,7 @@ from .constants import (
     WEBEX_API_BASE_URL,
 )
 
+
 def _auth_headers(bot_token: str) -> dict[str, str]:
     """Build standard Webex API request headers."""
     return {

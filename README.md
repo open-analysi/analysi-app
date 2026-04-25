@@ -4,58 +4,21 @@
 
 Security automation platform that processes alerts through AI-powered investigation workflows. Ingests alerts from SIEMs, enriches them via threat intelligence, runs automated investigation playbooks, and produces analyst-ready dispositions.
 
-For background on the problem Analysi solves, see [docs/context/ai-soc-problem.md](docs/context/ai-soc-problem.md).
+> 📖 **Documentation:** [open-analysi.github.io/analysi-app](https://open-analysi.github.io/analysi-app/) — concepts, alert lifecycle, component architecture, terminology, integrations catalog. This README covers build, install, and tooling only.
 
-## Architecture
+## Contents
 
-```mermaid
-flowchart LR
-    classDef ext fill:#fef3c7,stroke:#b45309,color:#78350f
-    classDef svc fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
-    User(["Analyst"]):::ext
-    Slack["Slack"]:::ext
-    SIEM["SIEM"]:::ext
-    Tools["Threat intel · EDR<br/>IdP · Sandbox · etc."]:::ext
-
-    UI["UI"]:::svc
-    API["API<br/>FastAPI · MCP"]:::svc
-    IW["⏰ Integrations Worker<br/>cron · polls schedules"]:::svc
-    AW["Alerts Worker<br/>Cy scripts + LLM"]:::svc
-    NW["Notifications Worker<br/>Slack Socket Mode"]:::svc
-
-    User --> UI --> API
-    IW -- enqueue jobs --> AW
-    AW -->|pull_alerts| SIEM
-    AW <-->|enrich| Tools
-    API -.->|ad-hoc exec| Tools
-    AW <-. HITL pause/resume .-> NW
-    NW <--> Slack
-```
-
-> The `IW → AW` arrow is mediated by **Valkey** (ARQ queue). All services share **Postgres** for state, **Vault** for credentials, and **MinIO** for artifacts; the API uses **Keycloak** for OIDC. See the service table below.
-
-**Services:**
-
-| Service | Purpose |
-|---------|---------|
-| **API** | REST API (FastAPI), MCP server, serves UI and external clients |
-| **Alerts Worker** | Alert analysis pipeline — triage, workflow generation, enrichment, disposition |
-| **Integrations Worker** | Schedule dispatcher — polls the `schedules` table and enqueues jobs (pull alerts, health checks) onto the alerts worker; ad-hoc tool execution runs in-process in the API |
-| **Notifications Worker** | Slack Socket Mode listener for human-in-the-loop interactions |
-| **UI** | Frontend application |
-| **PostgreSQL** | Primary data store (pg_partman for partitioned tables, pg_cron for maintenance) |
-| **Valkey** | Job queue (ARQ) and caching (Redis-compatible) |
-| **Vault** | Credential encryption (Transit engine) |
-| **MinIO** | Artifact storage (S3-compatible) |
-| **Keycloak** | Identity provider (OIDC, RBAC) |
-
-**Key concepts:**
-- **Tasks** — Reusable investigation steps written in Cy (a compiled automation language)
-- **Workflows** — DAGs of Tasks that process alerts end-to-end
-- **Integrations** — Actions for external tools (Splunk queries, VirusTotal lookups, LDAP queries)
-- **Knowledge Units** — Structured data (tables, documents, tools) for enrichment and context
-- **Control Events** — Event bus for alert lifecycle coordination and fan-out automation
-- **Content Packs** — Portable bundles of tasks, skills, workflows installable via CLI
+- [Quick Start](#quick-start)
+- [Development](#development)
+  - [Testing](#testing)
+  - [Developer Tools](#developer-tools)
+- [Deployment](#deployment)
+  - [Local Kubernetes (kind)](#local-kubernetes-kind)
+  - [AWS EKS](#aws-eks)
+  - [CI/CD](#cicd)
+- [Tech Stack](#tech-stack)
+- [License](#license)
+- [Contributing](#contributing)
 
 ## Quick Start
 
@@ -159,6 +122,7 @@ Analysi-specific:
 | `poetry run validate-manifest <path>` | Validate a single integration `manifest.json` |
 | `poetry run validate-integration <path>` | Validate a full integration directory (manifest + action classes + archetypes) |
 | `make code-quality-check` | Test hygiene + flakiness detection + line counts |
+| `mkdocs serve` | Preview the docs site locally at `http://127.0.0.1:8000/` (after `poetry install --with docs`) |
 
 ## Deployment
 
@@ -191,39 +155,13 @@ Infrastructure: Terraform modules for VPC, EKS (managed node groups), ALB ingres
 
 - **PR checks** (`.github/workflows/ci.yml`): lint, unit tests, image builds (~4.5 min)
 - **Release** (`.github/workflows/release.yml`): push to private GHCR on merge to main
+- **Docs** (`.github/workflows/docs.yml`): build and deploy MkDocs site to GitHub Pages on push to `main`
 
 Container images are **private** — never pushed to public registries.
 
-## Integrations
-
-Analysi ships with a pluggable integration framework (**Naxos**) and **101 built-in integrations**. Each integration declares an **archetype** (what kind of tool it is) and **actions** (capabilities callable from Cy scripts or scheduled jobs).
-
-Integrations, grouped by archetype:
-
-| Archetype | # | Examples |
-|-----------|---|----------|
-| ThreatIntel | 19 | VirusTotal, AbuseIPDB, Recorded Future, MISP, Shodan, GreyNoise, DomainTools |
-| EDR | 13 | CrowdStrike, SentinelOne, Defender for Endpoint, Carbon Black, Cortex XDR, Echo EDR |
-| NetworkSecurity | 11 | Palo Alto, FortiGate, Check Point, Zscaler, Cloudflare, Cisco Umbrella, Netskope |
-| SIEM | 10 | Splunk, Microsoft Sentinel, Elasticsearch, QRadar, Chronicle, Sumo Logic, Exabeam |
-| EmailSecurity | 6 | Proofpoint, Mimecast, Abnormal, Google Gmail, Exchange On-Prem, Cofense Triage |
-| DatabaseEnrichment | 6 | Censys, SecurityTrails, Have I Been Pwned, NIST NVD, Axonius, PassiveTotal |
-| IdentityProvider | 5 | Okta, Microsoft Entra ID, AD LDAP, Duo, CyberArk |
-| TicketingSystem | 5 | JIRA, ServiceNow, TheHive, Freshservice, BMC Remedy |
-| CloudProvider | 4 | AWS Security, Google Cloud SCC, Defender for Cloud, Wiz |
-| Sandbox | 5 | ANY.RUN, Joe Sandbox, WildFire, urlscan.io, CrowdStrike |
-| VulnerabilityManagement | 4 | Tenable, Qualys, Rapid7 InsightVM, Nessus |
-| AI | 3 | Anthropic (Claude), OpenAI, Google Gemini |
-| Communication | 3 | Microsoft Teams, Cisco Webex, Google Chat |
-| Lakehouse | 2 | Databricks, Google BigQuery |
-| Notification | 2 | Slack, PagerDuty |
-| DNS · Geolocation · MacOuiRegistry · QRDecoder · TorExitList · UrlShorteningTools · Whois | 1 each | Global DNS, MaxMind, MAC Vendors, QR Code, Tor, unshorten.me, WHOIS RDAP |
-
-Full list of integration IDs lives in [`src/analysi/integrations/framework/integrations/`](src/analysi/integrations/framework/integrations/). Add new integrations by dropping a directory with a `manifest.json` and an action class — validated via `poetry run validate-integration <path>`.
-
 ## Tech Stack
 
-- **Language:** Python 3.12+ (Docker images on 3.13), [Cy](https://github.com/imarios/cy-language) (compiled automation scripts), TypeScript (CLI)
+- **Language:** Python 3.12+ (Docker images on 3.13), [Cy](https://github.com/open-analysi/cy-language) (compiled automation scripts), TypeScript (CLI)
 - **Framework:** FastAPI, SQLAlchemy 2.0 (async), ARQ, `pydantic-ai-slim`, LangGraph
 - **Database:** PostgreSQL 15 (pg_partman, pg_cron), Flyway migrations, Valkey (Redis-compatible)
 - **Infrastructure:** Docker Compose, Helm, Terraform, Kind, EKS

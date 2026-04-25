@@ -192,7 +192,7 @@ async def test_whois_ip_success(make_action):
     assert isinstance(data["objects"], list)
     assert data["objects"][0]["handle"] == "GOGL"
 
-    # Summary fields 
+    # Summary fields
     summary = result["summary"]
     assert summary["registry"] == "arin"
     assert summary["asn"] == "15169"

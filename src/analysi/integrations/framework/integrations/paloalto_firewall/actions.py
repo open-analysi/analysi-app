@@ -20,6 +20,7 @@ from analysi.integrations.framework.base import IntegrationAction
 
 from .constants import (
     ADDR_GRP_XPATH,
+    ADDRESS_NAME_MARKER,
     APP_GRP_XPATH,
     APP_LIST_XPATH,
     BLOCK_APP_GROUP_NAME,
@@ -55,7 +56,6 @@ from .constants import (
     IP_ADDR_XPATH,
     MSG_REST_CALL_SUCCEEDED,
     MSG_TEST_CONNECTIVITY_PASSED,
-    ADDRESS_NAME_MARKER,
     SEC_POL_APP_TYPE,
     SEC_POL_IP_TYPE,
     SEC_POL_NAME,

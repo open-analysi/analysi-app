@@ -12,6 +12,7 @@ from analysi.integrations.framework.base import IntegrationAction
 
 from . import constants as consts
 
+
 class HealthCheckAction(IntegrationAction):
     """Health check action for RSA Security Analytics."""
 

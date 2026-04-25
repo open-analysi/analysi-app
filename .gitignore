@@ -173,3 +173,6 @@ deployments/helm/*/Chart.lock
 
 # Playwright
 .playwright-mcp/
+
+# MkDocs build output
+/site/

@@ -28,9 +28,9 @@ unit-level). Mark tests that depend on the worker with
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 
-import pytest
 import pytest_asyncio
 
 logger = logging.getLogger(__name__)
@@ -78,11 +78,7 @@ async def _in_process_arq_worker(request):
         yield worker
     finally:
         task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError, Exception):
             await task
-        except (asyncio.CancelledError, Exception):  # noqa: BLE001
-            pass
-        try:
+        with contextlib.suppress(Exception):
             await worker.aclose()
-        except Exception:  # noqa: BLE001
-            pass

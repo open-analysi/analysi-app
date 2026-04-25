@@ -5,7 +5,7 @@
 useDefault = true
 
 [allowlist]
-description = "Test fixtures and legacy planning docs contain obvious fake secrets"
+description = "Test fixtures, vendor doc examples, and UI mock data contain obvious fake secrets"
 paths = [
     # Unit and integration test fixtures use values like "test-api-key-12345"
     # and hand-crafted fake RSA keys. Real credentials never live here.
@@ -13,4 +13,12 @@ paths = [
     # Legacy phase planning docs (docs/planning/legacy/) reference placeholder
     # values like "YOUR_API_KEY" and "dev-root-token" in curl examples.
     '''docs/planning/legacy/''',
+    # Per-integration vendor README files include credential-shape examples
+    # (Google service-account JSON, "api_key": "0123456789abcdef...", etc.)
+    # to show users what to paste into the credentials form.
+    '''src/analysi/integrations/framework/integrations/[^/]+/README\.md$''',
+    # UI fixtures: faker-generated names get flagged as high-entropy strings,
+    # and mock alert artifacts include fake URLs with mock query tokens.
+    '''^ui/mocks/data/''',
+    '''^ui/src/data/staticMockData\.ts$''',
 ]

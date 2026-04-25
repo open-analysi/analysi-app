@@ -35,6 +35,7 @@ from .constants import (
     SETTINGS_VERIFY_SSL,
 )
 
+
 def _validate_credentials(
     action: IntegrationAction,
 ) -> tuple[str, str, str, bool] | str:

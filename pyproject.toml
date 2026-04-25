@@ -85,6 +85,12 @@ psycopg2-binary = "^2.9.10"
 deptry = "^0.25.1"
 fakeredis = "^2.35.1"
 
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.7.6"
+mkdocs-mermaid2-plugin = "^1.2.3"
+pymdown-extensions = "^10.21.2"
+
 [tool.poetry.scripts]
 start = "analysi.main:start"
 dev = "analysi.main:dev"

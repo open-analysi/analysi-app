@@ -39,6 +39,7 @@ from .constants import (
     STATUS_SUCCESS,
 )
 
+
 def _get_error_message_from_exception(e: Exception) -> str:
     """Extract error message from exception."""
     error_code = None

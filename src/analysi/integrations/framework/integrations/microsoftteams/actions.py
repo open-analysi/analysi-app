@@ -56,6 +56,7 @@ from .constants import (
     VALID_CHAT_TYPES,
 )
 
+
 class HealthCheckAction(IntegrationAction):
     """Test connectivity to Microsoft Teams"""
 
