@@ -16,7 +16,13 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  # ── Detect what changed — skip expensive image builds on non-infra PRs ──
+  # ── Detect what changed — skip expensive jobs that don't apply ──
+  #
+  # Two independent signals:
+  #   - infra: build-affecting paths (src, deployments, migrations, etc.)
+  #            → drives image build + smoke test
+  #   - docs_only: every changed file is markdown / docs / mkdocs config
+  #                → drives skip of code-quality, unit tests, CLI tests
   detect-changes:
     name: Detect changes
     runs-on: ubuntu-latest
@@ -25,8 +31,9 @@ jobs:
       pull-requests: read   # needed for pulls.listFiles in github-script
     outputs:
       infra: ${{ steps.filter.outputs.infra }}
+      docs_only: ${{ steps.filter.outputs.docs_only }}
     steps:
-      - name: Check for infrastructure changes
+      - name: Check what kind of changes this PR has
         id: filter
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
@@ -51,22 +58,39 @@ jobs:
               /^\.dockerignore$/,
               /^dist\//,
             ];
+            // Docs-only patterns. A PR is docs_only iff EVERY changed file
+            // matches at least one of these. Conservative on purpose —
+            // anything outside this set (code, deps, CI workflow, integration
+            // manifests, etc.) forces full CI.
+            const docsPatterns = [
+              /^docs\//,         // public docs site content
+              /\.md$/,           // any markdown (READMEs, CLAUDE.md, etc.)
+              /^mkdocs\.yml$/,   // docs site config
+            ];
             const buildNeeded = files.some(f =>
               buildPatterns.some(p => p.test(f.filename))
             );
+            const docsOnly = files.length > 0 && files.every(f =>
+              docsPatterns.some(p => p.test(f.filename))
+            );
             core.setOutput('infra', buildNeeded.toString());
-            if (buildNeeded) {
+            core.setOutput('docs_only', docsOnly.toString());
+            if (docsOnly) {
+              core.info('Docs-only PR — skipping code quality, unit tests, CLI tests, image build, and smoke test');
+            } else if (buildNeeded) {
               const triggers = files
                 .filter(f => buildPatterns.some(p => p.test(f.filename)))
                 .map(f => f.filename);
               core.info(`Build-affecting changes detected: ${triggers.join(', ')}`);
             } else {
-              core.info('No build-affecting changes (docs/tests only) — skipping image build and smoke test');
+              core.info('No build-affecting changes — skipping image build and smoke test (code quality + unit tests still run)');
             }
 
   # ── Code Quality & Security (merged lint + security — saves a runner) ──
   code-quality:
     name: Code Quality & Security
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -265,6 +289,8 @@ jobs:
   # ── Unit Tests ──
   test-unit:
     name: Unit Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -319,6 +345,8 @@ jobs:
   # Enforce via branch protection: add "CLI Tests" as a required status check.
   test-cli:
     name: CLI Tests
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
