@@ -114,7 +114,7 @@ flowchart TB
     Tools["Threat intel · EDR<br/>IdP · Sandbox · etc."]:::ext
 
     UI["UI"]:::svc
-    CLI["CLI<br/>(analysi)"]:::svc
+    CLI["CLI"]:::svc
     API["API<br/>FastAPI · MCP"]:::svc
     IW["⏰ Integrations Worker<br/>cron · polls schedules"]:::svc
     AW["Alerts Worker<br/>Cy scripts + LLM"]:::svc
