@@ -47,7 +47,7 @@ class TaskRun(Base):
     cy_script: Mapped[str | None] = mapped_column(Text)  # For ad-hoc executions
     status: Mapped[str] = mapped_column(
         String(50), nullable=False, default="running"
-    )  # running, completed, failed, paused_by_user
+    )  # See TaskConstants.Status: pending, running, completed, failed, paused
     duration: Mapped[timedelta | None] = mapped_column(Interval)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

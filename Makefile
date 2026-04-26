@@ -123,6 +123,11 @@ help:
 	@echo "Docker Maintenance:"
 	@echo "  make fix-docker-disk-space       Clean Docker cache/volumes/images"
 	@echo "  make docker-disk-usage           Show Docker disk usage"
+	@echo ""
+	@echo "Documentation (MkDocs site):"
+	@echo "  make docs-install                Install MkDocs and dependencies (one-time)"
+	@echo "  make docs-serve                  Live preview at http://localhost:8000"
+	@echo "  make docs-build                  Build site (CI-equivalent: --strict, fails on broken links)"
 
 
 # ──── Development ────────────────────────────────────────────────────────────
@@ -599,6 +604,20 @@ docker-disk-usage:
 	@docker system df -v
 
 
+# ──── Documentation (MkDocs) ─────────────────────────────────────────────────
+
+docs-install:
+	poetry install --with docs
+
+docs-serve:
+	@poetry run mkdocs --version >/dev/null 2>&1 || { echo "mkdocs not in poetry env — run 'make docs-install' first"; exit 1; }
+	poetry run mkdocs serve
+
+docs-build:
+	@poetry run mkdocs --version >/dev/null 2>&1 || { echo "mkdocs not in poetry env — run 'make docs-install' first"; exit 1; }
+	poetry run mkdocs build --strict
+
+
 # ──── Deprecated Aliases ─────────────────────────────────────────────────────
 # These still work but print a deprecation notice. Will be removed in a future release.
 
@@ -681,6 +700,7 @@ code-quality-check: code-quality
         ec2-up ec2-down ec2-status ec2-health ec2-logs ec2-endpoints \
         ec2-ssh ec2-info ec2-credentials ec2-help \
         fix-docker-disk-space docker-disk-usage \
+        docs-install docs-serve docs-build \
         restart-api restart-analysis restart-integrations \
         restart-keycloak restart-vault \
         rebuild-api rebuild-analysis rebuild-integrations \
