@@ -31,6 +31,35 @@ flags:
     paths:
       - cli/src/
     carryforward: true
+  # ui: placeholder — uncomment when ui/ gains a CI test job that uploads lcov
+  # ui:
+  #   paths:
+  #     - ui/src/
+  #   carryforward: true
+
+# Components — presentation grouping for the PR comment + dashboard.
+# Flags are about upload provenance (which CI job produced which lcov);
+# components are about how the data is sliced for humans.
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        informational: true   # soft signal — match the global status policy
+  individual_components:
+    - component_id: backend
+      name: Backend (Python)
+      paths:
+        - src/**
+    - component_id: cli
+      name: CLI
+      paths:
+        - cli/src/**
+    # Placeholder — UI has no CI test job yet. Uncomment once ui/ uploads coverage.
+    # - component_id: ui
+    #   name: UI
+    #   paths:
+    #     - ui/src/**
 
 ignore:
   - "tests/"
