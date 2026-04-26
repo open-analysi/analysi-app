@@ -331,7 +331,10 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ""
           OPENAI_API_KEY: ""
-        run: poetry run pytest tests/unit/ -q --tb=short --junitxml=test-results/junit.xml
+        run: |
+          poetry run pytest tests/unit/ -q --tb=short \
+            --junitxml=test-results/junit.xml \
+            --cov=src --cov-report=xml --cov-report=term
 
       - name: Upload test results
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
@@ -339,6 +342,17 @@ jobs:
         with:
           name: test-results
           path: test-results/
+
+      # Soft-signal coverage upload — never fails the build.
+      - name: Upload coverage to Codecov (python)
+        if: always() && hashFiles('coverage.xml') != ''
+        continue-on-error: true
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2  # v6.0.0
+        with:
+          files: coverage.xml
+          flags: python
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
   # ── CLI Tests (TypeScript — vitest) ──
   # Runs independently — not in build-images.needs (CLI ≠ Docker image).
@@ -372,7 +386,11 @@ jobs:
 
       - name: Run CLI tests
         working-directory: cli
-        run: npx vitest run --reporter=default --reporter=junit --outputFile=test-results/junit.xml
+        run: |
+          npx vitest run \
+            --reporter=default --reporter=junit \
+            --outputFile=test-results/junit.xml \
+            --coverage --coverage.reporter=lcov --coverage.reporter=text
 
       - name: Upload CLI test results
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
@@ -380,6 +398,17 @@ jobs:
         with:
           name: cli-test-results
           path: cli/test-results/
+
+      # Soft-signal coverage upload — never fails the build.
+      - name: Upload coverage to Codecov (cli)
+        if: always() && hashFiles('cli/coverage/lcov.info') != ''
+        continue-on-error: true
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2  # v6.0.0
+        with:
+          directory: cli/coverage
+          flags: cli
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
   # ── Build Image (only when infrastructure files change) ──
   # Skipped for pure src/ or tests/ changes — Release workflow builds on merge anyway.

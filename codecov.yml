@@ -1,0 +1,78 @@
+# Codecov configuration — https://docs.codecov.com/docs/codecovyml-reference
+#
+# Soft-signal mode: coverage is reported on PRs but never fails CI. We will
+# tighten this once a baseline is established (target: replace `informational`
+# with a real `target` + `threshold` once both python and cli surfaces have
+# stable numbers).
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+  status:
+    project:
+      default:
+        informational: true   # never fails — soft signal
+        target: auto
+    patch:
+      default:
+        informational: true   # never fails on uncovered new lines
+
+# Component flags — python (src/) and cli (cli/src/) report independently.
+# `carryforward` reuses the previous upload when a PR doesn't touch a flag,
+# so component coverage stays meaningful for python-only or cli-only PRs.
+flags:
+  python:
+    paths:
+      - src/
+    carryforward: true
+  cli:
+    paths:
+      - cli/src/
+    carryforward: true
+  # ui: placeholder — uncomment when ui/ gains a CI test job that uploads lcov
+  # ui:
+  #   paths:
+  #     - ui/src/
+  #   carryforward: true
+
+# Components — presentation grouping for the PR comment + dashboard.
+# Flags are about upload provenance (which CI job produced which lcov);
+# components are about how the data is sliced for humans.
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        informational: true   # soft signal — match the global status policy
+  individual_components:
+    - component_id: backend
+      name: Backend (Python)
+      paths:
+        - src/**
+    - component_id: cli
+      name: CLI
+      paths:
+        - cli/src/**
+    # Placeholder — UI has no CI test job yet. Uncomment once ui/ uploads coverage.
+    # - component_id: ui
+    #   name: UI
+    #   paths:
+    #     - ui/src/**
+
+ignore:
+  - "tests/"
+  - "**/tests/"
+  - "**/test/"
+  - "**/__tests__/"
+  - "migrations/"
+  - "cli/dist/"
+  - "cli/scripts/"
+  - "cli/test/"
+  - "src/analysi/migrations/"
+
+comment:
+  layout: "reach,diff,flags,components,files"
+  behavior: default
+  require_changes: false
