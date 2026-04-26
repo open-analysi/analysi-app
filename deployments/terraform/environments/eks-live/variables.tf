@@ -100,7 +100,11 @@ variable "acm_certificate_arn" {
 variable "ghcr_username" {
   description = "GitHub username for GHCR image pulls"
   type        = string
-  default     = "imarios"
+
+  validation {
+    condition     = length(var.ghcr_username) > 0
+    error_message = "ghcr_username is required. Set it in terraform.tfvars to the GitHub user that owns the PAT."
+  }
 }
 
 variable "ghcr_pat" {

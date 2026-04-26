@@ -19,5 +19,6 @@ node_desired_size  = 2
 
 # GitHub PAT with read:packages scope (for pulling private GHCR images)
 # Generate at: https://github.com/settings/tokens → read:packages
+# Tip: prefer setting the PAT via `export TF_VAR_ghcr_pat=...` to keep it out of files.
 ghcr_pat      = ""
-ghcr_username = "imarios"
+ghcr_username = ""
