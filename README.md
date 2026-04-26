@@ -1,6 +1,7 @@
 # Analysi
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![codecov](https://codecov.io/gh/open-analysi/analysi-app/graph/badge.svg)](https://codecov.io/gh/open-analysi/analysi-app)
 
 Security automation platform that processes alerts through AI-powered investigation workflows. Ingests alerts from SIEMs, enriches them via threat intelligence, runs automated investigation playbooks, and produces analyst-ready dispositions.
 

@@ -51,6 +51,9 @@ htmlcov/
 .coverage.*
 *.cover
 .hypothesis/
+coverage.xml
+cli/coverage/
+ui/coverage/
 
 # Mypy
 .mypy_cache/
