@@ -10,11 +10,14 @@ flowchart TB
     classDef new fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
     classDef terminal fill:#e0e7ff,stroke:#4338ca,color:#312e81
 
-    Alert([Alert arrives]):::terminal
-    Q{Do we already know<br/>how to investigate it?}
-    Run["Run agentic workflow<br/><b>cheap · fast</b>"]:::known
-    Gen["Generate new agentic workflow<br/><b>slow · deep thinking · high tokens</b>"]:::new
-    Disp([Disposition]):::terminal
+    Alert(["Alert arrives"]):::terminal
+    Q{"Do we already know
+how to investigate it?"}
+    Run["Run agentic workflow
+<b>cheap · fast</b>"]:::known
+    Gen["Generate new agentic workflow
+<b>slow · deep thinking · high tokens</b>"]:::new
+    Disp(["Disposition"]):::terminal
 
     Alert --> Q
     Q -- yes --> Run

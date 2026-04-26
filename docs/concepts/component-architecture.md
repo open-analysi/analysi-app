@@ -9,14 +9,19 @@ flowchart TB
     User(["Analyst"]):::ext
     Slack["Slack"]:::ext
     SIEM["SIEM"]:::ext
-    Tools["Threat intel · EDR<br/>IdP · Sandbox · etc."]:::ext
+    Tools["Threat intel · EDR
+IdP · Sandbox · etc."]:::ext
 
     UI["UI"]:::svc
     CLI["CLI"]:::svc
-    API["API<br/>FastAPI · MCP"]:::svc
-    IW["⏰ Integrations Worker<br/>cron · polls schedules"]:::svc
-    AW["Alerts Worker<br/>Cy scripts + LLM"]:::svc
-    NW["Notifications Worker<br/>Slack Socket Mode"]:::svc
+    API["API
+FastAPI · MCP"]:::svc
+    IW["⏰ Integrations Worker
+cron · polls schedules"]:::svc
+    AW["Alerts Worker
+Cy scripts + LLM"]:::svc
+    NW["Notifications Worker
+Slack Socket Mode"]:::svc
 
     User --> UI
     User --> CLI

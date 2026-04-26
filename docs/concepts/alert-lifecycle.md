@@ -12,13 +12,20 @@ flowchart TB
     classDef logic fill:#fcd34d,stroke:#b45309,color:#451a03
     classDef func fill:#93c5fd,stroke:#1e40af,color:#172554
 
-    Alert[/"Alert<br/>(OCSF)"/]:::data
-    Routing{"Alert Routing<br/>Rules"}:::logic
-    Run["Workflow<br/>Execution"]:::func
-    GenRun["Workflow Generation<br/>+ Execution"]:::func
-    Disp[/"Disposition<br/>Control Event"/]:::data
-    Reaction{"Event Reaction<br/>Rules"}:::logic
-    Action["Reaction Action<br/>(Slack · Jira · SIEM ticket update)"]:::func
+    Alert[/"Alert
+(OCSF)"/]:::data
+    Routing{"Alert Routing
+Rules"}:::logic
+    Run["Workflow
+Execution"]:::func
+    GenRun["Workflow Generation
++ Execution"]:::func
+    Disp[/"Disposition
+Control Event"/]:::data
+    Reaction{"Event Reaction
+Rules"}:::logic
+    Action["Reaction Action
+(Slack · Jira · SIEM ticket update)"]:::func
 
     Alert --> Routing
     Routing -- workflow exists --> Run
