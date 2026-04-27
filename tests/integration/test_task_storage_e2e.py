@@ -260,7 +260,7 @@ async def test_task_output_storage_e2e(minio_test_bucket, integration_test_sessi
     task_run.output_location = output_storage["location"]
     task_run.output_content_type = output_storage["content_type"]
     task_run.status = (
-        "completed"  # Valid status values: running, succeeded, failed, paused_by_user
+        "completed"  # See TaskConstants.Status: pending, running, completed, failed, paused
     )
     task_run.completed_at = datetime.now(UTC)
 

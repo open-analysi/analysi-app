@@ -217,7 +217,7 @@ class AlertAnalysis(Base):
     # Analysis lifecycle
     status: Mapped[str | None] = mapped_column(
         String, default="running"
-    )  # Enum: running, paused_workflow_building, completed, failed, cancelled
+    )  # See AnalysisStatus: running, paused, paused_human_review, completed, failed, cancelled
     error_message: Mapped[str | None] = mapped_column(Text)  # Store failure reason
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -108,7 +108,7 @@ class TaskRunService:
         Args:
             session: Database session
             task_run_id: Task run identifier
-            status: New status (running, completed, failed, paused_by_user)
+            status: New status (see TaskConstants.Status: pending, running, completed, failed, paused)
             output_data: Output data (for completed status)
             error_info: Error information (for failed status)
             llm_usage: LLMUsage dataclass with token counts and cost
