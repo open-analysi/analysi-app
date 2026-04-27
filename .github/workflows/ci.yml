@@ -12,9 +12,12 @@ on:
 
 concurrency:
   # On PRs, group by PR number so new pushes cancel in-flight runs.
-  # On push-to-main, group by ref so each merge commit gets its own run
-  # (no cancellation — we want every main commit's coverage uploaded).
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # On push-to-main, group by commit SHA so every merge commit gets its own
+  # group. Grouping all push-to-main runs together would let back-to-back
+  # merges silently drop coverage: a concurrency group holds at most one
+  # running + one pending run, so a third queued run evicts the pending one.
+  # Re-runs of the same SHA still dedupe naturally.
+  group: ci-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
