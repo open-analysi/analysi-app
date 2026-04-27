@@ -1,14 +1,21 @@
-# CI Pipeline — runs on every PR to main
-# Lint, unit tests, code quality, and production image builds
+# CI Pipeline — runs on every PR to main, and on push to main
+# Lint, unit tests, code quality, and production image builds.
+# The push-to-main run is what populates Codecov's default-branch baseline
+# (the badge in README.md reads default-branch coverage).
 name: CI
 
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}-${{ github.head_ref }}
-  cancel-in-progress: true
+  # On PRs, group by PR number so new pushes cancel in-flight runs.
+  # On push-to-main, group by ref so each merge commit gets its own run
+  # (no cancellation — we want every main commit's coverage uploaded).
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   PYTHON_VERSION: "3.12"
@@ -38,6 +45,16 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
+            // On push-to-main there's no PR to inspect. We force the
+            // "code changed, no infra build" path: test jobs run (so
+            // coverage uploads to Codecov for the default branch), and
+            // image-build/smoke-test stay skipped (they tag with pr-#).
+            if (context.eventName !== 'pull_request') {
+              core.info('Non-PR event — running tests, skipping image build and smoke test');
+              core.setOutput('infra', 'false');
+              core.setOutput('docs_only', 'false');
+              return;
+            }
             const files = await github.paginate(
               github.rest.pulls.listFiles,
               {
