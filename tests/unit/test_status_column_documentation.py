@@ -53,7 +53,7 @@ def _enum_values(enum_cls: Any) -> set[str]:
 
 
 @pytest.mark.parametrize(
-    "model_cls,enum_cls,enum_label",
+    ("model_cls", "enum_cls", "enum_label"),
     [
         (TaskRun, TaskConstants.Status, "TaskConstants.Status"),
         (WorkflowRun, WorkflowConstants.Status, "WorkflowConstants.Status"),
