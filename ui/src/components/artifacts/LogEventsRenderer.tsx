@@ -12,7 +12,9 @@ interface LogEntry {
 }
 
 interface LogEventsRendererProps {
-  data: string | Record<string, unknown>;
+  // null/undefined are tolerated at runtime (callers may pass partially
+  // loaded artifacts); the renderSummaryView and fallback paths handle them.
+  data: string | Record<string, unknown> | null | undefined;
   category?: string;
   maxHeight?: string;
   viewMode?: 'original' | 'summary';
@@ -95,11 +97,13 @@ export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ catego
 
 // Separated summary view rendering to reduce cognitive complexity
 const renderSummaryView = (
-  data: string | Record<string, unknown>,
+  data: string | Record<string, unknown> | null | undefined,
   category?: string
 ): React.JSX.Element => {
-  // Check if data is a JSON object for summary view
-  if (typeof data === 'object' && data !== undefined) {
+  // Check if data is a JSON object for summary view.
+  // typeof null === 'object', so an explicit null check is required —
+  // checking !== undefined here is always true and lets nulls through.
+  if (typeof data === 'object' && data !== null) {
     return <JsonRenderer data={data} title={getDisplayTitle(category)} />;
   }
 
@@ -141,7 +145,7 @@ const LogEventsRenderer: React.FC<LogEventsRendererProps> = ({
   if (typeof data === 'string') {
     // Direct string data
     logData = data;
-  } else if (typeof data === 'object' && data !== undefined) {
+  } else if (typeof data === 'object' && data !== null) {
     // Try to convert object to string for display
     try {
       logData = JSON.stringify(data, undefined, 2);
