@@ -23,10 +23,10 @@ export function createTestRouter(routes: any[], initialEntries?: string[]) {
 export function TestRouterProvider({
   children,
   initialEntries = ['/'],
-}: {
+}: Readonly<{
   children: React.ReactElement;
   initialEntries?: string[];
-}) {
+}>) {
   const router = createMemoryRouter(
     [
       {

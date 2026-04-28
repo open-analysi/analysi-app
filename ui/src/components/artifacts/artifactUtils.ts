@@ -27,8 +27,10 @@ export interface ArtifactCategory {
   subcategories?: ArtifactSubcategory[];
 }
 
+export type ArtifactContentType = 'json' | 'log' | 'text';
+
 export interface ArtifactContent {
-  contentType: 'json' | 'log' | 'text';
+  contentType: ArtifactContentType;
   category: string;
   subcategory?: string;
   data: unknown;

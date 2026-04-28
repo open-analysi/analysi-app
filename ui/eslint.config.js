@@ -190,6 +190,9 @@ export default [
       // self-contained "given/when/then" shape of each test.
       'sonarjs/no-duplicate-string': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
+      // vi.mocked(x.method) is the canonical vitest mock pattern but reads
+      // as an unbound method to the lint rule.
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 

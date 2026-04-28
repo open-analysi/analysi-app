@@ -32,10 +32,29 @@ const JsonRenderer: React.FC<JsonRendererProps> = ({
   const [currentMatch, setCurrentMatch] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Function to clear all highlights — declared before the effect that
+  // depends on it to satisfy block-scoped-var. Wrapped in useCallback so
+  // the reference is stable across renders.
+  const clearHighlights = React.useCallback(() => {
+    if (!contentRef.current) return;
+
+    const highlights = contentRef.current.querySelectorAll('.json-search-highlight');
+
+    for (const el of highlights) {
+      const parent = el.parentNode;
+      if (parent) {
+        parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+        parent.normalize();
+      }
+    }
+
+    setCurrentMatch(0);
+  }, []);
+
   // Clear highlights when search term changes
   useEffect(() => {
     clearHighlights();
-  }, [searchTerm]);
+  }, [searchTerm, clearHighlights]);
 
   if (!data) {
     return <div className="p-4 bg-dark-800 rounded-md text-gray-400">No data available</div>;
@@ -100,25 +119,6 @@ const JsonRenderer: React.FC<JsonRendererProps> = ({
       highlightMatches(matchPositions, 0);
       setCurrentMatch(1);
     }
-  };
-
-  // Function to clear all highlights
-  const clearHighlights = () => {
-    if (!contentRef.current) return;
-
-    // Remove all highlight spans
-    const highlights = contentRef.current.querySelectorAll('.json-search-highlight');
-
-    for (const el of highlights) {
-      const parent = el.parentNode;
-      if (parent) {
-        parent.replaceChild(document.createTextNode(el.textContent || ''), el);
-        parent.normalize();
-      }
-    }
-
-    // Reset state
-    setCurrentMatch(0);
   };
 
   // Handle next match
