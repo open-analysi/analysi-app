@@ -184,6 +184,12 @@ export default [
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      // Test fixtures legitimately repeat literals (endpoint URLs, sample
+      // payloads, expected message strings) and stringify mock objects with
+      // structural assertions. Extracting constants per case fights the
+      // self-contained "given/when/then" shape of each test.
+      'sonarjs/no-duplicate-string': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
     },
   },
 
