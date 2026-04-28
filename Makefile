@@ -81,6 +81,10 @@ help:
 	@echo "  make cli-test                    Run CLI unit tests"
 	@echo "  make cli CMD='alerts list'       Run the CLI"
 	@echo ""
+	@echo "UI:"
+	@echo "  make ui-test                     Run UI unit tests (vitest)"
+	@echo "  make ui-test-coverage            Run UI unit tests with coverage report"
+	@echo ""
 	@echo "Integration Tools:"
 	@echo "  make flush-tenant-queue [TENANT=default]  Flush Valkey queue for a tenant"
 	@echo "  make validate-manifest MANIFEST=<path>    Validate manifest.json"
@@ -426,6 +430,12 @@ cli-test: ## Run CLI unit tests
 cli: cli-build ## Run the Analysi CLI (use CMD="alerts list" etc.)
 	cd cli && node ./bin/analysi $(CMD)
 
+ui-test: ## Run UI unit tests (vitest)
+	cd ui && npx vitest run
+
+ui-test-coverage: ## Run UI unit tests with coverage report (writes to ui/coverage/)
+	cd ui && npx vitest run --coverage
+
 check-cli-api-sync: ## Verify CLI commands match actual API routes
 	poetry run python scripts/code_quality_tools/check_cli_api_sync.py
 
@@ -687,6 +697,7 @@ code-quality-check: code-quality
         package-external-agents package-foundation-skills check-foundation-skills \
         generate-types \
         cli-install cli-build cli-generate cli-test cli-dev cli \
+        ui-test ui-test-coverage \
         flush-tenant-queue \
         minio-start minio-restart minio-logs minio-rebuild minio-status \
         validate-manifest validate-integration \

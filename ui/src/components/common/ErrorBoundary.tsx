@@ -54,11 +54,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  render(): ReactNode {
-    if (this.state.hasError) {
-      // Use custom fallback or default error UI
-      return (
-        this.props.fallback || (
+  // eslint-disable-next-line sonarjs/function-return-type -- ReactNode is union by design
+  private renderError(): ReactNode {
+    return (
+      <>
+        {this.props.fallback ?? (
           <div className="p-4 border border-red-300 bg-red-50 rounded-sm text-red-800">
             <h3 className="text-lg font-medium mb-2">Something went wrong</h3>
             <p className="mb-2">The component could not be displayed.</p>
@@ -72,11 +72,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               </details>
             )}
           </div>
-        )
-      );
-    }
+        )}
+      </>
+    );
+  }
 
-    return this.props.children;
+  // eslint-disable-next-line sonarjs/function-return-type -- ReactNode is union by design
+  render(): ReactNode {
+    return <>{this.state.hasError ? this.renderError() : this.props.children}</>;
   }
 }
 

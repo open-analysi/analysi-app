@@ -27,9 +27,9 @@ export const WorkflowSearch: React.FC<WorkflowSearchProps> = ({
     onSearchChange(debouncedSearchTerm);
   }, [debouncedSearchTerm, onSearchChange]);
 
-  // Update local state when parent value changes
   useEffect(() => {
     if (searchTerm !== localSearchTerm) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- equality-guarded
       setLocalSearchTerm(searchTerm);
     }
   }, [searchTerm]);

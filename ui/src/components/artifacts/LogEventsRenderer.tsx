@@ -12,7 +12,7 @@ interface LogEntry {
 }
 
 interface LogEventsRendererProps {
-  data: string | Record<string, unknown>;
+  data: string | Record<string, unknown> | null;
   category?: string;
   maxHeight?: string;
   viewMode?: 'original' | 'summary';
@@ -71,6 +71,14 @@ const parseLogEntry = (entry: string): LogEntry => {
 export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ category }) => {
   const categoryName = category || 'data';
   const title = getDisplayTitle(category);
+  let unavailableLabel: string;
+  if (category === 'timeline') {
+    unavailableLabel = TRIGGERING_EVENTS;
+  } else if (category === 'logs') {
+    unavailableLabel = SUPPORTING_EVENTS;
+  } else {
+    unavailableLabel = `edr - ${categoryName}`;
+  }
 
   return (
     <div className="bg-dark-800 rounded-md border border-dark-700">
@@ -80,14 +88,7 @@ export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ catego
       <div className="flex flex-col items-center justify-center py-12">
         <ExclamationTriangleIcon className="w-12 h-12 mb-4 text-gray-400" />
         <p className="text-lg font-medium text-gray-400">Data Unavailable</p>
-        <p className="text-sm mt-2 text-gray-400">
-          Failed to load data for{' '}
-          {category === 'timeline'
-            ? TRIGGERING_EVENTS
-            : category === 'logs'
-              ? SUPPORTING_EVENTS
-              : 'edr - ' + categoryName}
-        </p>
+        <p className="text-sm mt-2 text-gray-400">Failed to load data for {unavailableLabel}</p>
       </div>
     </div>
   );
@@ -95,11 +96,10 @@ export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ catego
 
 // Separated summary view rendering to reduce cognitive complexity
 const renderSummaryView = (
-  data: string | Record<string, unknown>,
+  data: string | Record<string, unknown> | null,
   category?: string
 ): React.JSX.Element => {
-  // Check if data is a JSON object for summary view
-  if (typeof data === 'object' && data !== undefined) {
+  if (typeof data === 'object' && data !== null) {
     return <JsonRenderer data={data} title={getDisplayTitle(category)} />;
   }
 
@@ -141,7 +141,7 @@ const LogEventsRenderer: React.FC<LogEventsRendererProps> = ({
   if (typeof data === 'string') {
     // Direct string data
     logData = data;
-  } else if (typeof data === 'object' && data !== undefined) {
+  } else if (typeof data === 'object' && data !== null) {
     // Try to convert object to string for display
     try {
       logData = JSON.stringify(data, undefined, 2);

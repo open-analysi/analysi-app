@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { Runbook, generateMockRunbooks } from '../../data/mockSettings';
 
 const CustomizeRunbooks: React.FC = () => {
-  const [runbooks, setRunbooks] = useState<Runbook[]>([]);
-
-  useEffect(() => {
-    setRunbooks(generateMockRunbooks());
-  }, []);
+  const [runbooks] = useState<Runbook[]>(() => generateMockRunbooks());
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">

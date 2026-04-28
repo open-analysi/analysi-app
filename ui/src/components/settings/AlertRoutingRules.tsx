@@ -63,6 +63,7 @@ export const AlertRoutingRules: React.FC = () => {
   }, [runSafe, handleError, createContext]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch, setState happens after await
     void loadData();
   }, [loadData]);
 
@@ -254,20 +255,22 @@ export const AlertRoutingRules: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {isLoading && rules.length === 0 ? (
+            {isLoading && rules.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-gray-400">
                   <ArrowPathIcon className="h-6 w-6 animate-spin mx-auto mb-2" />
                   Loading routing rules...
                 </td>
               </tr>
-            ) : rules.length === 0 ? (
+            )}
+            {!isLoading && rules.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-gray-400">
                   No routing rules found. Create one to get started.
                 </td>
               </tr>
-            ) : (
+            )}
+            {rules.length > 0 &&
               rules.map((rule) => (
                 <tr key={rule.id} className="hover:bg-gray-800/30">
                   <td className="px-6 py-4">
@@ -293,8 +296,7 @@ export const AlertRoutingRules: React.FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>

@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { FeedbackItem, generateMockFeedback } from '../../data/mockSettings';
 import { componentStyles } from '../../styles/components';
 import { StatusBadge } from '../common/StatusBadge';
 
 const UserFeedback: React.FC = () => {
-  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
-
-  useEffect(() => {
-    setFeedbackItems(generateMockFeedback());
-  }, []);
+  const [feedbackItems] = useState<FeedbackItem[]>(() => generateMockFeedback());
 
   return (
     <div className={componentStyles.card}>

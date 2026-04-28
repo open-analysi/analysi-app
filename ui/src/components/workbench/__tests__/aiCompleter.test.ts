@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/unbound-method */
 import type { Ace } from 'ace-builds';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 

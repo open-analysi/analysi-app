@@ -184,6 +184,10 @@ export default [
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'sonarjs/no-duplicate-string': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      'sonarjs/no-nested-conditional': 'off',
     },
   },
 

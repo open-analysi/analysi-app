@@ -20,9 +20,9 @@ export const TaskSearch: React.FC<TaskSearchProps> = ({ onSearch, value }) => {
     onSearch(debouncedSearchTerm);
   }, [debouncedSearchTerm, onSearch]);
 
-  // Update local state when parent value changes
   useEffect(() => {
     if (value !== searchTerm) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- equality-guarded
       setSearchTerm(value);
     }
   }, [value]);

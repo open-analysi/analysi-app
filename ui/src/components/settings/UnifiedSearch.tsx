@@ -42,6 +42,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ onSearch, value, p
   // Only sync from external value if not currently handling an internal update
   useEffect(() => {
     if (!isInternalUpdate.current && value !== localSearchTerm) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- gated by ref + equality
       setLocalSearchTerm(value);
     }
   }, [value, localSearchTerm]);

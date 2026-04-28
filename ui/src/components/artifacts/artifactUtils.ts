@@ -27,8 +27,10 @@ export interface ArtifactCategory {
   subcategories?: ArtifactSubcategory[];
 }
 
+export type ArtifactContentType = 'json' | 'log' | 'text';
+
 export interface ArtifactContent {
-  contentType: 'json' | 'log' | 'text';
+  contentType: ArtifactContentType;
   category: string;
   subcategory?: string;
   data: unknown;
@@ -173,7 +175,7 @@ const getCategoryDirectory = (categoryId: string): string => {
 export const determineContentType = (
   filename: string,
   categoryId: string
-): 'json' | 'log' | 'text' => {
+): ArtifactContentType => {
   // First, check the category - timeline and logs categories should always be treated as logs
   if (categoryId === 'timeline' || categoryId === 'logs') {
     return 'log';

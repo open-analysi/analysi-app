@@ -23,6 +23,20 @@ interface RecordType {
   [key: string]: unknown;
 }
 
+// Object cells JSON.stringify so sort + search don't collapse to "[object Object]"
+const stringifyCell = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value) ?? '';
+  } catch {
+    return '';
+  }
+};
+
 const formatKey = (key: string): string => {
   return key
     .replaceAll('_', ' ')
@@ -39,33 +53,9 @@ const renderValue = (value: unknown): React.JSX.Element => {
 
   if (typeof value === 'object') {
     if (Array.isArray(value)) {
-      return (
-        <div className="flex items-center">
-          <span className="text-gray-300">{value.length} items</span>
-          <button
-            className="ml-2 text-xs text-primary hover:text-primary-light"
-            onClick={() => {
-              // TODO: Implement expand functionality
-            }}
-          >
-            [Expand]
-          </button>
-        </div>
-      );
+      return <span className="text-gray-300">{value.length} items</span>;
     }
-    return (
-      <div className="flex items-center">
-        <span className="text-gray-300">{Object.keys(value).length} fields</span>
-        <button
-          className="ml-2 text-xs text-primary hover:text-primary-light"
-          onClick={() => {
-            // TODO: Implement expand functionality
-          }}
-        >
-          [Expand]
-        </button>
-      </div>
-    );
+    return <span className="text-gray-300">{Object.keys(value).length} fields</span>;
   }
 
   if (typeof value === 'boolean') {
@@ -82,7 +72,7 @@ const renderValue = (value: unknown): React.JSX.Element => {
     return <span className="text-blue-400">{value}</span>;
   }
 
-  return <span className="text-gray-200">{String(value)}</span>;
+  return <span className="text-gray-200">{stringifyCell(value)}</span>;
 };
 
 export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
@@ -100,11 +90,10 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
     return [data];
   }, [data]);
 
-  // Get all unique keys from the records
   const allKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const record of records) {
-      if (typeof record === 'object' && record !== undefined) {
+      if (typeof record === 'object' && record !== null) {
         for (const key of Object.keys(record as RecordType)) keys.add(key);
       }
     }
@@ -119,10 +108,10 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter((record) => {
-        if (typeof record !== 'object' || record === undefined) return false;
+        if (typeof record !== 'object' || record === null) return false;
         return Object.entries(record as RecordType).some(([key, value]) => {
           const keyMatch = key.toLowerCase().includes(searchLower);
-          const valueMatch = String(value).toLowerCase().includes(searchLower);
+          const valueMatch = stringifyCell(value).toLowerCase().includes(searchLower);
           return keyMatch || valueMatch;
         });
       });
@@ -131,8 +120,7 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
     // Apply sorting
     if (sortConfig) {
       result.sort((a, b) => {
-        if (typeof a !== 'object' || typeof b !== 'object' || a === undefined || b === undefined)
-          return 0;
+        if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return 0;
 
         const aValue = (a as RecordType)[sortConfig.key];
         const bValue = (b as RecordType)[sortConfig.key];
@@ -141,7 +129,7 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
         if (aValue === undefined) return 1;
         if (bValue === undefined) return -1;
 
-        const comparison = String(aValue).localeCompare(String(bValue));
+        const comparison = stringifyCell(aValue).localeCompare(stringifyCell(bValue));
         return sortConfig.direction === 'asc' ? comparison : -comparison;
       });
     }
@@ -236,7 +224,7 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
                 {allKeys.map((key) => (
                   <td key={key} className="px-4 py-3">
                     {renderValue(
-                      typeof record === 'object' && record !== undefined
+                      typeof record === 'object' && record !== null
                         ? (record as RecordType)[key]
                         : undefined
                     )}

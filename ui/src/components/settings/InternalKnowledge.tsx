@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { SystemSource, generateMockSources } from '../../data/mockSettings';
 
-const InternalKnowledge: React.FC = () => {
-  const [sources, setSources] = useState<SystemSource[]>([]);
+const reliabilityBadgeClass = (score: number): string => {
+  if (score >= 80) return 'bg-green-100 text-green-800';
+  if (score >= 50) return 'bg-yellow-100 text-yellow-800';
+  return 'bg-red-100 text-red-800';
+};
 
-  useEffect(() => {
-    setSources(generateMockSources());
-  }, []);
+const InternalKnowledge: React.FC = () => {
+  const [sources] = useState<SystemSource[]>(() => generateMockSources());
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
@@ -70,14 +72,7 @@ const InternalKnowledge: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        ${
-                          source.reliabilityScore >= 80
-                            ? 'bg-green-100 text-green-800'
-                            : source.reliabilityScore >= 50
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reliabilityBadgeClass(source.reliabilityScore)}`}
                       >
                         {source.reliabilityScore}%
                       </span>

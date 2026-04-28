@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import {
   ArrowPathIcon,
@@ -35,6 +35,12 @@ export const ArtifactList: React.FC<ArtifactListProps> = ({
   const { timezone } = useTimezoneStore();
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  // Reset to page 1 when the artifact set changes
+  const [previousArtifactsLength, setPreviousArtifactsLength] = useState(artifacts.length);
+  if (previousArtifactsLength !== artifacts.length) {
+    setPreviousArtifactsLength(artifacts.length);
+    setCurrentPage(1);
+  }
 
   // Calculate pagination
   const totalItems = artifacts.length;
@@ -46,11 +52,6 @@ export const ArtifactList: React.FC<ArtifactListProps> = ({
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return artifacts.slice(startIndex, endIndex);
   }, [artifacts, currentPage]);
-
-  // Reset to page 1 when artifacts change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [artifacts.length]);
 
   const getArtifactTypeIcon = (artifact: Artifact) => {
     const mimeType = artifact.mime_type || '';
