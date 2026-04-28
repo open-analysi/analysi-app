@@ -497,14 +497,24 @@ async def get_platform_summary_impl(
             integ_summaries = [
                 IntegrationChatSummary.from_integration(i) for i in integrations
             ]
+            # Bucket integrations by health_status. The IntegrationHealthStatus
+            # enum has THREE values (healthy / unhealthy / unknown); the older
+            # IntegrationHealth schema docs an additional "degraded" tier so we
+            # surface it when present even though no current code path emits it.
+            # CRITICAL: "unknown" is its own bucket — never silently treated as
+            # "unhealthy". A freshly-provisioned integration should not look
+            # broken to the user just because no health check has run yet.
             healthy = [s.name for s in integ_summaries if s.health_status == "healthy"]
             degraded = [
                 s.name for s in integ_summaries if s.health_status == "degraded"
             ]
             unhealthy = [
+                s.name for s in integ_summaries if s.health_status == "unhealthy"
+            ]
+            unknown = [
                 s.name
                 for s in integ_summaries
-                if s.health_status not in ("healthy", "degraded")
+                if s.health_status not in ("healthy", "degraded", "unhealthy")
             ]
 
             sections.append(f"## Integrations ({len(integrations)} total)\n")
@@ -515,6 +525,10 @@ async def get_platform_summary_impl(
             if degraded:
                 sections.append(
                     f"**Degraded ({len(degraded)})**: {', '.join(degraded)}"
+                )
+            if unknown:
+                sections.append(
+                    f"**Unknown ({len(unknown)})**: {', '.join(unknown)}"
                 )
             if healthy:
                 sections.append(f"**Healthy ({len(healthy)})**: {', '.join(healthy)}")
