@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { HistoricalReport, generateMockHistoricalReports } from '../../data/mockSettings';
 
@@ -20,11 +20,7 @@ const getFileIcon = (format: string) => {
 };
 
 const HistoricalAlerts: React.FC = () => {
-  const [reports, setReports] = useState<HistoricalReport[]>([]);
-
-  useEffect(() => {
-    setReports(generateMockHistoricalReports());
-  }, []);
+  const [reports] = useState<HistoricalReport[]>(() => generateMockHistoricalReports());
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">

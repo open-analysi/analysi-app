@@ -12,9 +12,6 @@ interface LogEntry {
 }
 
 interface LogEventsRendererProps {
-  // null is tolerated at runtime — backend-sourced artifacts use null for
-  // absent values (matches the OpenAPI/Python-None convention used across
-  // src/types/), and the renderSummaryView and fallback paths handle it.
   data: string | Record<string, unknown> | null;
   category?: string;
   maxHeight?: string;
@@ -102,9 +99,6 @@ const renderSummaryView = (
   data: string | Record<string, unknown> | null,
   category?: string
 ): React.JSX.Element => {
-  // Check if data is a JSON object for summary view.
-  // typeof null === 'object', so an explicit null check is required —
-  // checking !== undefined here is always true and lets nulls through.
   if (typeof data === 'object' && data !== null) {
     return <JsonRenderer data={data} title={getDisplayTitle(category)} />;
   }

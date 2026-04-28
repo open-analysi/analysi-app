@@ -32,9 +32,6 @@ const JsonRenderer: React.FC<JsonRendererProps> = ({
   const [currentMatch, setCurrentMatch] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Function to clear all highlights — declared before the effect that
-  // depends on it to satisfy block-scoped-var. Wrapped in useCallback so
-  // the reference is stable across renders.
   const clearHighlights = React.useCallback(() => {
     if (!contentRef.current) return;
 
@@ -53,6 +50,7 @@ const JsonRenderer: React.FC<JsonRendererProps> = ({
 
   // Clear highlights when search term changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM side effect, must run post-render
     clearHighlights();
   }, [searchTerm, clearHighlights]);
 

@@ -54,9 +54,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  // ReactNode by definition mixes JSX, strings, numbers, fragments, etc.
-  // The rule's "consistent return shape" heuristic doesn't fit React rendering.
-  // eslint-disable-next-line sonarjs/function-return-type
+  // eslint-disable-next-line sonarjs/function-return-type -- ReactNode is union by design
   private renderError(): ReactNode {
     return (
       <>
@@ -79,6 +77,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     );
   }
 
+  // eslint-disable-next-line sonarjs/function-return-type -- ReactNode is union by design
   render(): ReactNode {
     return <>{this.state.hasError ? this.renderError() : this.props.children}</>;
   }

@@ -184,18 +184,9 @@ export default [
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      // Test fixtures legitimately repeat literals (endpoint URLs, sample
-      // payloads, expected message strings) and stringify mock objects with
-      // structural assertions. Extracting constants per case fights the
-      // self-contained "given/when/then" shape of each test.
       'sonarjs/no-duplicate-string': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
-      // vi.mocked(x.method) is the canonical vitest mock pattern but reads
-      // as an unbound method to the lint rule.
       '@typescript-eslint/unbound-method': 'off',
-      // Test fixtures often use nested ternaries to coerce mock arg types
-      // (e.g., URL | string | Request); refactoring each into named locals
-      // bloats the test without changing behaviour.
       'sonarjs/no-nested-conditional': 'off',
     },
   },

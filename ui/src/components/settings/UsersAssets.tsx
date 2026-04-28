@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { CriticalResource, generateMockCriticalResources } from '../../data/mockSettings';
 
@@ -20,11 +20,7 @@ const getCriticalityColor = (level: string) => {
 };
 
 const UsersAssets: React.FC = () => {
-  const [resources, setResources] = useState<CriticalResource[]>([]);
-
-  useEffect(() => {
-    setResources(generateMockCriticalResources());
-  }, []);
+  const [resources] = useState<CriticalResource[]>(() => generateMockCriticalResources());
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">

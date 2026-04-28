@@ -35,10 +35,6 @@ const WorkflowTableRowComponent: React.FC<WorkflowTableRowProps> = ({ workflow }
     );
   };
 
-  // Stub handlers — execution dialog, visualizer navigation, and details
-  // navigation are not yet wired up. Logging the intent keeps the buttons
-  // functional in dev (something happens on click) without a real
-  // destination; the caller wires no-op-or-log behaviour into the row.
   const handleExecuteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.info('Execute workflow:', workflow.id);

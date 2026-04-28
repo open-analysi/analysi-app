@@ -2,7 +2,6 @@ import React from 'react';
 
 import { FunctionFilters, ScopeFilters, StatusFilters } from '../../store/taskStore';
 
-// Inactive filter pill — shared across every filter button when its toggle is off.
 const INACTIVE_FILTER_PILL = 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
 
 interface TaskFiltersProps {
@@ -23,6 +22,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   setScopeFilters,
   setStatusFilters,
   resetFilters,
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- 13 inline filter pills
 }) => {
   // Listen for custom reset event (when user clicks "Reset All Filters" in the empty table state)
   React.useEffect(() => {

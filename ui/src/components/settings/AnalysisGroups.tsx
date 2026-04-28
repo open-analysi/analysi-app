@@ -32,6 +32,7 @@ export const AnalysisGroups: React.FC = () => {
   }, [runSafe, handleError, createContext]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch, setState happens after await
     void loadAnalysisGroups();
   }, [loadAnalysisGroups]);
 

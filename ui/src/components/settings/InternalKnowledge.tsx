@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { SystemSource, generateMockSources } from '../../data/mockSettings';
 
@@ -9,11 +9,7 @@ const reliabilityBadgeClass = (score: number): string => {
 };
 
 const InternalKnowledge: React.FC = () => {
-  const [sources, setSources] = useState<SystemSource[]>([]);
-
-  useEffect(() => {
-    setSources(generateMockSources());
-  }, []);
+  const [sources] = useState<SystemSource[]>(() => generateMockSources());
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">

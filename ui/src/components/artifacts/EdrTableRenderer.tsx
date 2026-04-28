@@ -23,17 +23,13 @@ interface RecordType {
   [key: string]: unknown;
 }
 
-// Safe stringification for cell values that may be primitives, null, or
-// nested objects/arrays. Object cells fall back to JSON so sort comparisons
-// and search filters operate on a real string instead of "[object Object]".
+// Object cells JSON.stringify so sort + search don't collapse to "[object Object]"
 const stringifyCell = (value: unknown): string => {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
     return String(value);
   }
-  // Symbols, functions, and circular structures fall back to an empty string
-  // rather than throwing — preserves the prior best-effort behaviour.
   try {
     return JSON.stringify(value) ?? '';
   } catch {
@@ -56,9 +52,6 @@ const renderValue = (value: unknown): React.JSX.Element => {
   if (value === null) return <span className="text-gray-400">null</span>;
 
   if (typeof value === 'object') {
-    // The "[Expand]" button was never wired up. Preserve the count display
-    // but drop the dead handler so clicking is a no-op-by-omission rather
-    // than a no-op-by-stub.
     if (Array.isArray(value)) {
       return <span className="text-gray-300">{value.length} items</span>;
     }
@@ -97,12 +90,9 @@ export const EdrTableRenderer: React.FC<EdrTableRendererProps> = ({
     return [data];
   }, [data]);
 
-  // Get all unique keys from the records
   const allKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const record of records) {
-      // typeof null === 'object', so an explicit null check is required —
-      // checking !== undefined here is always true and lets nulls slip through.
       if (typeof record === 'object' && record !== null) {
         for (const key of Object.keys(record as RecordType)) keys.add(key);
       }
