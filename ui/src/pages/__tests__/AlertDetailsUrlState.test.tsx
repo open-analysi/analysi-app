@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string, unicorn/filename-case */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useSearchParams } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';

@@ -1,4 +1,4 @@
-/* eslint-disable sonarjs/no-duplicate-string, sonarjs/no-identical-functions */
+/* eslint-disable sonarjs/no-identical-functions */
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';

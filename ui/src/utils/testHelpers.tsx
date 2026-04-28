@@ -1,23 +1,24 @@
 import React from 'react';
 
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
 
 /**
- * Creates a test router with React Router v7 future flags enabled
- * This helper prevents future flag warnings in tests
+ * Creates a memory router for tests.
+ *
+ * Historically this helper enabled the v7_startTransition / v7_relativeSplatPath
+ * future flags, but those are now the defaults in react-router 7 and no longer
+ * exist on FutureConfig — the helper just thin-wraps createMemoryRouter for
+ * call-site convenience.
  */
-export function createTestRouter(routes: any[], initialEntries?: string[]) {
-  return createMemoryRouter(routes, {
-    initialEntries,
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-    } as any, // Type assertion for v7 future flags not yet in types
-  });
+export function createTestRouter(
+  routes: RouteObject[],
+  initialEntries?: string[]
+): ReturnType<typeof createMemoryRouter> {
+  return createMemoryRouter(routes, { initialEntries });
 }
 
 /**
- * Wrapper component for tests that need routing with future flags
+ * Wrapper component for tests that need routing.
  * Usage: renderWithRouter(<YourComponent />, { route: '/path' })
  */
 export function TestRouterProvider({
@@ -34,13 +35,7 @@ export function TestRouterProvider({
         element: children,
       },
     ],
-    {
-      initialEntries,
-      future: {
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      } as any, // Type assertion for v7 future flags not yet in types
-    }
+    { initialEntries }
   );
 
   return <RouterProvider router={router} />;

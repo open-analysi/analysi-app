@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
 /**
  * Tests for AlertDetails 'failed' analysis status handling
  *
