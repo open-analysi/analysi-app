@@ -74,6 +74,14 @@ const parseLogEntry = (entry: string): LogEntry => {
 export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ category }) => {
   const categoryName = category || 'data';
   const title = getDisplayTitle(category);
+  let unavailableLabel: string;
+  if (category === 'timeline') {
+    unavailableLabel = TRIGGERING_EVENTS;
+  } else if (category === 'logs') {
+    unavailableLabel = SUPPORTING_EVENTS;
+  } else {
+    unavailableLabel = `edr - ${categoryName}`;
+  }
 
   return (
     <div className="bg-dark-800 rounded-md border border-dark-700">
@@ -83,14 +91,7 @@ export const DataUnavailableMessage: React.FC<{ category?: string }> = ({ catego
       <div className="flex flex-col items-center justify-center py-12">
         <ExclamationTriangleIcon className="w-12 h-12 mb-4 text-gray-400" />
         <p className="text-lg font-medium text-gray-400">Data Unavailable</p>
-        <p className="text-sm mt-2 text-gray-400">
-          Failed to load data for{' '}
-          {category === 'timeline'
-            ? TRIGGERING_EVENTS
-            : category === 'logs'
-              ? SUPPORTING_EVENTS
-              : 'edr - ' + categoryName}
-        </p>
+        <p className="text-sm mt-2 text-gray-400">Failed to load data for {unavailableLabel}</p>
       </div>
     </div>
   );

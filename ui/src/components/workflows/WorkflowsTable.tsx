@@ -40,14 +40,11 @@ export const WorkflowsTable: React.FC<WorkflowsTableProps> = ({
   const renderSortIndicator = useMemo(
     function renderSortIndicator() {
       return function renderSortIcon(field: WorkflowSortField) {
-        return sortField === field ? (
-          sortDirection === 'asc' ? (
-            <ChevronUpIcon className="w-4 h-4 inline-block ml-1" />
-          ) : (
-            <ChevronDownIcon className="w-4 h-4 inline-block ml-1" />
-          )
+        if (sortField !== field) return <></>;
+        return sortDirection === 'asc' ? (
+          <ChevronUpIcon className="w-4 h-4 inline-block ml-1" />
         ) : (
-          <></>
+          <ChevronDownIcon className="w-4 h-4 inline-block ml-1" />
         );
       };
     },

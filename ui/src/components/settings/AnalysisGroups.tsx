@@ -178,20 +178,22 @@ export const AnalysisGroups: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {isLoading && analysisGroups.length === 0 ? (
+            {isLoading && analysisGroups.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-gray-400">
                   <ArrowPathIcon className="h-6 w-6 animate-spin mx-auto mb-2" />
                   Loading analysis groups...
                 </td>
               </tr>
-            ) : analysisGroups.length === 0 ? (
+            )}
+            {!isLoading && analysisGroups.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-gray-400">
                   No analysis groups found. Create one to get started.
                 </td>
               </tr>
-            ) : (
+            )}
+            {analysisGroups.length > 0 &&
               analysisGroups.map((group) => (
                 <tr key={group.id} className="hover:bg-gray-800/30">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -210,8 +212,7 @@ export const AnalysisGroups: React.FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>

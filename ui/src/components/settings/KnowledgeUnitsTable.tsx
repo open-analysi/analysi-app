@@ -57,14 +57,11 @@ export const KnowledgeUnitsTable: React.FC<KnowledgeUnitsTableProps> = ({
   const renderSortIndicator = useMemo(
     function renderSortIndicator() {
       return function renderSortIcon(field: string) {
-        return sortField === field ? (
-          sortDirection === 'asc' ? (
-            <ChevronUpIcon className="w-4 h-4 inline-block ml-1" />
-          ) : (
-            <ChevronDownIcon className="w-4 h-4 inline-block ml-1" />
-          )
+        if (sortField !== field) return <></>;
+        return sortDirection === 'asc' ? (
+          <ChevronUpIcon className="w-4 h-4 inline-block ml-1" />
         ) : (
-          <></>
+          <ChevronDownIcon className="w-4 h-4 inline-block ml-1" />
         );
       };
     },
@@ -146,7 +143,7 @@ export const KnowledgeUnitsTable: React.FC<KnowledgeUnitsTableProps> = ({
             </tr>
           </thead>
           <tbody className={componentStyles.tableBody}>
-            {loading ? (
+            {loading && (
               <tr>
                 <td colSpan={8} className="text-center py-4">
                   <div className="flex justify-center items-center space-x-2">
@@ -155,7 +152,8 @@ export const KnowledgeUnitsTable: React.FC<KnowledgeUnitsTableProps> = ({
                   </div>
                 </td>
               </tr>
-            ) : knowledgeUnits.length === 0 ? (
+            )}
+            {!loading && knowledgeUnits.length === 0 && (
               <tr>
                 <td colSpan={8} className="text-center py-8">
                   <div className="flex flex-col items-center space-y-3">
@@ -187,7 +185,9 @@ export const KnowledgeUnitsTable: React.FC<KnowledgeUnitsTableProps> = ({
                   </div>
                 </td>
               </tr>
-            ) : (
+            )}
+            {!loading &&
+              knowledgeUnits.length > 0 &&
               knowledgeUnits
                 .filter((ku) => ku != undefined && ku.id != undefined)
                 .map((ku) => (
@@ -200,8 +200,7 @@ export const KnowledgeUnitsTable: React.FC<KnowledgeUnitsTableProps> = ({
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />
-                ))
-            )}
+                ))}
           </tbody>
         </table>
       </div>

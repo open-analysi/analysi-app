@@ -193,6 +193,10 @@ export default [
       // vi.mocked(x.method) is the canonical vitest mock pattern but reads
       // as an unbound method to the lint rule.
       '@typescript-eslint/unbound-method': 'off',
+      // Test fixtures often use nested ternaries to coerce mock arg types
+      // (e.g., URL | string | Request); refactoring each into named locals
+      // bloats the test without changing behaviour.
+      'sonarjs/no-nested-conditional': 'off',
     },
   },
 
