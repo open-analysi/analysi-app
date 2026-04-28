@@ -226,7 +226,70 @@ Files brought to ≥ 85 % unit coverage in this PR:
 - ✅ `services/cy_autocomplete.py` (pure helpers, 27 % → 67 %)
 - ✅ `data/cim_mappings.py` (11 % → 98 %)
 - ✅ `alert_analysis/clients.py` (40 % → 85 %)
+- ✅ `services/chat_action_tools.py` (43 % → 95 %, includes Bug #1 fix)
+- ✅ `services/chat_tools.py` (61 % → 85 %, includes Bug #2 fix)
 - ✅ All 7 OCSF normalizers (lifted via the orphan-tests fix)
+
+### 1f. Bugs found while writing tests
+
+The point of writing **meaningful** tests (rather than vanity ones) is
+that they probe the contract and find cases where reality diverges from
+intent. Tests written in this PR uncovered two real bugs in production
+code, both fixed in the same commits as the regression tests:
+
+#### Bug #1 — `create_alert_impl` produces invalid JSON in `raw_data`
+*Commit: `e39596d`*
+
+```python
+# Old:
+raw_data=f'{{"title": "{title}", "severity": "{severity}", "source": "chatbot"}}'
+```
+
+That is *string formatting*, not JSON encoding. Any title containing a
+double-quote, backslash, newline, control character, or itself JSON-
+shaped text silently produces invalid JSON. The chat-bot-created alert
+then:
+1. Hashes a malformed byte sequence for deduplication
+   (`alert_service._calculate_raw_data_hash`)
+2. Crashes any downstream OCSF normalizer / export that
+   `json.loads(raw_data)`s
+3. Looks like garbage to anyone copying it into `jq` / Splunk / Elastic
+
+The regression test parametrizes 7 titles that exercise each special-
+character class; all 7 failed against old code. Fix: `json.dumps`.
+
+#### Bug #2 — Platform summary mis-buckets `"unknown"` integrations as `"Unhealthy"`
+*Commit: `13d893c`*
+
+```python
+# Old:
+healthy   = [s for s in integrations if s.health_status == "healthy"]
+degraded  = [s for s in integrations if s.health_status == "degraded"]
+unhealthy = [s for s in integrations
+             if s.health_status not in ("healthy", "degraded")]
+```
+
+The catch-all `unhealthy` bucket swept in `"unknown"` — the documented
+sentinel that `IntegrationHealthStatus` emits for integrations that
+have never been health-checked. The chat agent then told the user::
+
+    **Unhealthy (1)**: never-checked
+
+— misinformation. The integration is not broken; we just don't know
+its state. Fix: split into four explicit buckets (Healthy / Degraded /
+Unhealthy / Unknown).
+
+#### Test-quality lesson
+
+Both bugs would have been hard to find in code review (the f-string
+*looks* like JSON; the `not in (...)` *looks* defensive). They were
+trivial to find with parametrized boundary tests:
+- "does this round-trip through `json.loads`?"
+- "is this integration name on a line that says `Unhealthy`?"
+
+The regression tests are now the documentation of intent — anyone
+reverting either fix gets a clear, named test failure pointing at the
+bug. That's the bar the rest of the suite should reach.
 
 To reproduce locally:
 `make test-db-up && ANTHROPIC_API_KEY="" OPENAI_API_KEY="" poetry run pytest --cov=src --cov-report=term-missing --cov-report=json:coverage.json`.
