@@ -80,10 +80,10 @@ tests exercise routers and repositories. Running the full integration
 suite (`make test-db-up && pytest tests/integration -m "integration and
 not requires_full_stack and not requires_api"`) and unioning the executed
 lines with the unit-test data gives the **combined view we should plan
-against** (regenerate with `python /tmp/combine_coverage.py
-/tmp/coverage_combined.json coverage_after_v1.json
-coverage_integration.json` — script lives in `/tmp` for now; will be
-moved to `scripts/code_quality_tools/combine_coverage.py` in a follow-up).
+against**. Regenerate with::
+
+    poetry run python scripts/code_quality_tools/combine_coverage.py \
+        out.json coverage_unit.json coverage_integration.json
 
 | Metric | Combined |
 | --- | --- |
