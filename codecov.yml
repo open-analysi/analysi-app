@@ -31,11 +31,10 @@ flags:
     paths:
       - cli/src/
     carryforward: true
-  # ui: placeholder — uncomment when ui/ gains a CI test job that uploads lcov
-  # ui:
-  #   paths:
-  #     - ui/src/
-  #   carryforward: true
+  ui:
+    paths:
+      - ui/src/
+    carryforward: true
 
 # Components — presentation grouping for the PR comment + dashboard.
 # Flags are about upload provenance (which CI job produced which lcov);
@@ -55,11 +54,10 @@ component_management:
       name: CLI
       paths:
         - cli/src/**
-    # Placeholder — UI has no CI test job yet. Uncomment once ui/ uploads coverage.
-    # - component_id: ui
-    #   name: UI
-    #   paths:
-    #     - ui/src/**
+    - component_id: ui
+      name: UI
+      paths:
+        - ui/src/**
 
 ignore:
   - "tests/"
