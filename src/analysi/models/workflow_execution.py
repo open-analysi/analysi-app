@@ -45,7 +45,7 @@ class WorkflowRun(Base):
         nullable=False,
         default="pending",
         index=True,
-    )  # pending, running, completed, failed, cancelled
+    )  # See WorkflowConstants.Status: pending, running, completed, failed, cancelled, paused
 
     # Timing
     started_at: Mapped[datetime | None] = mapped_column(
@@ -152,7 +152,7 @@ class WorkflowNodeInstance(Base):
         nullable=False,
         default="pending",
         index=True,
-    )  # pending, running, completed, failed, cancelled
+    )  # See WorkflowConstants.Status: pending, running, completed, failed, cancelled, paused
 
     # Timing
     started_at: Mapped[datetime | None] = mapped_column(

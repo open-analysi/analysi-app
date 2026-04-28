@@ -18,7 +18,7 @@ Every domain term used across the docs and codebase, with a precise one-sentence
 |------|------------|-------------------|
 | **Task** | An executable unit of Cy script (with optional LLM config) that can run standalone or as a node in a workflow. See **Cy language** below. | [`models/task.py:27`](https://github.com/open-analysi/analysi-app/blob/main/src/analysi/models/task.py#L27) |
 | **Workflow** | A static DAG blueprint of nodes (Tasks, transformations, foreach loops) and edges (data flow), instantiated as a `WorkflowRun` for execution. | [`models/workflow.py:30`](https://github.com/open-analysi/analysi-app/blob/main/src/analysi/models/workflow.py#L30) |
-| **Cy language** | Compiled-to-Python-bytecode DSL for orchestrating integration actions and LLM calls; Tasks are written in Cy. Lives in the external [`cy-language`](https://github.com/open-analysi/cy-language) repo. | [`mcp/tools/cy_tools.py:5`](https://github.com/open-analysi/analysi-app/blob/main/src/analysi/mcp/tools/cy_tools.py#L5) |
+| **Cy language** | Compiled-to-Python-bytecode DSL for orchestrating integration actions and LLM calls; Tasks are written in Cy. See the [Cy language tutorial](https://github.com/open-analysi/cy-language/blob/main/docs/TUTORIAL.md) and [Cy in Analysi](../concepts/cy-language.md) for what Analysi adds on top. | [`mcp/tools/cy_tools.py:5`](https://github.com/open-analysi/analysi-app/blob/main/src/analysi/mcp/tools/cy_tools.py#L5) |
 
 ## Execution records
 

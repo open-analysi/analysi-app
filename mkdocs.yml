@@ -69,6 +69,12 @@ nav:
       - Concept: concepts/concept.md
       - Alert lifecycle: concepts/alert-lifecycle.md
       - Component architecture: concepts/component-architecture.md
+      - Cy in Analysi: concepts/cy-language.md
+      - Tasks: concepts/tasks.md
+      - Workflows: concepts/workflows.md
+      - Workflow generation: concepts/workflow-generation.md
+      - Disposition: concepts/disposition.md
+      - Human-in-the-loop: concepts/hitl.md
   - Reference:
       - reference/index.md
       - Terminology: reference/terminology.md
