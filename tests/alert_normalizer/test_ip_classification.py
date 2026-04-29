@@ -24,7 +24,6 @@ from alert_normalizer.helpers.ip_classification import (
     is_threat_indicator,
 )
 
-
 # ── is_private_ip ───────────────────────────────────────────────────────────
 
 PRIVATE_IPS = [

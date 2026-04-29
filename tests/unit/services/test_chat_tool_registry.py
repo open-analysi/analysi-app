@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -36,7 +36,6 @@ import pytest
 from analysi.constants import ChatConstants
 from analysi.services import chat_tool_registry as ctr
 from analysi.services.chat_action_tools import PendingAction
-
 
 # ── A minimal RunContext / ChatDeps stand-in ───────────────────────────────-
 #

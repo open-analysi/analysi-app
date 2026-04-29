@@ -24,7 +24,6 @@ import pytest
 
 from analysi.services import cy_autocomplete as ac
 
-
 # ── _cursor_inside_string ──────────────────────────────────────────────────-
 
 

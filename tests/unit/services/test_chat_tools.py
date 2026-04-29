@@ -39,7 +39,6 @@ from analysi.services.chat_tools import (
     search_alerts_impl,
 )
 
-
 # ── _format_dict ────────────────────────────────────────────────────────────
 
 
@@ -304,7 +303,8 @@ async def test_get_platform_summary_impl_buckets_healthy() -> None:
         )
         out = await get_platform_summary_impl(fake_session, "t")
     assert "Healthy (2)" in out
-    assert "alpha" in out and "beta" in out
+    assert "alpha" in out
+    assert "beta" in out
 
 
 @pytest.mark.asyncio

@@ -12,14 +12,13 @@ plus HTTP-level errors. This file fills the remaining gaps in the
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 from uuid import UUID, uuid4
 
 import pytest
 
 from analysi.services.artifact_service import ArtifactService
 from analysi.services.cy_functions import CyArtifactFunctions
-
 
 # ── fixtures ────────────────────────────────────────────────────────────────
 

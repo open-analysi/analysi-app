@@ -26,7 +26,6 @@ from analysi.services.type_propagation.data_sample_validator import (
     validate_task_data_samples,
 )
 
-
 # ── _remove_required_fields edge branches ──────────────────────────────────-
 
 

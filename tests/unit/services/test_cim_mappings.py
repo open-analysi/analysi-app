@@ -21,7 +21,6 @@ import pytest
 
 from analysi.data.cim_mappings import CIMMappingLoader
 
-
 # ── helpers ────────────────────────────────────────────────────────────────-
 
 
