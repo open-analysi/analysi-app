@@ -15,7 +15,7 @@ The alert-worker container uses Claude Code agents to generate workflows from se
 
 ```
 agents/
-├── source/               # Editable source agents (local agents registered in skilltree.yaml)
+├── source/               # Editable source agents (local agents registered in skilltree.yml)
 ├── production/           # Production agents (deployed to alert-worker, includes remote agents)
 │   ├── cy-script-segment-tester.md
 │   ├── cybersec-task-builder.md
@@ -26,7 +26,7 @@ agents/
 └── dev/                  # Development-only agents (not deployed)
 ```
 
-`agents/source/` contains local agent source files referenced by `skilltree.yaml`. `agents/dist/` is the deployment artifact — it includes both local agents (copied from source) and remote agents (installed by skilltree from other repos).
+`agents/source/` contains local agent source files referenced by `skilltree.yml`. `agents/dist/` is the deployment artifact — it includes both local agents (copied from source) and remote agents (installed by skilltree from other repos).
 
 ## Development Workflows
 
@@ -134,6 +134,6 @@ If wrong version is found:
 ## Related Documentation
 
 - **Packaging Script**: `scripts/agents_management/package.py`
-- **Source of Truth**: `skilltree.yaml` (prod vs dev dependencies)
+- **Source of Truth**: `skilltree.yml` (prod vs dev dependencies)
 - **Runtime Configuration**: `src/analysi/agentic_orchestration/CLAUDE.md`
 - **Naming Conventions**: `CLAUDE.md` (Environment Variable Naming Convention section)

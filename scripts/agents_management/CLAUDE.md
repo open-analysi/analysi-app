@@ -2,7 +2,7 @@
 
 ## Overview
 
-`skilltree.yaml` is the single source of truth. Production dependencies (`group: prod`) are packaged into deployment directories. Dev dependencies are only used locally.
+`skilltree.yml` is the single source of truth. Production dependencies (`group: prod`) are packaged into deployment directories. Dev dependencies are only used locally.
 
 | What | Target | Command |
 |------|--------|---------|
@@ -19,14 +19,14 @@
 
 ## Adding a New Agent or Skill
 
-1. Add it to `skilltree.yaml` under `dependencies:` (not `dev-dependencies:`)
+1. Add it to `skilltree.yml` under `dependencies:` (not `dev-dependencies:`)
 2. Run `skilltree install`
 3. Run `make package-agents` or `make package-skills`
 4. Commit the output
 
 ```bash
 # Example: add a new prod agent
-# 1. Edit skilltree.yaml, then:
+# 1. Edit skilltree.yml, then:
 skilltree install
 make package-agents
 git add agents/dist/ && git commit -m "Add new-agent"
