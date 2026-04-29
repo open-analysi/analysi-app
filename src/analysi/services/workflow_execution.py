@@ -1949,9 +1949,25 @@ def template_function(inp, workflow_input=None):
 {indented_code}
 """
 
-        # Execute the function definition
+        # Execute the function definition.
+        #
+        # Security: this exec() is intentional and is the engine for workflow
+        # template-transform nodes. Three independent layers contain it:
+        #   1. ``_validate_template_ast`` (called above) walks the AST and
+        #      rejects imports, dunder attribute access (e.g. ``__class__``),
+        #      and any reference to ``exec``/``eval``/``compile``/``open``/
+        #      ``globals``/``locals``/``getattr`` etc.
+        #   2. ``safe_globals`` overrides ``__builtins__`` with an explicit
+        #      allowlist; ``__import__`` is not present, so even if AST
+        #      validation were bypassed there is no path to import modules.
+        #   3. Authoring workflow templates is gated by RBAC — only privileged
+        #      users (workflow authors) can land template code, never network
+        #      input.
+        # Suppress B102 / Semgrep: the sandbox above makes this exec safe.
         local_vars: dict[str, Any] = {}
-        exec(function_code, safe_globals, local_vars)  # nosec B102
+        exec(  # nosec B102  # nosemgrep: python.lang.security.audit.exec-detected.exec-detected
+            function_code, safe_globals, local_vars
+        )
 
         # Call the function with input data and optional envelope
         result = local_vars["template_function"](input_data, envelope)

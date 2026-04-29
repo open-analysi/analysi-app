@@ -164,7 +164,15 @@ class ArtifactStorageService:
         content_bytes = content.encode("utf-8") if isinstance(content, str) else content
 
         sha256_hash = hashlib.sha256(content_bytes).digest()
-        md5_hash = hashlib.md5(content_bytes).digest()  # nosec B324
+        # MD5 here is *not* a security primitive — it is used purely for
+        # content-addressing and S3 ETag parity (S3 returns MD5 as the ETag
+        # for non-multipart uploads, and we compare against it for dedup /
+        # integrity checks against the object store). SHA-256 above is the
+        # cryptographic hash. ``usedforsecurity=False`` documents the intent
+        # for both Python and Bandit/Semgrep.
+        md5_hash = hashlib.md5(  # nosec B324  # nosemgrep: python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
+            content_bytes, usedforsecurity=False
+        ).digest()
 
         return sha256_hash, md5_hash
 

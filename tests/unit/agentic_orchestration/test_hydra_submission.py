@@ -51,12 +51,12 @@ class TestHydraTenantLock:
         async with hydra_tenant_lock(mock_session2, "tenant-b"):
             pass
 
-        # Get the SQL text from both calls
-        sql1 = str(mock_session1.execute.call_args[0][0])
-        sql2 = str(mock_session2.execute.call_args[0][0])
+        # Lock id is now bound as a SQL parameter, not interpolated into the
+        # statement string — check the bind dict.
+        params1 = mock_session1.execute.call_args[0][1]
+        params2 = mock_session2.execute.call_args[0][1]
 
-        # They should be different (different tenant_ids produce different lock IDs)
-        assert sql1 != sql2
+        assert params1["lock_id"] != params2["lock_id"]
 
     @pytest.mark.asyncio
     async def test_lock_same_tenant_same_id(self):
@@ -75,12 +75,11 @@ class TestHydraTenantLock:
         async with hydra_tenant_lock(mock_session2, "same-tenant"):
             pass
 
-        # Get the SQL text from both calls
-        sql1 = str(mock_session1.execute.call_args[0][0])
-        sql2 = str(mock_session2.execute.call_args[0][0])
+        params1 = mock_session1.execute.call_args[0][1]
+        params2 = mock_session2.execute.call_args[0][1]
 
-        # They should be the same (same tenant_id produces same lock ID)
-        assert sql1 == sql2
+        # Same tenant_id produces same lock ID.
+        assert params1["lock_id"] == params2["lock_id"]
 
     @pytest.mark.asyncio
     async def test_lock_id_is_deterministic(self):
@@ -98,9 +97,9 @@ class TestHydraTenantLock:
         async with hydra_tenant_lock(mock_session, tenant_id):
             pass
 
-        # Get the SQL text and verify the lock ID is in it
-        sql_text = str(mock_session.execute.call_args[0][0])
-        assert str(expected_lock_id) in sql_text
+        # Lock id is bound as a parameter — check the bind dict.
+        params = mock_session.execute.call_args[0][1]
+        assert params["lock_id"] == expected_lock_id
 
     @pytest.mark.asyncio
     async def test_lock_releases_on_exception(self):

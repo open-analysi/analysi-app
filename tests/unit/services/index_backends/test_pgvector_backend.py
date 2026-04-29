@@ -150,7 +150,7 @@ class TestPgvectorBackendDelete:
         entry_ids = [uuid4(), uuid4()]
 
         mock_result = MagicMock()
-        mock_result.all.return_value = [MagicMock(), MagicMock()]
+        mock_result.rowcount = 2
         mock_session.execute.return_value = mock_result
 
         deleted = await backend.delete(collection_id, "tenant-a", entry_ids)
@@ -173,7 +173,7 @@ class TestPgvectorBackendDelete:
         collection_id = uuid4()
 
         mock_result = MagicMock()
-        mock_result.all.return_value = [MagicMock()] * 5
+        mock_result.rowcount = 5
         mock_session.execute.return_value = mock_result
 
         deleted = await backend.delete_all(collection_id, "tenant-a")

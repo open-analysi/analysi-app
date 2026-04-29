@@ -74,6 +74,11 @@ class DefaultTaskExecutor(TaskExecutor):
         Returns:
             Dict with status, output, and error information
         """
+        # Initialised before the try-block so the except arms can reference it
+        # without falling back to ``locals().get(...)`` (Semgrep flags any
+        # non-literal index into ``locals()`` as a sandbox-escape vector).
+        captured_logs: list[str | dict] = []
+
         try:
             # Ensure we start with a clean state
             await self._cleanup_artifact_session()
@@ -145,7 +150,7 @@ class DefaultTaskExecutor(TaskExecutor):
             # No need to separate app tools - export_custom_tools() handles FQN preservation
             # Cy 0.38+: use run_native_async() to get raw Python objects directly.
             # This avoids the JSON serialization round-trip (run_async → json.loads).
-            captured_logs: list[str | dict] = []
+            # ``captured_logs`` is initialised above, before the try-block.
 
             # Bug #30 fix: Extract HITL checkpoint for memoized replay on resume.
             # resume_paused_task stores the checkpoint (with injected answer) in
@@ -253,7 +258,7 @@ class DefaultTaskExecutor(TaskExecutor):
             return {
                 "status": "paused",
                 "_hitl_checkpoint": ep.checkpoint.to_dict(),
-                "logs": locals().get("captured_logs", []),
+                "logs": captured_logs,
             }
 
         except Exception as e:
@@ -292,7 +297,7 @@ class DefaultTaskExecutor(TaskExecutor):
                 "error": str(e),
                 "output": None,
                 "execution_time": 0.1,
-                "logs": locals().get("captured_logs", []),
+                "logs": captured_logs,
             }
 
     def _load_tools(self, execution_context: dict[str, Any] = None) -> dict[str, Any]:
@@ -1860,6 +1865,12 @@ class TaskExecutionService:
 
         start_ms = int(time.monotonic() * 1000)
 
+        # Hoisted out of the try-block so the except arm can read it without
+        # ``locals().get(...)`` (Semgrep flags non-literal locals() indexing).
+        # Set to the captured CyLLMFunctions instance once executor.execute()
+        # returns; remains None on failures earlier in the path.
+        cy_llm_instance_for_usage: Any | None = None
+
         try:
             # Get Cy script from task_run (ad-hoc) or load from task
             cy_script = task_run.cy_script
@@ -2078,9 +2089,8 @@ class TaskExecutionService:
             # failure so we don't lose cost data for LLM calls that did happen.
             llm_usage_on_error = None
             try:
-                inst = locals().get("cy_llm_instance_for_usage")
-                if inst is not None:
-                    llm_usage_on_error = inst.get_total_usage()
+                if cy_llm_instance_for_usage is not None:
+                    llm_usage_on_error = cy_llm_instance_for_usage.get_total_usage()
             except Exception:
                 pass
             return TaskExecutionResult(
