@@ -222,7 +222,12 @@ known-first-party = ["analysi"]
 "src/analysi/alert_analysis/jobs/reconciliation.py" = ["C901"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests/unit"]
+# tests/unit/        — true unit tests (no DB, no network)
+# tests/alert_normalizer/ — pure normalizer-level tests (no DB, no network);
+#                           previously orphaned (not in testpaths) so the
+#                           OCSF normalizers reported 0 % coverage even though
+#                           well covered by these tests.
+testpaths = ["tests/unit", "tests/alert_normalizer"]
 python_files = "test_*.py"
 python_functions = "test_*"
 python_classes = "Test*"

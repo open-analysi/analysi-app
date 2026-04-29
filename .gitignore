@@ -52,6 +52,7 @@ htmlcov/
 *.cover
 .hypothesis/
 coverage.xml
+coverage*.json
 cli/coverage/
 ui/coverage/
 

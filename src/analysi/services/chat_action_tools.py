@@ -198,12 +198,22 @@ async def create_alert_impl(
     source_product: str = "analysi-chatbot",
 ) -> str:
     """Create a new alert."""
+    import json
     from datetime import datetime
 
     from analysi.schemas.alert import AlertCreate
     from analysi.services.chat_tools import _make_alert_service
 
     service = _make_alert_service(session)
+
+    # raw_data must be valid JSON (alert_service hashes it for deduplication
+    # and downstream OCSF normalizers / exports parse it). Building it as
+    # an f-string silently produces invalid JSON for any title containing a
+    # double-quote, backslash, newline, control char, or itself JSON-shaped
+    # text. ``json.dumps`` is the only safe encoder.
+    raw_data = json.dumps(
+        {"title": title, "severity": severity, "source": "chatbot"}
+    )
 
     create_data = AlertCreate(
         title=title,
@@ -212,7 +222,7 @@ async def create_alert_impl(
         source_vendor=source_vendor,
         source_product=source_product,
         triggering_event_time=datetime.now(UTC),
-        raw_data=f'{{"title": "{title}", "severity": "{severity}", "source": "chatbot"}}',
+        raw_data=raw_data,
     )
 
     alert = await service.create_alert(tenant_id, create_data)
