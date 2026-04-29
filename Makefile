@@ -132,6 +132,9 @@ help:
 	@echo "  make docs-install                Install MkDocs and dependencies (one-time)"
 	@echo "  make docs-serve                  Live preview at http://localhost:8000"
 	@echo "  make docs-build                  Build site (CI-equivalent: --strict, fails on broken links)"
+	@echo ""
+	@echo "Developer setup:"
+	@echo "  make install-hooks               Install pre-commit hooks (ruff/format/secrets) — run once per clone"
 
 
 # ──── Development ────────────────────────────────────────────────────────────
@@ -619,6 +622,18 @@ docker-disk-usage:
 docs-install:
 	poetry install --with docs
 
+# ──── Pre-commit Hooks ───────────────────────────────────────────────────────
+
+install-hooks:  ## Install pre-commit hooks (ruff/format/bandit/secrets/etc.) in this clone
+	@poetry run pre-commit --version >/dev/null 2>&1 || { \
+		echo "pre-commit not in poetry env — run 'poetry install' first"; exit 1; \
+	}
+	poetry run pre-commit install
+	@echo
+	@echo "✓ pre-commit hooks installed."
+	@echo "  Hooks now run automatically on 'git commit'."
+	@echo "  Run on the whole tree any time with: poetry run pre-commit run --all-files"
+
 docs-serve:
 	@poetry run mkdocs --version >/dev/null 2>&1 || { echo "mkdocs not in poetry env — run 'make docs-install' first"; exit 1; }
 	poetry run mkdocs serve
@@ -711,7 +726,7 @@ code-quality-check: code-quality
         ec2-up ec2-down ec2-status ec2-health ec2-logs ec2-endpoints \
         ec2-ssh ec2-info ec2-credentials ec2-help \
         fix-docker-disk-space docker-disk-usage \
-        docs-install docs-serve docs-build \
+        docs-install docs-serve docs-build install-hooks \
         restart-api restart-analysis restart-integrations \
         restart-keycloak restart-vault \
         rebuild-api rebuild-analysis rebuild-integrations \
