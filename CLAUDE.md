@@ -57,19 +57,19 @@ Where:
 
 # Agents and Skills Management
 
-`skilltree.yaml` is the single source of truth. Prod agents and skills are packaged into deployment directories (committed to git). The packaging script reads `skilltree list --json` to discover what to package.
+`skilltree.yml` is the single source of truth. Prod agents and skills are packaged into deployment directories (committed to git). The packaging script reads `skilltree list --json` to discover what to package.
 
 **Quick Start:**
 ```bash
 # Normal: Just rebuild (uses packaged files from git)
 make rebuild-alert-worker
 
-# Update agents after skilltree.yaml or source changes
+# Update agents after skilltree.yml or source changes
 make package-agents
 git add agents/dist/ && git commit -m "Update production agents"
 make rebuild-alert-worker
 
-# Update skills after skilltree.yaml or source changes
+# Update skills after skilltree.yml or source changes
 make package-skills
 git add content/foundation/skills/ && git commit -m "Update foundation skills"
 ```

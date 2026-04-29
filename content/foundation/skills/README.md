@@ -25,7 +25,7 @@ skills/<name>/  (source of truth)
 ## Adding a new skill
 
 1. Add the skill under `skills/<skill-name>/` at the project root.
-2. Register it in `skilltree.yaml` under `dependencies:` (group `prod`).
+2. Register it in `skilltree.yml` under `dependencies:` (group `prod`).
 3. Run `skilltree install && make package-skills`.
 4. Commit.
 

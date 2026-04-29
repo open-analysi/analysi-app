@@ -102,7 +102,7 @@ You only need to install four things manually. Everything else is brought in by 
 | [Docker](https://docs.docker.com/get-docker/) | Runs the Compose stack, builds service images, feeds Kind |
 | [Make](https://www.gnu.org/software/make/) | Primary task runner — every workflow in this README is a `make` target |
 | [Poetry](https://python-poetry.org/) | Python dependency + virtualenv management (`poetry add <pkg>`, `poetry run <cmd>`) |
-| [Skilltree](https://github.com/imarios/skilltree) | Skill/agent dependency manager that works with any AI coding assistant (Claude Code, Cursor, etc.). `skilltree install` resolves [`skilltree.yaml`](skilltree.yaml) and populates the agent's local config dir. Skip if you're coding without an AI assistant. |
+| [Skilltree](https://github.com/imarios/skilltree) | Skill/agent dependency manager that works with any AI coding assistant (Claude Code, Cursor, etc.). `skilltree install` resolves [`skilltree.yml`](skilltree.yml) and populates the agent's local config dir. Skip if you're coding without an AI assistant. |
 
 **Runs in containers** (no local install needed): Flyway (SQL migrations via `make db-migrate`).
 

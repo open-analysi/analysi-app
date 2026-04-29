@@ -7,7 +7,7 @@ skills/
   dev/      Dev-only skills (never shipped). For local Claude Code use.
 ```
 
-Skills live in `skilltree.yaml`:
+Skills live in `skilltree.yml`:
 - `dependencies:` → prod skills (both local under `./skills/source/` and remote from vibes/cy-language)
 - `dev-dependencies:` → dev-only skills (local under `./skills/dev/` or remote)
 
@@ -30,15 +30,15 @@ non-trivial usage guidance worth shipping.
 
 ## Adding a new skill
 
-**Prod (local):** add under `dependencies:` in `skilltree.yaml`, place source
+**Prod (local):** add under `dependencies:` in `skilltree.yml`, place source
 under `skills/source/<name>/`, then:
 ```bash
 skilltree install
 make package-skills
-git add skilltree.yaml skilltree.lock skills/source/<name>/ content/foundation/skills/
+git add skilltree.yml skilltree.lock skills/source/<name>/ content/foundation/skills/
 ```
 
-**Dev-only (local):** add under `dev-dependencies:` in `skilltree.yaml`, place
+**Dev-only (local):** add under `dev-dependencies:` in `skilltree.yml`, place
 source under `skills/dev/<name>/`, then `skilltree install`.
 
 See `scripts/agents_management/CLAUDE.md` for the full packaging flow.

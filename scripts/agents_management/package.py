@@ -2,7 +2,7 @@
 """
 Package production agents and skills using skilltree as the source of truth.
 
-skilltree.yaml declares all dependencies with group (prod/dev) and type
+skilltree.yml declares all dependencies with group (prod/dev) and type
 (skill/agent). This script reads `skilltree list --json` and copies prod
 dependencies into their deployment directories:
 
@@ -96,7 +96,7 @@ def package_agents() -> int:
 
     print("=" * 70)
     print("Packaging agents into agents/dist/")
-    print(f"  Source of truth: skilltree.yaml ({len(agents)} prod agents)")
+    print(f"  Source of truth: skilltree.yml ({len(agents)} prod agents)")
     print("=" * 70)
     print()
 
@@ -297,7 +297,7 @@ def package_skills() -> int:
 
     print("=" * 70)
     print("Packaging skills into content/foundation/skills/")
-    print(f"  Source of truth: skilltree.yaml ({len(skills)} prod skills)")
+    print(f"  Source of truth: skilltree.yml ({len(skills)} prod skills)")
     print("=" * 70)
     print()
 
