@@ -77,11 +77,27 @@ To sign off a range of past commits on a branch:
 git rebase --signoff main
 ```
 
+## Pre-commit hooks (one-time setup)
+
+After `poetry install`, run **`make install-hooks`** in your clone. This wires the project's [pre-commit](https://pre-commit.com/) hooks into your local `git commit`:
+
+- `ruff check --fix` and `ruff format` (Python lint + format)
+- `bandit` (Python security)
+- `gitleaks` (secret detection)
+- `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-json`, `check-toml`
+- TypeScript types regen + Helm lint + dependency check (when relevant files change)
+
+Without this step, the same checks still run in CI, but you'll get the feedback loop minutes later instead of seconds. To run the full suite on demand against the whole tree:
+
+```bash
+poetry run pre-commit run --all-files
+```
+
 ## Pull requests
 
 1. Fork the repo and create a topic branch from `main`.
 2. Make your changes with clear, focused commits (each `Signed-off-by`).
-3. Run `poetry run ruff check --fix`, `poetry run ruff format`, and the relevant test suite (`make test-unit` at minimum).
+3. Run `poetry run ruff check --fix`, `poetry run ruff format`, and the relevant test suite (`make test-unit` at minimum). If you ran `make install-hooks`, ruff and friends fire automatically on every commit.
 4. Open a PR describing *what* you changed and *why*.
 
 CI will verify that every commit in the PR carries a valid `Signed-off-by` line. PRs without sign-off will be asked to amend before review.
