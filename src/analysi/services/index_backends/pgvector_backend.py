@@ -223,17 +223,13 @@ class PgvectorBackend:
         if not entry_ids:
             return 0
 
-        stmt = (
-            delete(IndexEntryModel)
-            .where(
-                IndexEntryModel.tenant_id == tenant_id,
-                IndexEntryModel.collection_id == collection_id,
-                IndexEntryModel.id.in_(entry_ids),
-            )
-            .returning(IndexEntryModel.id)
+        stmt = delete(IndexEntryModel).where(
+            IndexEntryModel.tenant_id == tenant_id,
+            IndexEntryModel.collection_id == collection_id,
+            IndexEntryModel.id.in_(entry_ids),
         )
         result = await self.session.execute(stmt)
-        deleted = len(result.all())
+        deleted = result.rowcount or 0
 
         logger.info(
             "index_entries_deleted",
@@ -249,16 +245,12 @@ class PgvectorBackend:
         tenant_id: str,
     ) -> int:
         """Delete all entries in a collection. Returns count deleted."""
-        stmt = (
-            delete(IndexEntryModel)
-            .where(
-                IndexEntryModel.tenant_id == tenant_id,
-                IndexEntryModel.collection_id == collection_id,
-            )
-            .returning(IndexEntryModel.id)
+        stmt = delete(IndexEntryModel).where(
+            IndexEntryModel.tenant_id == tenant_id,
+            IndexEntryModel.collection_id == collection_id,
         )
         result = await self.session.execute(stmt)
-        deleted = len(result.all())
+        deleted = result.rowcount or 0
 
         logger.info(
             "index_entries_deleted_all",

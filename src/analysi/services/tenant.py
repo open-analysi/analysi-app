@@ -239,8 +239,16 @@ class TenantService:
                 # the entire transaction (e.g., table might not exist in
                 # test environments or have FK ordering issues).
                 async with self.session.begin_nested():
+                    # ``table`` iterates over _CASCADE_DELETE_TABLES, a hardcoded
+                    # constant defined at module load time — never user input.
+                    # ``tenant_id`` is bound as a parameter (``:tid``). There is
+                    # no SQL-injection surface here.
+                    # Suppression comment must sit on the f-string line so
+                    # Bandit's per-line ``# nosec`` parser picks it up; the
+                    # same line carries ``# nosemgrep`` for the corresponding
+                    # Semgrep rule.
                     result = await self.session.execute(
-                        text(f"DELETE FROM {table} WHERE tenant_id = :tid"),  # nosec B608 — table names from hardcoded _CASCADE_DELETE_TABLES constant
+                        text(f"DELETE FROM {table} WHERE tenant_id = :tid"),  # nosec B608  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
                         {"tid": tenant_id},
                     )
                     count = result.rowcount
