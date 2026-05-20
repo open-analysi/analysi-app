@@ -347,24 +347,29 @@ def should_retry_llm_error(exception):
 
     Decision order (most reliable signal first):
 
-    1. Explicit ``status_code`` / ``http_status`` attribute.  4xx
-       (other than 429) is treated as **permanent** and short-circuits
-       to ``False`` — this is what stops a token-limit BadRequestError
-       from being retried just because its message happens to contain
-       a number like "9500 tokens".
+    1. Explicit ``status_code`` / ``http_status`` attribute.  Transient
+       statuses (429, 408 Request Timeout, 409 Conflict, and all 5xx)
+       are retried.  Other 4xx are treated as **permanent** and
+       short-circuit to ``False`` — this is what stops a token-limit
+       BadRequestError from being retried just because its message
+       happens to contain a number like "9500 tokens".
     2. Exception type name (covers SDKs that don't expose status_code).
     3. **Semantic** message patterns ("rate limit", "internal server
        error", "service unavailable", …).  Bare numeric substrings
        like "500" or "502" are intentionally **not** matched here:
        they false-match many permanent-error messages.
     """
+    # Transient 4xx statuses worth retrying: rate limiting (429),
+    # request timeout (408), and conflicts (409) are typically temporary.
+    _TRANSIENT_4XX = {408, 409, 429}
+
     # 1. Most reliable signal: explicit HTTP status from the SDK.
     status_code = getattr(exception, "status_code", None)
     if status_code is None:
         status_code = getattr(exception, "http_status", None)
 
     if isinstance(status_code, int):
-        if status_code == 429 or status_code >= 500:
+        if status_code in _TRANSIENT_4XX or status_code >= 500:
             return True
         if 400 <= status_code < 500:
             # Permanent client error (auth, bad request, not found,

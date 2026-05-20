@@ -247,6 +247,18 @@ class TestShouldRetryLlmError:
         exc = _LLMErrorWithStatus("Too Many Requests", status_code=429)
         assert should_retry_llm_error(exc) is True
 
+    def test_status_408_request_timeout_retried(self):
+        """408 Request Timeout is transient — must be retried even though
+        it is a 4xx status."""
+        exc = _LLMErrorWithStatus("Request Timeout", status_code=408)
+        assert should_retry_llm_error(exc) is True
+
+    def test_status_409_conflict_retried(self):
+        """409 Conflict is commonly transient for LLM/proxy backends —
+        must be retried."""
+        exc = _LLMErrorWithStatus("Conflict", status_code=409)
+        assert should_retry_llm_error(exc) is True
+
     def test_http_status_attr_alias_retried(self):
         """Some SDKs use ``http_status`` instead of ``status_code``."""
         exc = _LLMError("Server error")
