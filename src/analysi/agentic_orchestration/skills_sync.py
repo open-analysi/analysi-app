@@ -267,8 +267,17 @@ async def hydra_tenant_lock(session: AsyncSession, tenant_id: str):
     # Use only first 15 hex chars to fit in bigint range
     lock_id = int(hashlib.sha256(f"hydra:{tenant_id}".encode()).hexdigest()[:15], 16)
 
-    # Acquire exclusive advisory lock (blocks if another session holds it)
-    await session.execute(text(f"SELECT pg_advisory_xact_lock({lock_id})"))
+    # Acquire exclusive advisory lock (blocks if another session holds it).
+    # ``pg_advisory_xact_lock`` is a Postgres-only function with no ORM
+    # equivalent, so raw SQL via ``text()`` is required. The value flowing
+    # into the statement is bound as ``:lock_id`` (never f-string
+    # interpolated), so there is no injection surface to defend against.
+    await session.execute(
+        text(
+            "SELECT pg_advisory_xact_lock(:lock_id)"
+        ),  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+        {"lock_id": lock_id},
+    )
 
     try:
         yield

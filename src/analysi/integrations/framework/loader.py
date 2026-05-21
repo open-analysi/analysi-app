@@ -4,9 +4,9 @@ Dynamic loader for integration actions.
 Loads action implementations from integration folders.
 """
 
-import importlib
 from typing import Any
 
+from analysi.common.safe_import import UnsafeModulePathError, safe_import_module
 from analysi.integrations.framework.base import IntegrationAction
 
 
@@ -41,14 +41,22 @@ class IntegrationLoader:
         Returns:
             IntegrationAction instance
         """
-        # 1. Build module path
+        # 1. Build module path. ``integration_id`` originates from manifest
+        # registration; safe_import_module enforces an analysi.* allowlist and
+        # rejects anything that isn't a well-formed dotted Python identifier,
+        # so a hostile manifest cannot pivot us into arbitrary site-packages.
         module_path = (
             f"analysi.integrations.framework.integrations.{integration_id}.actions"
         )
 
         # 2. Import actions module
         try:
-            module = importlib.import_module(module_path)
+            module = safe_import_module(module_path)
+        except UnsafeModulePathError as e:
+            raise ValueError(
+                f"Refusing to load actions for integration '{integration_id}': "
+                f"invalid module path ({e})"
+            ) from e
         except ImportError as e:
             raise ValueError(
                 f"Failed to import actions module for integration '{integration_id}': {e!s}"

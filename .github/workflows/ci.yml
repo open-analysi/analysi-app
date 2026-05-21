@@ -200,12 +200,32 @@ jobs:
             src/analysi/ \
             || true
 
+      - name: Honor in-source Semgrep suppressions in SARIF
+        if: always() && hashFiles('semgrep-results.sarif') != ''
+        run: |
+          # `# nosemgrep:<rule-id>` is our single source of truth for findings that
+          # have been reviewed and accepted — each carries an inline rationale and is
+          # vetted in the PR diff (same model as .pip-audit-ignore.txt / .gitleaksignore).
+          # Semgrep records these as SARIF results carrying a `suppressions` array
+          # (kind: inSource), but GitHub code scanning does not honor that field for
+          # the PR diff check, so accepted findings resurface as "new alerts". Drop the
+          # results Semgrep already flagged as suppressed so the uploaded SARIF reflects
+          # only findings that have NOT been explicitly accepted in source.
+          jq '(.runs[].results) |= map(select((.suppressions // []) | length == 0))' \
+            semgrep-results.sarif > semgrep-results.honored.sarif
+          mv semgrep-results.honored.sarif semgrep-results.sarif
+
       - name: pip-audit vulnerability scan
         if: always()
         run: |
           # Blocking — PRs cannot merge with known CVEs in dependencies.
           # To temporarily ignore a CVE while waiting for an upstream fix,
           # add it to .pip-audit-ignore.txt (one CVE ID per line).
+          #
+          # pip itself is the build-venv installer (not a runtime/poetry.lock
+          # dependency), so keep it patched to the latest release rather than
+          # ignoring its fixable CVEs — clears e.g. CVE-2026-6357.
+          poetry run python -m pip install --quiet --upgrade pip
           IGNORE_ARGS=""
           if [ -f .pip-audit-ignore.txt ]; then
             while IFS= read -r cve; do

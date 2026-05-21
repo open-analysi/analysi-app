@@ -2386,18 +2386,18 @@ license = ["ukkonen"]
 
 [[package]]
 name = "idna"
-version = "3.11"
+version = "3.15"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev", "docs"]
 files = [
-    {file = "idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea"},
-    {file = "idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902"},
+    {file = "idna-3.15-py3-none-any.whl", hash = "sha256:048adeaf8c2d788c40fee287673ccaa74c24ffd8dcf09ffa555a2fbb59f10ac8"},
+    {file = "idna-3.15.tar.gz", hash = "sha256:ca962446ea538f7092a95e057da437618e886f4d349216d2b1e294abfdb65fdc"},
 ]
 
 [package.extras]
-all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
+all = ["mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
 
 [[package]]
 name = "importlib-metadata"
@@ -2692,18 +2692,19 @@ pydantic = ">=2.7.4,<3.0.0"
 
 [[package]]
 name = "langchain-core"
-version = "1.2.31"
+version = "1.4.0"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0.0,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "langchain_core-1.2.31-py3-none-any.whl", hash = "sha256:c407193edb99311cc36ec3e4d3667a065bbc4d7d72fbb6e368538b9b134d4033"},
-    {file = "langchain_core-1.2.31.tar.gz", hash = "sha256:aad3ecc9e4dce2dd2bb79526c81b92e5322fd81db7834a031cb80359f2e3ebaa"},
+    {file = "langchain_core-1.4.0-py3-none-any.whl", hash = "sha256:23cbbdb46e38ddd1dd5247e6167e96013eae74bea4c5949c550809970a9e565c"},
+    {file = "langchain_core-1.4.0.tar.gz", hash = "sha256:1dc341eed802ed9c117c0df3923c991e5e9e226571e5725c194eeb5bd93d1a7f"},
 ]
 
 [package.dependencies]
 jsonpatch = ">=1.33.0,<2.0.0"
+langchain-protocol = ">=0.0.14"
 langsmith = ">=0.3.45,<1.0.0"
 packaging = ">=23.2.0"
 pydantic = ">=2.7.4,<3.0.0"
@@ -2746,6 +2747,21 @@ files = [
 langchain-core = ">=1.2.31,<2.0.0"
 openai = ">=2.26.0,<3.0.0"
 tiktoken = ">=0.7.0,<1.0.0"
+
+[[package]]
+name = "langchain-protocol"
+version = "0.0.15"
+description = "Python bindings for the LangChain agent streaming protocol"
+optional = false
+python-versions = "<4.0.0,>=3.10.0"
+groups = ["main"]
+files = [
+    {file = "langchain_protocol-0.0.15-py3-none-any.whl", hash = "sha256:461eb794358f83d5e42635a5797799ffec7b4702314e34edf73ac21e75d3ef79"},
+    {file = "langchain_protocol-0.0.15.tar.gz", hash = "sha256:9ab2d11ee73944754f10e037e717098d3a6796f0e58afa9cadda6154e7655ade"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.7.0,<5.0.0"
 
 [[package]]
 name = "langgraph"
@@ -2817,14 +2833,14 @@ orjson = ">=3.11.5"
 
 [[package]]
 name = "langsmith"
-version = "0.7.32"
+version = "0.8.5"
 description = "Client library to connect to the LangSmith Observability and Evaluation Platform."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "langsmith-0.7.32-py3-none-any.whl", hash = "sha256:e1fde928990c4c52f47dc5132708cec674355d9101723d564183e965f383bf5f"},
-    {file = "langsmith-0.7.32.tar.gz", hash = "sha256:b59b8e106d0e4c4842e158229296086e2aa7c561e3f602acda73d3ad0062e915"},
+    {file = "langsmith-0.8.5-py3-none-any.whl", hash = "sha256:efc779f9d450dcaf9d97bc8894f4926276509d6e730e05289af9a64debce06ae"},
+    {file = "langsmith-0.8.5.tar.gz", hash = "sha256:3615243d99c12f4047f13042bdc05a373dce232d106a6511b3ca7b48c5af1c2c"},
 ]
 
 [package.dependencies]
@@ -2846,6 +2862,7 @@ openai-agents = ["openai-agents (>=0.0.3)"]
 otel = ["opentelemetry-api (>=1.30.0)", "opentelemetry-exporter-otlp-proto-http (>=1.30.0)", "opentelemetry-sdk (>=1.30.0)"]
 pytest = ["pytest (>=7.0.0)", "rich (>=13.9.4)", "vcrpy (>=7.0.0)"]
 sandbox = ["websockets (>=15.0)"]
+strands-agents = ["opentelemetry-api (>=1.30.0)", "opentelemetry-exporter-otlp-proto-http (>=1.30.0)", "opentelemetry-sdk (>=1.30.0)", "strands-agents (>=0.1.0)", "strands-agents-tools (>=0.2.0)"]
 vcr = ["vcrpy (>=7.0.0)"]
 
 [[package]]
@@ -5092,14 +5109,14 @@ tests = ["coverage[toml] (==7.10.7)", "pytest (>=8.4.2,<9.0.0)"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "10.21.2"
+version = "10.21.3"
 description = "Extension pack for Python Markdown."
 optional = false
 python-versions = ">=3.9"
 groups = ["docs"]
 files = [
-    {file = "pymdown_extensions-10.21.2-py3-none-any.whl", hash = "sha256:5c0fd2a2bea14eb39af8ff284f1066d898ab2187d81b889b75d46d4348c01638"},
-    {file = "pymdown_extensions-10.21.2.tar.gz", hash = "sha256:c3f55a5b8a1d0edf6699e35dcbea71d978d34ff3fa79f3d807b8a5b3fa90fbdc"},
+    {file = "pymdown_extensions-10.21.3-py3-none-any.whl", hash = "sha256:d7a5d08014fc571e80ca21dd6f854e31f94c489800350564d55d15b3c41e76b6"},
+    {file = "pymdown_extensions-10.21.3.tar.gz", hash = "sha256:72cfcf55f07aea0d4af2c4f11dd4e52466ddfb1bb819673146398e0bd3a77354"},
 ]
 
 [package.dependencies]
@@ -5255,14 +5272,14 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-multipart"
-version = "0.0.26"
+version = "0.0.27"
 description = "A streaming multipart parser for Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "python_multipart-0.0.26-py3-none-any.whl", hash = "sha256:c0b169f8c4484c13b0dcf2ef0ec3a4adb255c4b7d18d8e420477d2b1dd03f185"},
-    {file = "python_multipart-0.0.26.tar.gz", hash = "sha256:08fadc45918cd615e26846437f50c5d6d23304da32c341f289a617127b081f17"},
+    {file = "python_multipart-0.0.27-py3-none-any.whl", hash = "sha256:6fccfad17a27334bd0193681b369f476eda3409f17381a2d65aa7df3f7275645"},
+    {file = "python_multipart-0.0.27.tar.gz", hash = "sha256:9870a6a8c5a20a5bf4f07c017bd1489006ff8836cff097b6933355ee2b49b602"},
 ]
 
 [[package]]
@@ -6302,14 +6319,14 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.6.3"
+version = "2.7.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main", "dev", "docs"]
 files = [
-    {file = "urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"},
-    {file = "urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed"},
+    {file = "urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897"},
+    {file = "urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c"},
 ]
 
 [package.extras]
@@ -7257,4 +7274,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "9c9e87b15b4653bbb3f43feb5091aac3ae7add78adcb855e0ce1942cbc58337b"
+content-hash = "752d9d2252fddd59760fcfbffb0181ba87514e67e07a6d8c2d813c7a720208f7"

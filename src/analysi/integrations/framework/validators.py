@@ -4,10 +4,10 @@ Manifest validation for Integrations Framework.
 Validates manifest.json files against schema and archetype requirements.
 """
 
-import importlib
 import json
 from pathlib import Path
 
+from analysi.common.safe_import import UnsafeModulePathError, safe_import_module
 from analysi.integrations.framework.models import (
     Archetype,
     IntegrationManifest,
@@ -402,9 +402,23 @@ class ManifestValidator:
             f"analysi.integrations.framework.integrations.{manifest.id}.actions"
         )
 
-        # Try to import the actions module
+        # Try to import the actions module. ``manifest.id`` is user-supplied,
+        # so route through the allowlisted importer that enforces an analysi.*
+        # namespace and a strict dotted-identifier shape.
         try:
-            actions_module = importlib.import_module(module_path)
+            actions_module = safe_import_module(module_path)
+        except UnsafeModulePathError as e:
+            errors.append(
+                ManifestValidationError(
+                    field="actions_module",
+                    message=(
+                        f"Refusing to load actions module '{module_path}': "
+                        f"invalid module path ({e})"
+                    ),
+                    severity="error",
+                )
+            )
+            return errors
         except ImportError as e:
             errors.append(
                 ManifestValidationError(

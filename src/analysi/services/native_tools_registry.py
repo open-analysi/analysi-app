@@ -10,9 +10,10 @@ This replaces the manual hardcoded registration in cy_tool_registry.py,
 reducing duplication and preventing forgotten registrations.
 """
 
-import importlib
 import inspect
 from typing import Any, get_args, get_origin
+
+from analysi.common.safe_import import safe_import_module
 
 
 # Short names of native tools (e.g., "llm_run", "store_artifact").
@@ -535,8 +536,11 @@ def extract_function_signature(
             "required": ["prompt"]
         }
     """
-    # Import module and get class
-    module = importlib.import_module(module_name)
+    # Import module and get class. ``module_name`` is read from
+    # NATIVE_TOOL_METADATA (a hardcoded constant) but Semgrep can't prove that
+    # at the callsite — route through safe_import_module so the analysi.*
+    # allowlist is enforced regardless of how this helper is invoked.
+    module = safe_import_module(module_name)
     cls = getattr(module, class_name)
 
     # Get method

@@ -19,17 +19,42 @@ class TestIntegrationLoader:
         pass
 
     def test_ut_05_2_load_nonexistent_integration(self):
-        """UT-05.2: Load action with non-existent integration, verify ImportError handled."""
+        """UT-05.2: Load action with invalid integration id, verify failure surfaces as ValueError.
+
+        Hyphens aren't valid Python identifier characters, so the safe-import
+        guard rejects the constructed path before importlib is called. The
+        loader should still surface a ``ValueError``.
+        """
         loader = IntegrationLoader()
 
-        with pytest.raises(ValueError, match="Failed to import actions module"):
-            # Attempt to load from non-existent integration
-            # Using asyncio.run to call async method
+        with pytest.raises(
+            ValueError,
+            match="(Refusing to load|Failed to import) actions",
+        ):
             import asyncio
 
             asyncio.run(
                 loader.load_action(
                     integration_id="nonexistent-integration-12345",
+                    action_id="health_check",
+                    action_metadata={"type": "connector"},
+                    settings={},
+                    credentials={},
+                )
+            )
+
+    def test_ut_05_2b_load_unsafe_integration_id_rejected(self):
+        """Reject integration ids that escape the analysi.* namespace."""
+        loader = IntegrationLoader()
+
+        with pytest.raises(ValueError, match="Refusing to load"):
+            import asyncio
+
+            asyncio.run(
+                loader.load_action(
+                    # ``..os`` would build a non-identifier dotted path; the
+                    # safe-import allowlist must refuse it.
+                    integration_id="..os",
                     action_id="health_check",
                     action_metadata={"type": "connector"},
                     settings={},
