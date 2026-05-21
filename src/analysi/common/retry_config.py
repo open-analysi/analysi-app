@@ -343,11 +343,49 @@ def polling_retry_policy(max_wait_seconds: int = 120, poll_interval_max: float =
 
 
 def should_retry_llm_error(exception):
-    """Determine if an LLM API error should be retried."""
-    # OpenAI/LangChain specific exceptions
-    exception_name = type(exception).__name__
+    """Determine if an LLM API error should be retried.
 
-    # Retryable LLM exceptions
+    Decision order (most reliable signal first):
+
+    1. Explicit HTTP status from the SDK.  Both ``status_code`` and
+       ``http_status`` are considered (some wrappers expose both, and
+       one may be a non-actionable placeholder like ``0``).  If **any**
+       actionable status is transient (429, 408 Request Timeout, 409
+       Conflict, or 5xx) the call is retried.  If every actionable
+       status is a non-transient 4xx, it is treated as **permanent** and
+       short-circuits to ``False`` — this is what stops a token-limit
+       BadRequestError from being retried just because its message
+       happens to contain a number like "9500 tokens".
+    2. Exception type name (covers SDKs that don't expose status_code).
+    3. **Semantic** message patterns ("rate limit", "internal server
+       error", "service unavailable", …).  Bare numeric substrings
+       like "500" or "502" are intentionally **not** matched here:
+       they false-match many permanent-error messages.
+    """
+    # Transient 4xx statuses worth retrying: rate limiting (429),
+    # request timeout (408), and conflicts (409) are typically temporary.
+    _TRANSIENT_4XX = {408, 409, 429}
+
+    # 1. Most reliable signal: explicit HTTP status from the SDK.
+    #    Gather every actionable status the exception exposes.  A
+    #    placeholder/sentinel like ``0`` (or a non-int) is ignored so a
+    #    real code in the sibling attribute still drives the decision.
+    statuses = [
+        val
+        for attr in ("status_code", "http_status")
+        if isinstance(val := getattr(exception, attr, None), int) and val > 0
+    ]
+    if statuses:
+        if any(s in _TRANSIENT_4XX or s >= 500 for s in statuses):
+            return True
+        if all(400 <= s < 500 for s in statuses):
+            # Permanent client error (auth, bad request, not found,
+            # context-length, etc.).  Don't waste retries.
+            return False
+
+    # 2. Exception type name fallback (some SDKs raise typed errors
+    #    without a status_code attribute).
+    exception_name = type(exception).__name__
     retryable_exceptions = {
         "RateLimitError",  # OpenAI rate limit
         "APITimeoutError",  # OpenAI timeout
@@ -357,38 +395,25 @@ def should_retry_llm_error(exception):
         "Timeout",  # Generic timeout
         "ConnectionError",  # Network issues
     }
+    if exception_name in retryable_exceptions:
+        return True
 
-    # Check if exception message contains retryable patterns
+    # 3. Last resort: semantic message patterns.  Phrases only — no
+    #    bare status-code numerals, which collide with token counts,
+    #    port numbers, etc.
     exception_str = str(exception).lower()
-    retryable_patterns = [
+    retryable_patterns = (
         "rate limit",
-        "429",
         "quota exceeded",
         "timeout",
         "connection",
         "internal server error",
-        "500",
-        "502",
-        "503",
-        "504",
         "service unavailable",
         "temporarily unavailable",
-    ]
-
-    # Check for HTTP status codes in attributes
-    if hasattr(exception, "status_code"):
-        status_code = getattr(exception, "status_code", 0)
-        if status_code == 429 or status_code >= 500:
-            return True
-
-    if hasattr(exception, "http_status"):
-        http_status = getattr(exception, "http_status", 0)
-        if http_status == 429 or http_status >= 500:
-            return True
-
-    return exception_name in retryable_exceptions or any(
-        pattern in exception_str for pattern in retryable_patterns
+        "bad gateway",
+        "gateway timeout",
     )
+    return any(pattern in exception_str for pattern in retryable_patterns)
 
 
 def llm_retry_policy(max_attempts: int = 5):
