@@ -265,6 +265,26 @@ class TestShouldRetryLlmError:
         exc.http_status = 503
         assert should_retry_llm_error(exc) is True
 
+    def test_placeholder_status_code_falls_back_to_http_status_retried(self):
+        """When status_code is a non-actionable placeholder (0) but
+        http_status carries the real transient code (503), the predicate
+        must still retry — not be misled by the placeholder."""
+        exc = _LLMErrorWithStatus("Service Unavailable", status_code=0)
+        exc.http_status = 503
+        assert should_retry_llm_error(exc) is True
+
+    def test_placeholder_status_code_with_permanent_http_status_not_retried(self):
+        """status_code=0 placeholder + http_status=400 → permanent, no retry."""
+        exc = _LLMErrorWithStatus("Bad Request", status_code=0)
+        exc.http_status = 400
+        assert should_retry_llm_error(exc) is False
+
+    def test_both_fields_transient_retried(self):
+        """If either field signals a transient status, retry."""
+        exc = _LLMErrorWithStatus("err", status_code=400)
+        exc.http_status = 503
+        assert should_retry_llm_error(exc) is True
+
     def test_rate_limit_message_retried(self):
         exc = _LLMError("Rate limit reached for requests")
         assert should_retry_llm_error(exc) is True

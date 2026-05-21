@@ -347,10 +347,13 @@ def should_retry_llm_error(exception):
 
     Decision order (most reliable signal first):
 
-    1. Explicit ``status_code`` / ``http_status`` attribute.  Transient
-       statuses (429, 408 Request Timeout, 409 Conflict, and all 5xx)
-       are retried.  Other 4xx are treated as **permanent** and
-       short-circuit to ``False`` — this is what stops a token-limit
+    1. Explicit HTTP status from the SDK.  Both ``status_code`` and
+       ``http_status`` are considered (some wrappers expose both, and
+       one may be a non-actionable placeholder like ``0``).  If **any**
+       actionable status is transient (429, 408 Request Timeout, 409
+       Conflict, or 5xx) the call is retried.  If every actionable
+       status is a non-transient 4xx, it is treated as **permanent** and
+       short-circuits to ``False`` — this is what stops a token-limit
        BadRequestError from being retried just because its message
        happens to contain a number like "9500 tokens".
     2. Exception type name (covers SDKs that don't expose status_code).
@@ -364,14 +367,18 @@ def should_retry_llm_error(exception):
     _TRANSIENT_4XX = {408, 409, 429}
 
     # 1. Most reliable signal: explicit HTTP status from the SDK.
-    status_code = getattr(exception, "status_code", None)
-    if status_code is None:
-        status_code = getattr(exception, "http_status", None)
-
-    if isinstance(status_code, int):
-        if status_code in _TRANSIENT_4XX or status_code >= 500:
+    #    Gather every actionable status the exception exposes.  A
+    #    placeholder/sentinel like ``0`` (or a non-int) is ignored so a
+    #    real code in the sibling attribute still drives the decision.
+    statuses = [
+        val
+        for attr in ("status_code", "http_status")
+        if isinstance(val := getattr(exception, attr, None), int) and val > 0
+    ]
+    if statuses:
+        if any(s in _TRANSIENT_4XX or s >= 500 for s in statuses):
             return True
-        if 400 <= status_code < 500:
+        if all(400 <= s < 500 for s in statuses):
             # Permanent client error (auth, bad request, not found,
             # context-length, etc.).  Don't waste retries.
             return False
