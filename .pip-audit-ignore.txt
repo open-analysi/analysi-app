@@ -15,3 +15,25 @@
 # exposure. No upstream pip fix published yet.
 # Remove this entry as soon as pip ships a patched release and is updated.
 CVE-2026-3219
+
+# PYSEC-2025-183 — pyjwt
+# Issue: report of "weak encryption" in pyjwt. DISPUTED by the maintainer:
+# the key length is chosen by the application that uses the library, not by
+# pyjwt itself. There is no upstream fix (and none is planned, since it is
+# disputed). Our usage validates tokens with asymmetric RS256 via a JWKS
+# endpoint (src/analysi/auth/jwks.py, PyJWKClient) — key strength is set by
+# the identity provider, not a short HMAC secret — so the disputed weakness
+# does not apply to us.
+# Remove this entry if pyjwt ships a fix or the advisory is withdrawn.
+PYSEC-2025-183
+
+# PYSEC-2026-89 — markdown
+# Issue: malformed HTML-like input can trigger an unhandled error in the
+# markdown renderer (DoS). The OSV record is unbounded (introduced: 0, no
+# fixed version), so every release is flagged with no fix available.
+# Why we ignore: markdown is a transitive docs-build dependency only
+# (mkdocs-material / pymdown-extensions); it is never imported by the
+# application (src/analysi does not import it) and is not shipped in the
+# runtime image, so untrusted input has no path to reach it.
+# Remove this entry as soon as markdown ships a fixed release.
+PYSEC-2026-89

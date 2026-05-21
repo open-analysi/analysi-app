@@ -221,6 +221,11 @@ jobs:
           # Blocking — PRs cannot merge with known CVEs in dependencies.
           # To temporarily ignore a CVE while waiting for an upstream fix,
           # add it to .pip-audit-ignore.txt (one CVE ID per line).
+          #
+          # pip itself is the build-venv installer (not a runtime/poetry.lock
+          # dependency), so keep it patched to the latest release rather than
+          # ignoring its fixable CVEs — clears e.g. CVE-2026-6357.
+          poetry run python -m pip install --quiet --upgrade pip
           IGNORE_ARGS=""
           if [ -f .pip-audit-ignore.txt ]; then
             while IFS= read -r cve; do
